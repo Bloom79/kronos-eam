@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kronos EAM - Prototipo Piattaforma</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+       .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+       .sidebar-link.active,.sidebar-link:hover {
+            background-color: #1d4ed8;
+            color: white;
+        }
+       .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+       .modal-content {
+            transition: transform 0.3s ease;
+        }
+       .kanban-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+       }
+       .kanban-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+       }
+       .kanban-card:active {
+            cursor: grabbing;
+       }
+       .tab-link.active {
+            border-color: #2563eb;
+            color: #2563eb;
+        }
+        .checklist-item.completed .checklist-icon {
+            background-color: #10B981; /* green-500 */
+            color: white;
+        }
+        .checklist-item.pending .checklist-icon {
+            background-color: #E5E7EB; /* gray-200 */
+            color: #6B7280; /* gray-500 */
+        }
+        .checklist-item.completed .checklist-text {
+            text-decoration: line-through;
+            color: #6B7280; /* gray-500 */
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex overflow-hidden">
+
+    <aside id="sidebar" class="sidebar bg-gray-900 text-gray-200 flex flex-col flex-shrink-0 w-64 fixed inset-y-0 left-0 z-30 transform -translate-x-full md:relative md:translate-x-0">
+        <div class="h-16 flex items-center justify-center border-b border-gray-700 flex-shrink-0">
+            <h1 class="text-2xl font-bold text-white">Kronos EAM</h1>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+            <a href="#" data-view="dashboard" class="sidebar-link active flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Dashboard
+            </a>
+            <a href="#" data-view="impianti" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                Impianti
+            </a>
+            <a href="#" data-view="workflow" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                Workflow
+            </a>
+            <a href="#" data-view="agenda" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                Agenda
+            </a>
+            <a href="#" data-view="process-guide" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                Ciclo di Vita
+            </a>
+            <a href="#" data-view="ai-assistant" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                Assistente AI
+            </a>
+            <div class="mt-auto p-4 border-t border-gray-700">
+                 <a href="#" data-view="profilo" class="sidebar-link flex items-center px-4 py-2 rounded-lg">
+                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    Profilo & Fatturazione
+                </a>
+            </div>
+        </nav>
+    </aside>
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden"></div>
+
+    <div class="flex-1 flex flex-col">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 flex-shrink-0">
+            <div class="flex items-center">
+                <button id="menu-toggle-btn" class="p-2 rounded-md text-gray-500 hover:bg-gray-100 md:hidden">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div id="view-title" class="text-xl font-semibold text-gray-800 ml-4 md:ml-0">Dashboard</div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                </button>
+                <div class="flex items-center">
+                    <img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/e0e7ff/3730a3?text=MR" alt="Mario Rossi">
+                    <div class="ml-3 hidden sm:block">
+                        <p class="text-sm font-semibold text-gray-800">Mario Rossi</p>
+                        <p class="text-xs text-gray-500">Asset Manager</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto">
+            
+            <div id="dashboard-view" class="view-content">
+                <div class="mb-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h2 class="text-lg font-bold text-blue-800">La Mia Scrivania</h2>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-600 mb-2">Task Assegnati a Te</h3>
+                            <div class="space-y-2">
+                                <a href="#" class="block bg-white p-3 rounded-md shadow-sm hover:shadow-md transition-shadow">
+                                    <p class="font-semibold text-sm text-gray-800">Censisci su GAUDÌ</p>
+                                    <p class="text-xs text-gray-500">Impianto: FV Tetto Sicuro</p>
+                                </a>
+                                <a href="#" class="block bg-white p-3 rounded-md shadow-sm hover:shadow-md transition-shadow">
+                                    <p class="font-semibold text-sm text-gray-800">Verifica Verbale SPI</p>
+                                    <p class="text-xs text-gray-500">Impianto: Eolico Vento Forte</p>
+                                </a>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-semibold text-gray-600 mb-2">Tue Prossime Scadenze</h3>
+                            <div class="space-y-2">
+                                <div class="flex items-center text-sm"><span class="h-2 w-2 rounded-full bg-red-500 mr-3"></span><p>Pagamento Licenza Dogane (Verdi S.p.A.) - <span class="font-semibold">7 giorni</span></p></div>
+                                <div class="flex items-center text-sm"><span class="h-2 w-2 rounded-full bg-yellow-500 mr-3"></span><p>Verifica Quinquennale SPI (Blu S.A.S.) - <span class="font-semibold">22 giorni</span></p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-5 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Potenza Totale Gestita</h3><p class="mt-2 text-3xl font-bold text-gray-900">48.7 MW</p></div>
+                    <div class="bg-white p-5 rounded-lg shadow"><h3 class="text-sm font-medium text-gray-500">Stato Impianti</h3><div class="mt-2 flex items-baseline"><p class="text-3xl font-bold text-green-600">112</p><p class="ml-2 text-sm text-gray-500">/ 115 totali</p></div></div>
+                    <div class="bg-white p-5 rounded-lg shadow"><h3 class="text-sm font-medium text-red-600">Workflow in Ritardo</h3><p class="mt-2 text-3xl font-bold text-gray-900">3</p></div>
+                    <div class="bg-white p-5 rounded-lg shadow"><h3 class="text-sm font-medium text-yellow-600">Documenti da Revisionare</h3><p class="mt-2 text-3xl font-bold text-gray-900">5</p></div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow">
+                        <h3 class="font-semibold text-gray-800">Mappa Portafoglio</h3>
+                        <div class="mt-4 h-96 bg-gray-100 rounded-md flex items-center justify-center">
+                            <img src="https://i.imgur.com/sS5z9Vz.png" class="w-full h-full object-contain rounded-md" alt="Mappa degli impianti in Italia">
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="font-semibold text-gray-800 mb-4">Stato Workflow</h3>
+                            <div class="h-40"><canvas id="dashboardDoughnutChart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="font-semibold text-gray-800">Feed Attività Recenti</h3>
+                            <ul class="mt-4 space-y-3 text-sm">
+                                <li class="flex items-start"><span class="mr-3 text-gray-400">10:30</span><p class="text-gray-700"><span class="font-semibold">L. Neri</span> ha completato il task "Censisci su GAUDÌ".</p></li>
+                                <li class="flex items-start"><span class="mr-3 text-gray-400">09:15</span><p class="text-gray-700">Nuovo documento caricato per <span class="font-semibold">FV Verdi</span>.</p></li>
+                                <li class="flex items-start"><span class="mr-3 text-gray-400">Ieri</span><p class="text-gray-700">Allarme: Inverter offline per <span class="font-semibold">FV Rossi</span>.</p></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="impianti-view" class="view-content hidden">
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <input type="text" placeholder="Cerca impianto per nome o POD..." class="w-full md:w-1/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <button id="add-impianto-btn" class="w-full md:w-auto bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            Aggiungi Impianto
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Nome Impianto</th>
+                                    <th scope="col" class="px-6 py-3">Potenza</th>
+                                    <th scope="col" class="px-6 py-3">Stato</th>
+                                    <th scope="col" class="px-6 py-3">Località</th>
+                                    <th scope="col" class="px-6 py-3">Prossima Scadenza</th>
+                                    <th scope="col" class="px-6 py-3"><span class="sr-only">Azioni</span></th>
+                                </tr>
+                            </thead>
+                            <tbody id="impianti-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="impianto-detail-view" class="view-content hidden">
+            </div>
+
+            <div id="workflow-view" class="view-content hidden">
+                <div id="workflow-list-view">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <div>
+                            <select id="impianto-filter" class="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <option value="all">Tutti gli Impianti</option>
+                            </select>
+                        </div>
+                        <button id="add-workflow-btn" class="w-full md:w-auto bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                            Crea Workflow
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-500">
+                             <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3">Workflow</th>
+                                    <th class="px-6 py-3">Impianto Associato</th>
+                                    <th class="px-6 py-3">Stato Corrente</th>
+                                    <th class="px-6 py-3">Progresso</th>
+                                    <th class="px-6 py-3"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="workflow-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="workflow-detail-view" class="hidden"></div>
+            </div>
+
+            <div id="agenda-view" class="view-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow h-full flex flex-col">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold">Luglio 2025</h2>
+                        <div class="flex space-x-2">
+                            <button class="p-2 rounded-full hover:bg-gray-100">&lt;</button>
+                            <button class="p-2 rounded-full hover:bg-gray-100">&gt;</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 text-center font-semibold text-xs text-gray-600"><div>LUN</div><div>MAR</div><div>MER</div><div>GIO</div><div>VEN</div><div>SAB</div><div>DOM</div></div>
+                    <div class="grid grid-cols-7 grid-rows-5 gap-px mt-2 flex-1">
+                        <div class="border border-gray-200 p-2">1</div><div class="border border-gray-200 p-2">2</div><div class="border border-gray-200 p-2">3</div><div class="border border-gray-200 p-2">4</div><div class="border border-gray-200 p-2">5</div><div class="border border-gray-200 p-2">6</div><div class="border border-gray-200 p-2">7</div><div class="border border-gray-200 p-2">8</div><div class="border border-gray-200 p-2">9</div><div class="border border-gray-200 p-2">10</div><div class="border border-gray-200 p-2 relative"><span class="absolute top-2 left-2">11</span><div class="mt-6 text-xs text-left"><span class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">Verifica SPI</span></div></div><div class="border border-gray-200 p-2">12</div><div class="border border-gray-200 p-2">13</div><div class="border border-gray-200 p-2">14</div><div class="border border-gray-200 p-2">15</div><div class="border border-gray-200 p-2">16</div><div class="border border-gray-200 p-2">17</div><div class="border border-gray-200 p-2">18</div><div class="border border-gray-200 p-2">19</div><div class="border border-gray-200 p-2">20</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="process-guide-view" class="view-content hidden">
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Ciclo di Vita Amministrativo di un Impianto</h2>
+                    <p class="text-gray-600 mb-6">Una guida completa ai processi, documenti e interazioni gestiti da Kronos EAM.</p>
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-xl font-semibold text-blue-700 mb-3">Fase 1: Autorizzazione e Connessione</h3>
+                            <p class="text-sm text-gray-500">Dall'ottenimento del titolo autorizzativo all'allaccio fisico alla rete.</p>
+                        </div>
+                         <div>
+                            <h3 class="text-xl font-semibold text-blue-700 mb-3">Fase 2: Attivazione Servizi</h3>
+                            <p class="text-sm text-gray-500">Interazione con GSE per la remunerazione dell'energia e con l'Agenzia delle Dogane per la conformità fiscale.</p>
+                        </div>
+                         <div>
+                            <h3 class="text-xl font-semibold text-blue-700 mb-3">Fase 3: Gestione Ricorrente</h3>
+                            <p class="text-sm text-gray-500">Gestione delle scadenze annuali, triennali e quinquennali per mantenere l'impianto conforme e operativo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="ai-assistant-view" class="view-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow flex flex-col" style="height: 75vh;">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Assistente AI</h3>
+                        <div class="flex-1 overflow-y-auto space-y-4 pr-4">
+                            <div class="flex items-start space-x-3"><div class="p-2 rounded-full bg-blue-600 text-white flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div><div class="bg-gray-100 p-4 rounded-lg rounded-tl-none"><p class="text-sm text-gray-800">Ciao Mario, sono l'assistente AI di Kronos. Come posso aiutarti oggi? Puoi chiedermi dello stato dei tuoi impianti, delle scadenze imminenti o dei ricavi.</p></div></div>
+                            <div class="flex items-start space-x-3 justify-end"><div class="bg-gray-200 p-4 rounded-lg rounded-tr-none"><p class="text-sm text-gray-800">Quali impianti hanno la verifica SPI in scadenza quest'anno?</p></div><img class="h-10 w-10 rounded-full object-cover" src="https://placehold.co/100x100/e0e7ff/3730a3?text=MR" alt="Mario Rossi"></div>
+                            <div class="flex items-start space-x-3"><div class="p-2 rounded-full bg-blue-600 text-white flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div><div class="bg-gray-100 p-4 rounded-lg rounded-tl-none"><p class="text-sm text-gray-800 mb-2">Certo, ecco gli impianti con la verifica quinquennale del Sistema di Protezione di Interfaccia (SPI) in scadenza nel 2025:</p><ul class="text-sm list-disc list-inside space-y-1"><li><b>Impianto Blu S.A.S.</b> - Scadenza: 25/01/2025</li><li><b>FV Colle Alto</b> - Scadenza: 18/05/2025</li><li><b>Eolico Tramontana</b> - Scadenza: 03/09/2025</li></ul></div></div>
+                        </div>
+                        <div class="mt-6 flex"><input type="text" placeholder="Chiedi qualcosa al tuo assistente..." class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-blue-500 focus:border-blue-500"><button class="bg-blue-600 text-white px-4 rounded-r-lg hover:bg-blue-700">Invia</button></div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-lg shadow">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Estrazione Dati Automatica</h3>
+                            <p class="text-sm text-gray-500 mb-4">L'AI analizza i documenti che carichi per estrarre dati chiave e popolare automaticamente l'anagrafica.</p>
+                            <ul class="space-y-3">
+                                <li class="flex items-center"><span class="mr-3">📄</span><div class="flex-1"><p class="text-sm font-semibold">TICA_FV_Tetto_Sicuro.pdf</p></div><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">Completato</span></li>
+                                <li class="flex items-center"><span class="mr-3">📄</span><div class="flex-1"><p class="text-sm font-semibold">Fattura_GSE_Maggio.pdf</p></div><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">Completato</span></li>
+                                <li class="flex items-center"><span class="mr-3">📄</span><div class="flex-1"><p class="text-sm font-semibold">Verbale_Verifica_SPI.pdf</p></div><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800">In analisi...</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reportistica-view" class="view-content hidden">
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Generatore di Report</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div><label class="text-sm font-medium text-gray-700">Tipo di Report</label><select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"><option>Conformità Scadenze</option><option>Performance Operativa</option><option>Analisi Finanziaria</option></select></div>
+                        <div><label class="text-sm font-medium text-gray-700">Periodo</label><select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"><option>Ultimi 30 giorni</option><option>Ultimo Trimestre</option><option>Anno Corrente</option></select></div>
+                        <div><label class="text-sm font-medium text-gray-700">Formato</label><select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"><option>PDF</option><option>CSV</option></select></div>
+                    </div>
+                    <div class="mt-6 flex justify-end"><button class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Genera Report</button></div>
+                </div>
+            </div>
+
+            <div id="team-view" class="view-content hidden">
+                 <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">Membri del Team</h3>
+                        <button id="invite-user-btn" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">Invita Utente</button>
+                    </div>
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-6 py-3">Nome</th><th class="px-6 py-3">Email</th><th class="px-6 py-3">Ruolo</th><th class="px-6 py-3">Stato</th></tr></thead>
+                        <tbody>
+                            <tr class="bg-white border-b"><td class="px-6 py-4 font-medium">Mario Rossi</td><td class="px-6 py-4">m.rossi@example.com</td><td class="px-6 py-4">Admin</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Attivo</span></td></tr>
+                            <tr class="bg-white border-b"><td class="px-6 py-4 font-medium">Laura Neri</td><td class="px-6 py-4">l.neri@example.com</td><td class="px-6 py-4">Operativo</td><td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Attivo</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="profilo-view" class="view-content hidden">
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Il Mio Profilo</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="text-sm font-medium text-gray-500">Nome</label><p class="text-gray-900">Mario Rossi</p></div>
+                            <div><label class="text-sm font-medium text-gray-500">Email</label><p class="text-gray-900">m.rossi@example.com</p></div>
+                            <div><label class="text-sm font-medium text-gray-500">Ruolo</label><p class="text-gray-900">Asset Manager (Admin)</p></div>
+                        </div>
+                        <div class="mt-6 flex space-x-3"><button class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300">Modifica Profilo</button><button class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300">Cambia Password</button></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Abbonamento e Fatturazione</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div><label class="text-sm font-medium text-gray-500">Piano Attuale</label><p class="text-lg font-semibold text-blue-600">Business Plan</p></div>
+                            <div><label class="text-sm font-medium text-gray-500">Prossimo Rinnovo</label><p class="text-lg font-semibold text-gray-800">01/08/2025</p></div>
+                             <div><label class="text-sm font-medium text-gray-500">Metodo di Pagamento</label><p class="text-lg font-semibold text-gray-800">Carta di Credito **** 4242</p></div>
+                        </div>
+                        <h4 class="text-md font-semibold text-gray-700 mb-2">Storico Fatture</h4>
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-4 py-2">Data</th><th class="px-4 py-2">Importo</th><th class="px-4 py-2">Stato</th><th class="px-4 py-2"></th></tr></thead>
+                            <tbody>
+                                <tr class="border-b"><td class="px-4 py-2">01/07/2025</td><td class="px-4 py-2">€ 250,00</td><td class="px-4 py-2"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">Pagata</span></td><td class="px-4 py-2 text-right"><a href="#" class="font-medium text-blue-600 hover:underline">Scarica</a></td></tr>
+                                <tr class="border-b"><td class="px-4 py-2">01/06/2025</td><td class="px-4 py-2">€ 250,00</td><td class="px-4 py-2"><span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800">Pagata</span></td><td class="px-4 py-2 text-right"><a href="#" class="font-medium text-blue-600 hover:underline">Scarica</a></td></tr>
+                            </tbody>
+                        </table>
+                        <div class="mt-6 flex space-x-3"><button class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Gestisci Abbonamento</button></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="add-impianto-modal" class="modal-backdrop fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg p-8 transform scale-95">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Aggiungi Nuovo Impianto</h2>
+            <form>
+                <div class="space-y-4">
+                    <div><label for="nome-impianto" class="block text-sm font-medium text-gray-700">Nome Impianto</label><input type="text" id="nome-impianto" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                    <div><label for="potenza-impianto" class="block text-sm font-medium text-gray-700">Potenza (kWp)</label><input type="number" id="potenza-impianto" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                    <div><label for="localita-impianto" class="block text-sm font-medium text-gray-700">Località</label><input type="text" id="localita-impianto" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></div>
+                </div>
+                <div class="mt-8 flex justify-end space-x-3"><button type="button" class="modal-cancel-btn bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300">Annulla</button><button type="submit" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Salva Impianto</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="add-workflow-modal" class="modal-backdrop fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-lg p-8 transform scale-95">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Crea Nuovo Workflow</h2>
+            <form>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium text-gray-700">Seleziona Template</label><select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"><option>Nuova Connessione Impianto</option><option>Revamping / Potenziamento</option><option>Voltura Contratto</option><option>Gestione Sinistro</option></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700">Seleziona Impianto</label><select class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"><option>FV Solare Verdi S.p.A.</option><option>Eolico Vento Forte S.R.L.</option></select></div>
+                </div>
+                <div class="mt-8 flex justify-end space-x-3"><button type="button" class="modal-cancel-btn bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-300">Annulla</button><button type="submit" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700">Crea</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="task-detail-modal" class="modal-backdrop fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden opacity-0">
+        <div class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl p-8 transform scale-95" style="height: 90vh;">
+            <!-- Modal content will be injected here by JS -->
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Data ---
+            const impiantiData = [
+                { id: 1, nome: 'FV Solare Verdi S.p.A.', potenza: '1.2 MWp', stato: 'In Esercizio', localita: 'Brindisi (BR)', prossimaScadenza: '16/12/2025', coloreScadenza: 'text-red-600', anagrafica: { pod: 'IT001E12345678', gaudi: 'IM_A123B456', dataEsercizio: '22/05/2022', regime: 'Ritiro Dedicato', responsabile: 'Mario Rossi', assicurazione: 'Polizza #123-ALL-RISK' }, performance: { labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'], attesa: [180, 190, 210, 240, 260, 270, 280, 275, 250, 220, 190, 170], effettiva: [175, 185, 205, 238, 255, 268, 275, 270, 245, 215, 188, 165], pr: 98.1 }, manutenzione: [{id: 1, data: '15/03/2025', tipo: 'Ordinaria', desc: 'Pulizia Pannelli', stato: 'Completato', costo: '€ 500'}, {id: 2, data: '01/06/2025', tipo: 'Straordinaria', desc: 'Sostituzione Inverter #2', stato: 'Completato', costo: '€ 2,500'}, {id: 3, data: '10/09/2025', tipo: 'Ordinaria', desc: 'Verifica quadri elettrici', stato: 'Pianificato', costo: '€ 300'}], checklist: { connessione_dso: true, registrazione_terna: true, attivazione_gse: true, licenza_dogane: true, verifica_spi: false, dichiarazione_consumo: true } },
+                { id: 2, nome: 'Eolico Vento Forte S.R.L.', potenza: '5.0 MW', stato: 'In Esercizio', localita: 'Foggia (FG)', prossimaScadenza: '25/01/2026', coloreScadenza: 'text-gray-600', anagrafica: { pod: 'IT001E87654321', gaudi: 'IM_C123D456', dataEsercizio: '10/11/2021', regime: 'Conto Energia', responsabile: 'Laura Neri', assicurazione: 'Polizza #456-WIND' }, performance: { labels: ['Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'], attesa: [1200, 1300, 1400, 1350, 1250, 1100, 1050, 1000, 1150, 1250, 1350, 1300], effettiva: [1180, 1290, 1380, 1360, 1240, 1090, 1030, 990, 1140, 1230, 1340, 1290], pr: 98.5 }, manutenzione: [], checklist: { connessione_dso: true, registrazione_terna: true, attivazione_gse: true, licenza_dogane: true, verifica_spi: true, dichiarazione_consumo: true } },
+                { id: 3, nome: 'FV Tetto Sicuro', potenza: '50 kWp', stato: 'In Autorizzazione', localita: 'Milano (MI)', prossimaScadenza: '-', coloreScadenza: 'text-gray-600', anagrafica: { pod: 'N/A', gaudi: 'N/A', dataEsercizio: 'N/A', regime: 'N/A', responsabile: 'Mario Rossi', assicurazione: 'N/A' }, performance: { labels: [], attesa:[], effettiva: [], pr: null }, manutenzione: [], checklist: { connessione_dso: true, registrazione_terna: false, attivazione_gse: false, licenza_dogane: false, verifica_spi: false, dichiarazione_consumo: false } },
+            ];
+            
+            const workflowData = [
+                { id: 1, nome: 'Attivazione Nuovo Impianto', impiantoId: 3, impiantoNome: 'FV Tetto Sicuro', statoCorrente: 'Registrazione GAUDÌ', progresso: 40, 
+                  stages: [ 
+                    { name: '1. Richiesta DSO', tasks: [
+                        {id: 1, title: 'Invia Richiesta Connessione', status: 'Completato', assignee: 'M. Rossi', dueDate: '15/06/2025', documents: [{name: 'Mandato_Rappresentanza.pdf', type: 'inviato', date: '14/06/2025'}], comments: [{user: 'M. Rossi', text: 'Inviata richiesta via PEC.', date: '14/06/2025'}]}, 
+                        {id: 2, title: 'Gestisci TICA', status: 'Completato', assignee: 'M. Rossi', dueDate: '30/07/2025', documents: [{name: 'TICA_FV_Tetto_Sicuro.pdf', type: 'ricevuto', date: '01/07/2025'}], comments: []}
+                    ]}, 
+                    { name: '2. Registrazione Terna', tasks: [
+                        {id: 3, title: 'Censisci su GAUDÌ', status: 'In Corso', assignee: 'L. Neri', dueDate: '25/07/2025', documents: [], comments: [{user: 'L. Neri', text: 'In attesa di validazione dal distributore.', date: '10/07/2025'}]}
+                    ]}, 
+                    { name: '3. Fine Lavori', tasks: [] }, 
+                    { name: '4. Attivazione GSE', tasks: [] } 
+                  ] 
+                },
+                { id: 2, nome: 'Dichiarazione Dogane 2025', impiantoId: 2, impiantoNome: 'Eolico Vento Forte S.R.L.', statoCorrente: 'Raccolta Dati', progresso: 15, stages: [] },
+            ];
+
+            // --- Elements ---
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const views = document.querySelectorAll('.view-content');
+            const viewTitle = document.getElementById('view-title');
+            const impiantiTableBody = document.getElementById('impianti-table-body');
+            const impiantoDetailView = document.getElementById('impianto-detail-view');
+            const workflowListView = document.getElementById('workflow-list-view');
+            const workflowDetailView = document.getElementById('workflow-detail-view');
+            const workflowTableBody = document.getElementById('workflow-table-body');
+            const impiantoFilter = document.getElementById('impianto-filter');
+
+            // --- Modals ---
+            const modals = {
+                'add-impianto': document.getElementById('add-impianto-modal'),
+                'add-workflow': document.getElementById('add-workflow-modal'),
+                'task-detail': document.getElementById('task-detail-modal'),
+            };
+            document.getElementById('add-impianto-btn')?.addEventListener('click', () => openModal('add-impianto'));
+            document.getElementById('add-workflow-btn')?.addEventListener('click', () => openModal('add-workflow'));
+            document.querySelectorAll('.modal-cancel-btn').forEach(btn => btn.addEventListener('click', closeModal));
+            document.querySelectorAll('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', (e) => { if (e.target === backdrop) closeModal(); }));
+
+            function openModal(modalId) {
+                const modal = modals[modalId];
+                if (!modal) return;
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+                setTimeout(() => modal.querySelector('.modal-content').classList.remove('scale-95'), 10);
+            }
+
+            function closeModal() {
+                Object.values(modals).forEach(modal => {
+                    if (modal && !modal.classList.contains('hidden')) {
+                        modal.querySelector('.modal-content').classList.add('scale-95');
+                        modal.classList.add('opacity-0');
+                        setTimeout(() => modal.classList.add('hidden'), 300);
+                    }
+                });
+            }
+
+            // --- Mobile Navigation ---
+            menuToggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            });
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+
+            // --- Navigation ---
+            function switchView(viewId, title, data = null) {
+                views.forEach(v => v.classList.add('hidden'));
+                const targetView = document.getElementById(`${viewId}-view`);
+                if (targetView) {
+                    targetView.classList.remove('hidden');
+                    viewTitle.textContent = title;
+                    sidebarLinks.forEach(l => {
+                        l.classList.toggle('active', l.dataset.view === viewId || (viewId.startsWith('impianto-detail') && l.dataset.view === 'impianti') || (viewId.startsWith('workflow') && l.dataset.view === 'workflow'));
+                    });
+
+                    if (viewId === 'impianto-detail' && data) {
+                        renderImpiantoDetail(data);
+                    } else if (viewId === 'workflow') {
+                        workflowListView.classList.remove('hidden');
+                        workflowDetailView.classList.add('hidden');
+                    }
+                }
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                }
+            }
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    switchView(link.dataset.view, link.textContent.trim());
+                });
+            });
+
+            // --- Rendering ---
+            function renderImpiantiTable() {
+                if (!impiantiTableBody) return;
+                impiantiTableBody.innerHTML = '';
+                impiantiData.forEach(impianto => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${impianto.nome}</th>
+                        <td class="px-6 py-4">${impianto.potenza}</td>
+                        <td class="px-6 py-4"><span class="px-2 py-1 text-xs font-medium ${impianto.stato === 'In Esercizio' ? 'text-green-800 bg-green-100' : 'text-yellow-800 bg-yellow-100'} rounded-full">${impianto.stato}</span></td>
+                        <td class="px-6 py-4">${impianto.localita}</td>
+                        <td class="px-6 py-4 font-semibold ${impianto.coloreScadenza}">${impianto.prossimaScadenza}</td>
+                        <td class="px-6 py-4 text-right"><a href="#" class="font-medium text-blue-600 hover:underline detail-link" data-id="${impianto.id}">Dettagli</a></td>
+                    `;
+                    impiantiTableBody.appendChild(row);
+                });
+                document.querySelectorAll('.detail-link').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const impiantoId = parseInt(e.target.dataset.id);
+                        const impianto = impiantiData.find(i => i.id === impiantoId);
+                        switchView('impianto-detail', `Dettaglio: ${impianto.nome}`, impianto);
+                    });
+                });
+            }
+
+            function renderImpiantoDetail(impianto) {
+                const produzioneAnnua = impianto.performance.effettiva.reduce((a, b) => a + b, 0);
+                const ricaviStimati = (produzioneAnnua * 150).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+
+                impiantoDetailView.innerHTML = `
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <div class="border-b border-gray-200">
+                            <nav class="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+                                <a href="#" class="tab-link active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab="dso-detail">DSO</a>
+                                <a href="#" class="tab-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="terna-detail">Terna</a>
+                                <a href="#" class="tab-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="gse-detail">GSE</a>
+                                <a href="#" class="tab-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="dogane-detail">Dogane</a>
+                                <a href="#" class="tab-link whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="performance-detail">Performance</a>
+                            </nav>
+                        </div>
+                        <div class="mt-6">
+                            <div id="dso-detail-content" class="tab-content-detail">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Checklist Conformità Distributore (DSO)</h3>
+                                <ul class="space-y-3">
+                                    <li class="flex items-center checklist-item ${impianto.checklist.connessione_dso ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Richiesta di Connessione Inviata</span></li>
+                                    <li class="flex items-center checklist-item ${impianto.checklist.connessione_dso ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Preventivo (TICA) Accettato e Pagato</span></li>
+                                    <li class="flex items-center checklist-item ${impianto.checklist.connessione_dso ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Regolamento di Esercizio Firmato</span></li>
+                                </ul>
+                            </div>
+                            <div id="terna-detail-content" class="tab-content-detail hidden">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Checklist Conformità Terna</h3>
+                                <ul class="space-y-3">
+                                   <li class="flex items-center checklist-item ${impianto.checklist.registrazione_terna ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Registrazione Impianto su GAUDÌ</span></li>
+                                </ul>
+                            </div>
+                            <div id="gse-detail-content" class="tab-content-detail hidden">
+                               <h3 class="text-lg font-semibold text-gray-800 mb-4">Checklist Conformità GSE</h3>
+                                <ul class="space-y-3">
+                                   <li class="flex items-center checklist-item ${impianto.checklist.attivazione_gse ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Attivazione Convenzione (RID/SSP)</span></li>
+                                   <li class="flex items-center checklist-item completed"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Gestione Pratica Antimafia</span></li>
+                                </ul>
+                            </div>
+                             <div id="dogane-detail-content" class="tab-content-detail hidden">
+                               <h3 class="text-lg font-semibold text-gray-800 mb-4">Checklist Conformità Agenzia delle Dogane</h3>
+                                <ul class="space-y-3">
+                                   <li class="flex items-center checklist-item ${impianto.checklist.licenza_dogane ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Ottenimento Licenza di Officina Elettrica</span></li>
+                                   <li class="flex items-center checklist-item ${impianto.checklist.dichiarazione_consumo ? 'completed' : 'pending'}"><span class="checklist-icon flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mr-3">✓</span><span class="checklist-text">Dichiarazione Annuale di Consumo</span></li>
+                                </ul>
+                            </div>
+                            <div id="performance-detail-content" class="tab-content-detail hidden">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+                                    <div class="bg-gray-50 p-4 rounded-lg"><h4 class="text-sm font-medium text-gray-500">Produzione Annua</h4><p class="text-2xl font-bold text-gray-800">${produzioneAnnua.toLocaleString('it-IT')} MWh</p></div>
+                                    <div class="bg-gray-50 p-4 rounded-lg"><h4 class="text-sm font-medium text-gray-500">Performance Ratio (PR)</h4><p class="text-2xl font-bold text-gray-800">${impianto.performance.pr || 'N/A'}%</p></div>
+                                    <div class="bg-gray-50 p-4 rounded-lg"><h4 class="text-sm font-medium text-gray-500">Ricavi Stimati (Anno)</h4><p class="text-2xl font-bold text-gray-800">${ricaviStimati}</p></div>
+                                </div>
+                                <div class="h-80"><canvas id="performanceChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const detailTabs = impiantoDetailView.querySelectorAll('.tab-link');
+                const detailPanes = impiantoDetailView.querySelectorAll('.tab-content-detail');
+                detailTabs.forEach(tab => {
+                    tab.addEventListener('click', e => {
+                        e.preventDefault();
+                        detailTabs.forEach(t => {
+                            t.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                            t.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                        });
+                        tab.classList.add('active', 'border-blue-500', 'text-blue-600');
+                        tab.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                        detailPanes.forEach(p => p.classList.add('hidden'));
+                        document.getElementById(`${tab.dataset.tab}-content`).classList.remove('hidden');
+                    });
+                });
+
+                const perfCtx = document.getElementById('performanceChart')?.getContext('2d');
+                if(perfCtx) {
+                    new Chart(perfCtx, {
+                        type: 'line',
+                        data: {
+                            labels: impianto.performance.labels,
+                            datasets: [
+                                { label: 'Produzione Attesa (MWh)', data: impianto.performance.attesa, borderColor: 'rgba(107, 114, 128, 0.5)', borderWidth: 2, pointRadius: 0, tension: 0.4, borderDash: [5, 5] },
+                                { label: 'Produzione Effettiva (MWh)', data: impianto.performance.effettiva, borderColor: 'rgba(59, 130, 246, 1)', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, pointRadius: 0, tension: 0.4, fill: true }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+            }
+
+            function renderWorkflowTable() {
+                if (!workflowTableBody) return;
+                workflowTableBody.innerHTML = '';
+                workflowData.forEach(wf => {
+                    const row = document.createElement('tr');
+                    row.className = 'bg-white border-b hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 font-medium text-gray-900">${wf.nome}</td>
+                        <td class="px-6 py-4">${wf.impiantoNome}</td>
+                        <td class="px-6 py-4">${wf.statoCorrente}</td>
+                        <td class="px-6 py-4"><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="bg-blue-600 h-2.5 rounded-full" style="width: ${wf.progresso}%"></div></div></td>
+                        <td class="px-6 py-4 text-right"><a href="#" class="font-medium text-blue-600 hover:underline workflow-detail-link" data-id="${wf.id}">Visualizza</a></td>
+                    `;
+                    workflowTableBody.appendChild(row);
+                });
+
+                document.querySelectorAll('.workflow-detail-link').forEach(link => {
+                    link.addEventListener('click', e => {
+                        e.preventDefault();
+                        const wfId = parseInt(e.target.dataset.id);
+                        const wf = workflowData.find(w => w.id === wfId);
+                        renderWorkflowDetail(wf);
+                    });
+                });
+            }
+
+            function renderWorkflowDetail(wf) {
+                workflowListView.classList.add('hidden');
+                workflowDetailView.classList.remove('hidden');
+                let stagesHtml = wf.stages.map(stage => `
+                    <div class="bg-gray-100 rounded-lg p-4 flex flex-col w-80 flex-shrink-0">
+                        <h3 class="font-semibold text-gray-800 mb-4">${stage.name}</h3>
+                        <div class="space-y-4 overflow-y-auto">
+                            ${stage.tasks.map(task => `
+                                <div class="kanban-card bg-white p-4 rounded-lg shadow" data-task-id="${task.id}" data-workflow-id="${wf.id}">
+                                    <p class="font-semibold text-sm">${task.title}</p>
+                                    <div class="mt-2 flex justify-between items-center">
+                                        <span class="text-xs text-gray-500">${task.assignee ? 'Resp: ' + task.assignee : ''}</span>
+                                        <span class="px-2 py-0.5 text-xs font-medium rounded-full ${task.status === 'Completato' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}">${task.status}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+
+                workflowDetailView.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <button id="back-to-workflows" class="p-2 rounded-full hover:bg-gray-200 mr-4">&lt;</button>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">${wf.nome}</h2>
+                            <p class="text-sm text-gray-500">${wf.impiantoNome}</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-6 overflow-x-auto pb-4">
+                        ${stagesHtml}
+                    </div>
+                `;
+                document.getElementById('back-to-workflows').addEventListener('click', () => {
+                    workflowDetailView.classList.add('hidden');
+                    workflowListView.classList.remove('hidden');
+                });
+                
+                workflowDetailView.querySelectorAll('.kanban-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const taskId = parseInt(card.dataset.taskId);
+                        const workflowId = parseInt(card.dataset.workflowId);
+                        const workflow = workflowData.find(w => w.id === workflowId);
+                        const task = workflow.stages.flatMap(s => s.tasks).find(t => t.id === taskId);
+                        renderTaskDetailModal(task);
+                    });
+                });
+            }
+
+            function renderTaskDetailModal(task) {
+                const modalContent = modals['task-detail'].querySelector('.modal-content');
+                modalContent.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-2xl font-bold text-gray-800">${task.title}</h2>
+                        <button class="modal-cancel-btn text-gray-400 hover:text-gray-600">&times;</button>
+                    </div>
+                    <div class="mt-2 flex items-center space-x-4 text-sm text-gray-500">
+                        <span>Stato: <span class="font-semibold ${task.status === 'Completato' ? 'text-green-600' : 'text-blue-600'}">${task.status}</span></span>
+                        <span>|</span>
+                        <span>Responsabile: <span class="font-semibold text-gray-800">${task.assignee}</span></span>
+                        <span>|</span>
+                        <span>Scadenza: <span class="font-semibold text-gray-800">${task.dueDate}</span></span>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 overflow-y-auto pr-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-700 mb-3">Documenti</h3>
+                            <div class="space-y-3">
+                                <h4 class="text-sm font-medium text-gray-500">Documenti Inviati</h4>
+                                <ul class="text-sm space-y-2">${task.documents.filter(d => d.type === 'inviato').map(d => `<li>${d.name}</li>`).join('') || '<li class="text-gray-400">Nessuno</li>'}</ul>
+                                <h4 class="text-sm font-medium text-gray-500 mt-4">Documenti Ricevuti</h4>
+                                <ul class="text-sm space-y-2">${task.documents.filter(d => d.type === 'ricevuto').map(d => `<li>${d.name}</li>`).join('') || '<li class="text-gray-400">Nessuno</li>'}</ul>
+                            </div>
+                            <button class="mt-4 w-full bg-gray-100 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 text-sm">Carica Documento</button>
+                        </div>
+                        <div>
+                             <h3 class="font-semibold text-gray-700 mb-3">Attività e Commenti</h3>
+                             <div class="space-y-4">
+                                ${task.comments.map(c => `
+                                    <div class="flex items-start space-x-2">
+                                        <span class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-bold">${c.user.substring(0,1)}</span>
+                                        <div class="text-sm">
+                                            <p class="font-semibold">${c.user} <span class="text-gray-400 font-normal ml-2">${c.date}</span></p>
+                                            <p class="text-gray-600">${c.text}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                                <div class="mt-4">
+                                    <textarea placeholder="Aggiungi un commento..." rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    <button class="mt-2 bg-blue-600 text-white font-semibold px-3 py-1 rounded-lg hover:bg-blue-700 text-sm">Aggiungi</button>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+                `;
+                modalContent.querySelector('.modal-cancel-btn').addEventListener('click', closeModal);
+                openModal('task-detail');
+            }
+
+            function populateFilters() {
+                if (!impiantoFilter) return;
+                impiantiData.forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i.id;
+                    option.textContent = i.nome;
+                    impiantoFilter.appendChild(option);
+                });
+            }
+
+            // --- Initial Render ---
+            renderImpiantiTable();
+            renderWorkflowTable();
+            populateFilters();
+
+            // --- Charts ---
+            const dashboardDoughnutCtx = document.getElementById('dashboardDoughnutChart')?.getContext('2d');
+            if(dashboardDoughnutCtx) { new Chart(dashboardDoughnutCtx, { type: 'doughnut', data: { labels: ['Completati', 'In Corso', 'In Ritardo'], datasets: [{ data: [65, 25, 10], backgroundColor: ['#10B981', '#3B82F6', '#EF4444'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '80%', plugins: { legend: { display: false } } } }); }
+        });
+    </script>
+</body>
+</html>

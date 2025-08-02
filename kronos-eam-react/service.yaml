@@ -1,0 +1,62 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: kronos-eam-react
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/launch-stage: GA
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+    spec:
+      containerConcurrency: 100
+      timeoutSeconds: 300
+      serviceAccountName: kronos-eam-react@kronos-eam-react-prototype.iam.gserviceaccount.com
+      containers:
+      - name: kronos-eam-react
+        image: gcr.io/kronos-eam-react-prototype/kronos-eam-react:latest
+        ports:
+        - name: http1
+          containerPort: 80
+        env:
+        - name: REACT_APP_API_URL
+          value: "https://kronos-eam-api.a.run.app/api/v1"
+        - name: REACT_APP_WEBSOCKET_URL
+          value: "wss://kronos-eam-api.a.run.app"
+        - name: REACT_APP_RPA_PROXY_URL
+          value: "https://kronos-eam-api.a.run.app/api/rpa"
+        - name: NODE_ENV
+          value: "production"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+          requests:
+            cpu: "0.5"
+            memory: "256Mi"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 0
+          periodSeconds: 1
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 30
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+  traffic:
+  - percent: 100
+    latestRevision: true

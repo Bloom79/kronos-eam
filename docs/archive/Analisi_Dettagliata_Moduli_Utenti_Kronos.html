@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analisi_Dettagliata_Moduli_Utenti_Kronos.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="analisi-dettagliata-moduli-e-utenti---piattaforma-kronos-eam">Analisi Dettagliata Moduli e Utenti - Piattaforma Kronos EAM</h1>
+<h2 id="1-analisi-mercato-target-e-prospect-reali">1. Analisi Mercato Target e Prospect Reali</h2>
+<h3 id="11-situazione-attuale-mercato-fotovoltaico-italia-2025">1.1 Situazione Attuale Mercato Fotovoltaico Italia (2025)</h3>
+<p><strong>Totale impianti</strong>: ~1.880.000 installazioni connesse (37 GW)</p>
+<h4 id="segmentazione-per-tipologia">Segmentazione per Tipologia:</h4>
+<table>
+<thead>
+<tr>
+<th>Tipologia</th>
+<th>N° Impianti</th>
+<th>Potenza Media</th>
+<th>Chi Gestisce</th>
+<th>Bisogno Piattaforma</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Residenziale &lt;12 kW</strong></td>
+<td>~1.600.000</td>
+<td>6 kW</td>
+<td>Proprietari diretti o installatori</td>
+<td>❌ BASSO</td>
+</tr>
+<tr>
+<td><strong>Commerciale 12-50 kW</strong></td>
+<td>~120.000</td>
+<td>30 kW</td>
+<td>PMI, negozi, uffici</td>
+<td>✅ ALTO</td>
+</tr>
+<tr>
+<td><strong>Industriale 50-200 kW</strong></td>
+<td>~80.000</td>
+<td>120 kW</td>
+<td>Aziende medie</td>
+<td>✅ MOLTO ALTO</td>
+</tr>
+<tr>
+<td><strong>Industriale 200kW-1MW</strong></td>
+<td>~25.000</td>
+<td>500 kW</td>
+<td>Grandi aziende</td>
+<td>⚠️ MEDIO</td>
+</tr>
+<tr>
+<td><strong>Utility Scale &gt;1MW</strong></td>
+<td>~5.000</td>
+<td>5 MW</td>
+<td>Fondi, utilities</td>
+<td>❌ BASSO</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-target-primario-chi-ha-realmente-bisogno-della-piattaforma">1.2 Target Primario: Chi Ha REALMENTE Bisogno della Piattaforma</h3>
+<h4 id="%F0%9F%8E%AF-sweet-spot-impianti-commercialiindustriali-20-500-kw">🎯 <strong>SWEET SPOT: Impianti Commerciali/Industriali 20-500 kW</strong></h4>
+<p><strong>Perché sono il target ideale:</strong></p>
+<ul>
+<li><strong>Troppo piccoli</strong> per avere team interni dedicati</li>
+<li><strong>Troppo grandi</strong> per gestione &quot;fai da te&quot;</li>
+<li><strong>Obblighi normativi complessi</strong> (UTF Dogane per &gt;20kW)</li>
+<li><strong>ROI sensibile</strong> a fermi e inefficienze</li>
+<li><strong>Budget limitato</strong> per consulenti esterni full-time</li>
+</ul>
+<h4 id="chi-non-%C3%A8-nostro-target">Chi NON è nostro target:</h4>
+<ul>
+<li><strong>Residenziale &lt;12 kW</strong>: Gestito da installatori, no complessità</li>
+<li><strong>Utility Scale &gt;1MW</strong>: Hanno già EPC contractor e O&amp;M strutturati</li>
+</ul>
+<h3 id="13-profili-target-realistici-e-dimensionamento">1.3 Profili Target Realistici e Dimensionamento</h3>
+<table>
+<thead>
+<tr>
+<th>Profilo</th>
+<th>Mercato Reale</th>
+<th>% Prospect</th>
+<th>Utenti Target</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>PMI con impianti 20-200 kW</strong></td>
+<td>~50.000</td>
+<td>25%</td>
+<td>12.500</td>
+<td>Core target</td>
+</tr>
+<tr>
+<td><strong>Aziende medie 200-500 kW</strong></td>
+<td>~15.000</td>
+<td>35%</td>
+<td>5.250</td>
+<td>High value</td>
+</tr>
+<tr>
+<td><strong>Gestori multi-sito</strong></td>
+<td>~2.000</td>
+<td>50%</td>
+<td>1.000</td>
+<td>Strategic</td>
+</tr>
+<tr>
+<td><strong>O&amp;M Provider indipendenti</strong></td>
+<td>~500</td>
+<td>60%</td>
+<td>300</td>
+<td>Partner channel</td>
+</tr>
+<tr>
+<td><strong>Consulenti energia PMI</strong></td>
+<td>~1.500</td>
+<td>40%</td>
+<td>600</td>
+<td>Influencer</td>
+</tr>
+<tr>
+<td><strong>TOTALE REALISTICO</strong></td>
+<td><strong>~69.000</strong></td>
+<td><strong>29%</strong></td>
+<td><strong>19.650</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-analisi-dettagliata-per-segmento-target">2. Analisi Dettagliata per Segmento Target</h2>
+<h3 id="21-pmi-con-impianti-20-200-kw-12500-utenti-target">2.1 PMI con Impianti 20-200 kW (12.500 utenti target)</h3>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Fatturato: 2-50M€</li>
+<li>Dipendenti: 10-250</li>
+<li>Settori: Manifattura, logistica, retail, alimentare</li>
+<li>Pain points: Costi energia, compliance UTF, mancanza competenze interne</li>
+</ul>
+<h4 id="moduli-critici">Moduli Critici:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Priorità</th>
+<th>Valore Percepito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gestione Scadenze UTF</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Evita sanzioni 5.000-50.000€</td>
+</tr>
+<tr>
+<td><strong>Monitoraggio Performance</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Identifica perdite produzione</td>
+</tr>
+<tr>
+<td><strong>Manutenzione Preventiva</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Riduce fermi non pianificati</td>
+</tr>
+<tr>
+<td><strong>Documenti Compliance</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Gestione GSE, Dogane, TERNA</td>
+</tr>
+<tr>
+<td><strong>Alert Automatici</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Risposta rapida a problemi</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-esistenti-%E2%9C%85">Funzionalità Esistenti ✅:</h4>
+<ul>
+<li>Dashboard base performance</li>
+<li>Upload documenti</li>
+<li>Calendario scadenze</li>
+</ul>
+<h4 id="funzionalit%C3%A0-mancanti-critiche-%E2%9D%8C">Funzionalità Mancanti Critiche ❌:</h4>
+<ul>
+<li><strong>Compilazione automatica UTF</strong> mensile/annuale</li>
+<li><strong>Calcolo automatico accise</strong> e F24</li>
+<li><strong>Alert predittivi</strong> basati su meteo</li>
+<li><strong>Integrazione contatori fiscali</strong> Agenzia Dogane</li>
+<li><strong>Workflow approvazioni</strong> multi-livello</li>
+</ul>
+<hr>
+<h3 id="22-aziende-medie-200-500-kw-5250-utenti-target">2.2 Aziende Medie 200-500 kW (5.250 utenti target)</h3>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Fatturato: 50-500M€</li>
+<li>Dipendenti: 250-1000</li>
+<li>Settori: Industria pesante, GDO, datacenter</li>
+<li>Pain points: Ottimizzazione energetica, reporting direzionale</li>
+</ul>
+<h4 id="moduli-critici">Moduli Critici:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Priorità</th>
+<th>Valore Percepito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Energy Management System</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Ottimizzazione consumi</td>
+</tr>
+<tr>
+<td><strong>Predictive Analytics</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Prevenzione guasti costosi</td>
+</tr>
+<tr>
+<td><strong>Financial Reporting</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Board reporting</td>
+</tr>
+<tr>
+<td><strong>Multi-site Overview</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Gestione centralizzata</td>
+</tr>
+<tr>
+<td><strong>ISO 50001 Compliance</strong></td>
+<td>⭐⭐⭐</td>
+<td>Certificazioni</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-mancanti-critiche-%E2%9D%8C">Funzionalità Mancanti Critiche ❌:</h4>
+<ul>
+<li><strong>Integrazione SCADA/BMS</strong> esistenti</li>
+<li><strong>AI per ottimizzazione</strong> consumi vs produzione</li>
+<li><strong>Simulatore scenari</strong> energetici</li>
+<li><strong>Carbon footprint</strong> tracking automatico</li>
+<li><strong>API per ERP</strong> (SAP, Oracle)</li>
+</ul>
+<h4 id="moduli-utilizzati">Moduli Utilizzati:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Frequenza Uso</th>
+<th>Funzionalità Chiave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Gestione Operativa</strong></td>
+<td>Giornaliera</td>
+<td>Stato impianti, task, team</td>
+</tr>
+<tr>
+<td><strong>Workflow Manager</strong></td>
+<td>Giornaliera</td>
+<td>Creazione/monitoraggio processi</td>
+</tr>
+<tr>
+<td><strong>Manutenzione</strong></td>
+<td>Giornaliera</td>
+<td>Pianificazione, tracking</td>
+</tr>
+<tr>
+<td><strong>Performance Analytics</strong></td>
+<td>Settimanale</td>
+<td>PR, availability, losses</td>
+</tr>
+<tr>
+<td><strong>Gestione Team</strong></td>
+<td>Giornaliera</td>
+<td>Assegnazioni, carichi lavoro</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-esistenti-%E2%9C%85">Funzionalità Esistenti ✅:</h4>
+<ul>
+<li>Workflow base</li>
+<li>Calendario manutenzioni</li>
+<li>Assegnazione task</li>
+</ul>
+<h4 id="funzionalit%C3%A0-mancanti-%E2%9D%8C">Funzionalità Mancanti ❌:</h4>
+<ul>
+<li><strong>Ottimizzatore risorse</strong> con AI per bilanciamento team</li>
+<li><strong>Manutenzione predittiva</strong> basata su dati storici</li>
+<li><strong>Integrazione ERP</strong> per spare parts</li>
+<li><strong>Mobile dispatch</strong> real-time</li>
+<li><strong>Video-assistenza remota</strong> per tecnici</li>
+</ul>
+<hr>
+<h3 id="23-gestori-multi-sito-1000-utenti-target">2.3 Gestori Multi-Sito (1.000 utenti target)</h3>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Portfolio: 5-50 impianti</li>
+<li>Tipologia: Catene retail, banche, telecomunicazioni</li>
+<li>Pain points: Standardizzazione processi, economie di scala</li>
+</ul>
+<h4 id="moduli-critici">Moduli Critici:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Priorità</th>
+<th>Valore Percepito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Portfolio Dashboard</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Vista aggregata real-time</td>
+</tr>
+<tr>
+<td><strong>Comparative Analytics</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Benchmark tra siti</td>
+</tr>
+<tr>
+<td><strong>Bulk Operations</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Efficienza gestionale</td>
+</tr>
+<tr>
+<td><strong>Standardized Workflows</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Qualità uniforme</td>
+</tr>
+<tr>
+<td><strong>Consolidated Reporting</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Report direzionali</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-mancanti-critiche-%E2%9D%8C">Funzionalità Mancanti Critiche ❌:</h4>
+<ul>
+<li><strong>Template replicabili</strong> per nuovi siti</li>
+<li><strong>Gestione contratti</strong> multi-fornitore</li>
+<li><strong>Allocazione costi</strong> per centro di costo</li>
+<li><strong>Mobile app</strong> supervisore area</li>
+<li><strong>BI avanzata</strong> con drill-down</li>
+</ul>
+<h4 id="moduli-utilizzati">Moduli Utilizzati:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Frequenza Uso</th>
+<th>Funzionalità Chiave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Monitoraggio Tecnico</strong></td>
+<td>Giornaliera</td>
+<td>SCADA lite, allarmi, performance</td>
+</tr>
+<tr>
+<td><strong>Analisi Guasti</strong></td>
+<td>Settimanale</td>
+<td>Root cause, patterns</td>
+</tr>
+<tr>
+<td><strong>Documentazione Tecnica</strong></td>
+<td>Occasionale</td>
+<td>Manuali, schemi, datasheet</td>
+</tr>
+<tr>
+<td><strong>Report Tecnici</strong></td>
+<td>Mensile</td>
+<td>Performance ratio, availability</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-esistenti-%E2%9C%85">Funzionalità Esistenti ✅:</h4>
+<ul>
+<li>Dashboard performance</li>
+<li>Storico allarmi</li>
+<li>Repository documenti</li>
+</ul>
+<h4 id="funzionalit%C3%A0-mancanti-%E2%9D%8C">Funzionalità Mancanti ❌:</h4>
+<ul>
+<li><strong>Integrazione SCADA</strong> diretta</li>
+<li><strong>Analisi perdite</strong> con categorizzazione IEC</li>
+<li><strong>Simulatore producibilità</strong></li>
+<li><strong>Database guasti</strong> con ML per pattern recognition</li>
+<li><strong>Digital twin</strong> impianti</li>
+</ul>
+<hr>
+<h3 id="24-om-provider-indipendenti-300-utenti-target">2.4 O&amp;M Provider Indipendenti (300 utenti target)</h3>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Gestiscono: 50-500 impianti terzi</li>
+<li>Modello: Service contract 10-20 anni</li>
+<li>Pain points: Margini bassi, efficienza operativa</li>
+</ul>
+<h4 id="moduli-critici">Moduli Critici:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Priorità</th>
+<th>Valore Percepito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Field Service Management</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Ottimizzazione route</td>
+</tr>
+<tr>
+<td><strong>Customer Portal</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Trasparenza cliente</td>
+</tr>
+<tr>
+<td><strong>Inventory Management</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Gestione ricambi</td>
+</tr>
+<tr>
+<td><strong>SLA Tracking</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Rispetto contratti</td>
+</tr>
+<tr>
+<td><strong>White-label Reports</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Professional branding</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-mancanti-critiche-%E2%9D%8C">Funzionalità Mancanti Critiche ❌:</h4>
+<ul>
+<li><strong>Multi-tenant</strong> per clienti separati</li>
+<li><strong>Fatturazione automatica</strong> da SLA</li>
+<li><strong>Gestione subappaltatori</strong></li>
+<li><strong>Knowledge base</strong> condivisa tecnici</li>
+<li><strong>Certificazioni digitali</strong> interventi</li>
+</ul>
+<h4 id="moduli-utilizzati">Moduli Utilizzati:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Frequenza Uso</th>
+<th>Funzionalità Chiave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>App Mobile O&amp;M</strong></td>
+<td>Giornaliera</td>
+<td>Work orders, checklist, foto</td>
+</tr>
+<tr>
+<td><strong>Navigazione</strong></td>
+<td>Giornaliera</td>
+<td>Mappe impianti, routing</td>
+</tr>
+<tr>
+<td><strong>Documentazione Campo</strong></td>
+<td>Giornaliera</td>
+<td>Manuali offline, schemi</td>
+</tr>
+<tr>
+<td><strong>Magazzino</strong></td>
+<td>Settimanale</td>
+<td>Richiesta ricambi</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-esistenti-%E2%9C%85">Funzionalità Esistenti ✅:</h4>
+<ul>
+<li>App mobile base</li>
+<li>Checklist digitali</li>
+<li>Upload foto</li>
+</ul>
+<h4 id="funzionalit%C3%A0-mancanti-%E2%9D%8C">Funzionalità Mancanti ❌:</h4>
+<ul>
+<li><strong>Offline completo</strong> con sync intelligente</li>
+<li><strong>Scanner QR/barcode</strong> per componenti</li>
+<li><strong>Realtà aumentata</strong> per manutenzione guidata</li>
+<li><strong>Voice-to-text</strong> per note campo</li>
+<li><strong>Firma digitale</strong> cliente</li>
+</ul>
+<hr>
+<h3 id="25-consulenti-energia-pmi-600-utenti-target">2.5 Consulenti Energia PMI (600 utenti target)</h3>
+<p><strong>Caratteristiche:</strong></p>
+<ul>
+<li>Clienti: 20-100 PMI ciascuno</li>
+<li>Servizi: Energy management, pratiche, incentivi</li>
+<li>Pain points: Scalabilità, standardizzazione servizi</li>
+</ul>
+<h4 id="moduli-critici">Moduli Critici:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Priorità</th>
+<th>Valore Percepito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Multi-client Management</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Gestione scalabile</td>
+</tr>
+<tr>
+<td><strong>Regulatory Automation</strong></td>
+<td>⭐⭐⭐⭐⭐</td>
+<td>Pratiche veloci</td>
+</tr>
+<tr>
+<td><strong>Incentive Calculator</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Consulenza valore</td>
+</tr>
+<tr>
+<td><strong>Client Reporting</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Professional service</td>
+</tr>
+<tr>
+<td><strong>Document Templates</strong></td>
+<td>⭐⭐⭐⭐</td>
+<td>Efficienza</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-mancanti-critiche-%E2%9D%8C">Funzionalità Mancanti Critiche ❌:</h4>
+<ul>
+<li><strong>CRM integrato</strong> per lead/clienti</li>
+<li><strong>Simulatore incentivi</strong> multi-scenario</li>
+<li><strong>Firma digitale remota</strong> documenti</li>
+<li><strong>Area clienti</strong> self-service</li>
+<li><strong>Automazione fatturazione</strong> servizi</li>
+</ul>
+<hr>
+<hr>
+<h2 id="3-analisi-competitiva-chi-offre-gi%C3%A0-cosa">3. Analisi Competitiva: Chi Offre Già Cosa</h2>
+<h3 id="31-operatori-esistenti-nel-mercato">3.1 Operatori Esistenti nel Mercato</h3>
+<table>
+<thead>
+<tr>
+<th>Competitor</th>
+<th>Target</th>
+<th>Punti Forza</th>
+<th>Punti Deboli</th>
+<th>Pricing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Enel X</strong></td>
+<td>Grandi aziende</td>
+<td>Brand, integrazione completa</td>
+<td>Costoso, rigido</td>
+<td>500-2000€/mese</td>
+</tr>
+<tr>
+<td><strong>T-Green</strong></td>
+<td>PMI Nord Italia</td>
+<td>Locale, supporto diretto</td>
+<td>Solo Nord, limitato</td>
+<td>200-500€/mese</td>
+</tr>
+<tr>
+<td><strong>Solar-Log</strong></td>
+<td>Tecnico</td>
+<td>Monitoring avanzato</td>
+<td>No compliance, no workflow</td>
+<td>50-200€/mese</td>
+</tr>
+<tr>
+<td><strong>Meteocontrol</strong></td>
+<td>Utility scale</td>
+<td>Enterprise features</td>
+<td>Troppo complesso PMI</td>
+<td>300-1000€/mese</td>
+</tr>
+<tr>
+<td><strong>Consulenti locali</strong></td>
+<td>PMI</td>
+<td>Relazione personale</td>
+<td>Non scalabile, costoso</td>
+<td>500-2000€/mese</td>
+</tr>
+</tbody>
+</table>
+<h4 id="moduli-utilizzati">Moduli Utilizzati:</h4>
+<table>
+<thead>
+<tr>
+<th>Modulo</th>
+<th>Frequenza Uso</th>
+<th>Funzionalità Chiave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Modulo Fiscale</strong></td>
+<td>Mensile</td>
+<td>Fatture, F24, dichiarazioni</td>
+</tr>
+<tr>
+<td><strong>Incentivi Tracker</strong></td>
+<td>Mensile</td>
+<td>GSE, crediti imposta</td>
+</tr>
+<tr>
+<td><strong>Report Economici</strong></td>
+<td>Trimestrale</td>
+<td>Bilanci, cash flow</td>
+</tr>
+</tbody>
+</table>
+<h4 id="funzionalit%C3%A0-esistenti-%E2%9C%85">Funzionalità Esistenti ✅:</h4>
+<ul>
+<li>Export dati contabili</li>
+<li>Registro fatture</li>
+</ul>
+<h4 id="funzionalit%C3%A0-mancanti-%E2%9D%8C">Funzionalità Mancanti ❌:</h4>
+<ul>
+<li><strong>Integrazione software contabili</strong> (TeamSystem, Zucchetti)</li>
+<li><strong>Calcolo automatico</strong> crediti imposta</li>
+<li><strong>Generazione F24</strong> pre-compilati</li>
+<li><strong>Alert fiscali</strong> personalizzati</li>
+<li><strong>Simulatore</strong> impatto fiscale investimenti</li>
+</ul>
+<hr>
+<h3 id="32-gap-di-mercato--nostra-opportunit%C3%A0">3.2 Gap di Mercato = Nostra Opportunità</h3>
+<p><strong>Nessuno copre bene:</strong></p>
+<ol>
+<li><strong>Compliance UTF automatizzata</strong> per impianti 20-200kW</li>
+<li><strong>Workflow burocratici</strong> GSE/TERNA/Dogane integrati</li>
+<li><strong>Prezzo accessibile</strong> per PMI (target 100-300€/mese)</li>
+<li><strong>Semplicità d'uso</strong> senza formazione specialistica</li>
+<li><strong>Supporto multilingua</strong> (molte PMI hanno staff straniero)</li>
+</ol>
+<hr>
+<hr>
+<h2 id="4-value-proposition-per-segmento">4. Value Proposition per Segmento</h2>
+<h3 id="41-pmi-20-200-kw">4.1 PMI 20-200 kW</h3>
+<p><strong>&quot;Zero Sanzioni, Zero Pensieri&quot;</strong></p>
+<ul>
+<li>UTF automatizzato = risparmio 5-10k€/anno sanzioni</li>
+<li>Compliance semplificata = -80% tempo amministrativo</li>
+<li>Alert intelligenti = prevenzione fermi (valore 20-50k€/anno)</li>
+<li>ROI: 6-12 mesi</li>
+</ul>
+<h3 id="42-aziende-200-500-kw">4.2 Aziende 200-500 kW</h3>
+<p><strong>&quot;Controllo Totale, Costi Prevedibili&quot;</strong></p>
+<ul>
+<li>Energy management integrato = -10% costi energia</li>
+<li>Predictive maintenance = -30% fermi non pianificati</li>
+<li>Multi-site dashboard = -50% tempo gestione</li>
+<li>ROI: 12-18 mesi</li>
+</ul>
+<h3 id="43-gestori-multi-sito">4.3 Gestori Multi-Sito</h3>
+<p><strong>&quot;Scala senza Complessità&quot;</strong></p>
+<ul>
+<li>Standardizzazione = -60% training nuovo staff</li>
+<li>Benchmark automatico = identificazione best practices</li>
+<li>Reporting consolidato = board-ready in 1 click</li>
+<li>ROI: 9-15 mesi</li>
+</ul>
+<h3 id="44-om-provider">4.4 O&amp;M Provider</h3>
+<p><strong>&quot;Margini Migliori, Clienti Più Felici&quot;</strong></p>
+<ul>
+<li>Route optimization = +30% interventi/giorno</li>
+<li>Customer portal = -70% chiamate status</li>
+<li>SLA automation = fatturazione puntuale</li>
+<li>ROI: 6-9 mesi</li>
+</ul>
+<hr>
+<h2 id="5-funzionalit%C3%A0-prioritarie-per-mvp-e-roadmap">5. Funzionalità Prioritarie per MVP e Roadmap</h2>
+<h3 id="51-mvp-core-0-3-mesi---%22compliance-zero-pensieri%22">5.1 MVP Core (0-3 mesi) - &quot;Compliance Zero Pensieri&quot;</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Target Primario</th>
+<th>Valore Immediato</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UTF Wizard</strong></td>
+<td>PMI 20-200kW</td>
+<td>Evita sanzioni immediate</td>
+</tr>
+<tr>
+<td><strong>Calendario Smart</strong></td>
+<td>Tutti</td>
+<td>Mai più scadenze perse</td>
+</tr>
+<tr>
+<td><strong>Document Hub</strong></td>
+<td>Tutti</td>
+<td>Tutto in un posto</td>
+</tr>
+<tr>
+<td><strong>Alert WhatsApp</strong></td>
+<td>PMI</td>
+<td>Notifiche immediate</td>
+</tr>
+<tr>
+<td><strong>Dashboard Mobile</strong></td>
+<td>Owner/Manager</td>
+<td>Controllo ovunque</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-fase-2-3-6-mesi---%22performance-optimizer%22">5.2 Fase 2 (3-6 mesi) - &quot;Performance Optimizer&quot;</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Target Primario</th>
+<th>Valore Aggiunto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Predictive Alerts</strong></td>
+<td>Aziende 200-500kW</td>
+<td>Prevenzione guasti</td>
+</tr>
+<tr>
+<td><strong>Energy Analytics</strong></td>
+<td>Multi-sito</td>
+<td>Benchmark e saving</td>
+</tr>
+<tr>
+<td><strong>Workflow Pratiche</strong></td>
+<td>Tutti</td>
+<td>Automazione GSE/TERNA</td>
+</tr>
+<tr>
+<td><strong>OCR Fatture</strong></td>
+<td>PMI</td>
+<td>Data entry automatico</td>
+</tr>
+<tr>
+<td><strong>API Contabilità</strong></td>
+<td>Aziende medie</td>
+<td>Integrazione ERP</td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-fase-3-6-12-mesi---%22scale--integrate%22">5.3 Fase 3 (6-12 mesi) - &quot;Scale &amp; Integrate&quot;</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Target Primario</th>
+<th>Differenziazione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Multi-tenant Pro</strong></td>
+<td>O&amp;M Provider</td>
+<td>White label ready</td>
+</tr>
+<tr>
+<td><strong>SCADA Connect</strong></td>
+<td>Industriali</td>
+<td>Real-time monitoring</td>
+</tr>
+<tr>
+<td><strong>AI Maintenance</strong></td>
+<td>Tutti &gt;100kW</td>
+<td>Predictive planning</td>
+</tr>
+<tr>
+<td><strong>Customer Portal</strong></td>
+<td>O&amp;M Provider</td>
+<td>Self-service clients</td>
+</tr>
+<tr>
+<td><strong>BI Advanced</strong></td>
+<td>Multi-sito</td>
+<td>Deep insights</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="6-metriche-di-successo-e-kpi">6. Metriche di Successo e KPI</h2>
+<h3 id="61-metriche-di-adozione">6.1 Metriche di Adozione</h3>
+<table>
+<thead>
+<tr>
+<th>Metrica</th>
+<th>Target 6 mesi</th>
+<th>Target 12 mesi</th>
+<th>Target 24 mesi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Clienti Attivi</strong></td>
+<td>500</td>
+<td>2.000</td>
+<td>5.000</td>
+</tr>
+<tr>
+<td><strong>MRR (€)</strong></td>
+<td>75k</td>
+<td>400k</td>
+<td>1.2M</td>
+</tr>
+<tr>
+<td><strong>Churn Rate</strong></td>
+<td>&lt;5%</td>
+<td><img class="emoji" alt="heart" src="data:image/png;base64,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" />%</td>
+<td>&lt;2%</td>
+</tr>
+<tr>
+<td><strong>NPS</strong></td>
+<td>&gt;40</td>
+<td>&gt;50</td>
+<td>&gt;60</td>
+</tr>
+<tr>
+<td><strong>Impianti Gestiti</strong></td>
+<td>1.000</td>
+<td>5.000</td>
+<td>15.000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-metriche-di-valore">6.2 Metriche di Valore</h3>
+<table>
+<thead>
+<tr>
+<th>Metrica</th>
+<th>Impatto Cliente</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sanzioni Evitate</strong></td>
+<td>5-50k€/anno</td>
+<td>100%</td>
+</tr>
+<tr>
+<td><strong>Tempo Risparmiato</strong></td>
+<td>ore/settimana</td>
+<td>&gt;10h</td>
+</tr>
+<tr>
+<td><strong>Downtime Ridotto</strong></td>
+<td>giorni/anno</td>
+<td>-30%</td>
+</tr>
+<tr>
+<td><strong>ROI Platform</strong></td>
+<td>mesi payback</td>
+<td>&lt;12</td>
+</tr>
+<tr>
+<td><strong>Compliance Rate</strong></td>
+<td>% conformità</td>
+<td>&gt;98%</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-pricing-strategy">7. Pricing Strategy</h2>
+<h3 id="71-modello-saas-per-impianto-non-per-utente">7.1 Modello SaaS per Impianto (non per utente)</h3>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Target</th>
+<th>€/mese per impianto</th>
+<th>Features Incluse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Starter</strong></td>
+<td>20-50 kW</td>
+<td>99</td>
+<td>Compliance, alerts, 2 utenti</td>
+</tr>
+<tr>
+<td><strong>Professional</strong></td>
+<td>50-200 kW</td>
+<td>199</td>
+<td>+ Analytics, workflow, 5 utenti</td>
+</tr>
+<tr>
+<td><strong>Business</strong></td>
+<td>200-500 kW</td>
+<td>399</td>
+<td>+ Predictive, API, 10 utenti</td>
+</tr>
+<tr>
+<td><strong>Enterprise</strong></td>
+<td>&gt;500 kW o Multi-sito</td>
+<td>Custom</td>
+<td>Full platform, utenti illimitati</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-add-on-opzionali">7.2 Add-on Opzionali</h3>
+<table>
+<thead>
+<tr>
+<th>Add-on</th>
+<th>€/mese</th>
+<th>Valore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UTF Automation</strong></td>
+<td>+50</td>
+<td>Compilazione automatica</td>
+</tr>
+<tr>
+<td><strong>SCADA Connect</strong></td>
+<td>+100</td>
+<td>Real-time monitoring</td>
+</tr>
+<tr>
+<td><strong>White Label</strong></td>
+<td>+200</td>
+<td>Per O&amp;M provider</td>
+</tr>
+<tr>
+<td><strong>Priority Support</strong></td>
+<td>+50</td>
+<td>SLA 2h response</td>
+</tr>
+<tr>
+<td><strong>Extra Storage</strong></td>
+<td>+30/TB</td>
+<td>Documenti illimitati</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="8-go-to-market-strategy">8. Go-to-Market Strategy</h2>
+<h3 id="81-canali-di-acquisizione">8.1 Canali di Acquisizione</h3>
+<table>
+<thead>
+<tr>
+<th>Canale</th>
+<th>Target</th>
+<th>CAC Stimato</th>
+<th>Conversione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Partner O&amp;M</strong></td>
+<td>PMI via provider</td>
+<td>200€</td>
+<td>25%</td>
+</tr>
+<tr>
+<td><strong>Associazioni</strong></td>
+<td>Confindustria locale</td>
+<td>300€</td>
+<td>20%</td>
+</tr>
+<tr>
+<td><strong>Webinar Compliance</strong></td>
+<td>PMI dirette</td>
+<td>150€</td>
+<td>15%</td>
+</tr>
+<tr>
+<td><strong>Consulenti Energia</strong></td>
+<td>Referral</td>
+<td>100€</td>
+<td>35%</td>
+</tr>
+<tr>
+<td><strong>Google Ads</strong></td>
+<td>&quot;UTF fotovoltaico&quot;</td>
+<td>400€</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-pilot-program-primi-6-mesi">8.2 Pilot Program (Primi 6 mesi)</h3>
+<ul>
+<li><strong>50 clienti pilota</strong> con 50% sconto</li>
+<li><strong>Case studies</strong> per vertical (manufacturing, retail, logistica)</li>
+<li><strong>Referral program</strong> 20% commissione primo anno</li>
+<li><strong>Partnership</strong> con 2-3 O&amp;M provider regionali</li>
+</ul>
+<h3 id="83-messaggi-chiave-per-vertical">8.3 Messaggi Chiave per Vertical</h3>
+<table>
+<thead>
+<tr>
+<th>Settore</th>
+<th>Pain Point</th>
+<th>Messaggio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Manufacturing</strong></td>
+<td>Costi energia</td>
+<td>&quot;Riduci i costi energetici del 15%&quot;</td>
+</tr>
+<tr>
+<td><strong>Retail/GDO</strong></td>
+<td>Multi-sito</td>
+<td>&quot;Gestisci 50 punti vendita con 1 click&quot;</td>
+</tr>
+<tr>
+<td><strong>Logistica</strong></td>
+<td>Compliance</td>
+<td>&quot;Zero sanzioni UTF garantito&quot;</td>
+</tr>
+<tr>
+<td><strong>Alimentare</strong></td>
+<td>Continuità</td>
+<td>&quot;Mai più fermi non pianificati&quot;</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="9-conclusioni-e-next-steps">9. Conclusioni e Next Steps</h2>
+<h3 id="target-realistico">Target Realistico</h3>
+<ul>
+<li><strong>Mercato Totale</strong>: 69.000 prospect qualificati</li>
+<li><strong>Target 5 anni</strong>: 19.650 clienti (28.5% market share)</li>
+<li><strong>Sweet Spot</strong>: PMI con impianti 20-500 kW</li>
+<li><strong>MRR Target Year 3</strong>: 1.2M€ (6.000 impianti x 200€ average)</li>
+</ul>
+<h3 id="fattori-critici-di-successo">Fattori Critici di Successo</h3>
+<ol>
+<li><strong>UTF Automation</strong> come killer feature</li>
+<li><strong>Semplicità</strong> estrema UI/UX</li>
+<li><strong>Prezzo</strong> accessibile PMI</li>
+<li><strong>Partner Channel</strong> per scala</li>
+<li><strong>Supporto Eccellente</strong> in italiano</li>
+</ol>
+<h3 id="prossimi-passi">Prossimi Passi</h3>
+<ol>
+<li><strong>Validazione</strong> con 10 PMI target</li>
+<li><strong>MVP Development</strong> focus UTF</li>
+<li><strong>Partnership</strong> 1 O&amp;M provider</li>
+<li><strong>Pilot Launch</strong> 50 clienti</li>
+<li><strong>Iterate &amp; Scale</strong></li>
+</ol>
+
+</body>
+</html>

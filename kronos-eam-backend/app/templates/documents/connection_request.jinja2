@@ -1,0 +1,119 @@
+# Impianto Fotovoltaico Intestato a
+
+Nome e Cognome: **{{ richiedente.nome }} {{ richiedente.cognome }}** nato/a a {{ richiedente.luogo_nascita|default('___________________', true) }} ({{ richiedente.provincia_nascita|default('__', true) }}) il {{ richiedente.data_nascita|default('______________', true) }}
+
+Residente in {{ richiedente.indirizzo_residenza|default('____________________', true) }} n. {{ richiedente.civico|default('___', true) }} Comune di {{ richiedente.comune_residenza|default('_______________________________________', true) }} Prov. ({{ richiedente.provincia_residenza|default('__', true) }})
+
+{% if richiedente.tipo == 'azienda' %}
+da compilare in caso di società:
+In qualità di {{ richiedente.qualifica|default('______________________________', true) }} del/della {{ richiedente.ragione_sociale|default('______________________', true) }} con sede legale in {{ richiedente.sede_legale|default('________', true) }}
+{{ richiedente.indirizzo_sede|default('__________________________', true) }} n° {{ richiedente.civico_sede|default('____', true) }} CAP {{ richiedente.cap_sede|default('________', true) }} nel comune di {{ richiedente.comune_sede|default('_________________________', true) }} prov. ({{ richiedente.provincia_sede|default('__', true) }})
+{% endif %}
+
+## AUTORIZZAZIONI AMMINISTRATIVE
+
+L'installazione di un impianto fotovoltaico rientra in attività di edilizia libera, come confermano sia il Testo Unico per l'Edilizia (DPR 380/2001), sia il DM 2 marzo 2018.
+
+In alcuni casi eccezionali l'installazione di un impianto con pannelli solari e fotovoltaici non è liberamente consentita.
+In particolare, un impianto fotovoltaico è un intervento che rientra nell'edilizia libera ad esclusione dei casi in cui i lavori vengono svolti negli "agglomerati urbani che rivestano carattere storico, artistico e di particolare pregio ambientale". In altre parole, nei centri storici o dove ci sono vincoli paesaggistici.
+
+Titoli Autorizzativi richiesti:
+{% if edilizia_libera|default(true) %}☑{% else %}☐{% endif %} Attività in edilizia libera.
+{% if altro_titolo %}☑{% else %}☐{% endif %} Altro titolo autorizzativo: {{ altro_titolo_desc|default('____________________________________________________', true) }}
+
+## ITER CONNESSIONE ALLA RETE
+
+Documenti necessari per la FASE 1 (Domanda di connessione):
+
+L'impianto usufruisce del Superbonus 110%? SI {% if superbonus %}☑{% else %}☐{% endif %} NO {% if not superbonus %}☑{% else %}☐{% endif %}
+
+Si richiedono:
+☑ copia dell'ultima bolletta elettrica
+☑ codice IBAN dell'intestatario della bolletta elettrica: **{{ richiedente.iban|default('_______________________________', true) }}**
+☑ copia del documento di identità dell'intestatario della bolletta che sarà l'intestatario dell'impianto.
+☑ indirizzo e.mail per la registrazione sul portale GSE: **{{ richiedente.email|default('________________________________', true) }}**
+☑ numero di telefono: **{{ richiedente.telefono|default('______ ___________________________________________________', true) }}**
+☑ mappa catastale che deve riportare il Comune di rilascio, il foglio e particella catastale con evidenziata la particella interessata. Il documento catastale deve avere la data di rilascio non anteriore a 6 mesi a quella di presentazione
+☑ l'intestatario della bolletta è titolare del sito oggetto dell'installazione dell'impianto:
+SI {% if richiedente.titolare_sito|default(true) %}☑{% else %}☐{% endif %} NO {% if not richiedente.titolare_sito|default(true) %}☑{% else %}☐{% endif %}
+
+{% if not richiedente.titolare_sito|default(true) %}
+Se NO indicare a che titolo: 
+{% if richiedente.titolo_godimento %}☑{% else %}☐{% endif %} Titolare di altro diritto di godimento
+{% if richiedente.amministratore_condominio %}☑{% else %}☐{% endif %} Amministratore di condominio
+{% if richiedente.altro_titolo %}☑{% else %}☐{% endif %} Altro: {{ richiedente.altro_titolo_desc|default('___________________', true) }}
+{% endif %}
+
+Per Accettazione:
+☑ schema unifilare impianto (firmato dal tecnico abilitato)
+☑ fotografie dell'impianto realizzato (da richiedere all'installatore):
+  ☑ Moduli fotovoltaici,
+  ☑ Inverter con relativa etichetta e numero di matricola,
+  ☑ Accumulatore con relativa etichetta e numero di matricola,
+  ☑ eventuale sistema esterno di Protezione Interfaccia con relativo numero di matricola e firmware, quadri elettrici installati.
+☑ dichiarazione Sostitutiva mandato con rappresentanza (verrà inviato successivamente e dovrà essere firmata dall'intestatario dell'impianto)
+☑ ricevuta del corrispettivo pagato per l'ottenimento del preventivo:
+
+{% if impianto.potenza_kw <= 6 %}
+  ▪ potenze in immissione richieste fino a 6 kW: **€ 30 + IVA 22% = € 36,60**
+{% elif impianto.potenza_kw <= 10 %}
+  ▪ potenze in immissione richieste superiori a 6 kW e fino a 10kW: **€ 50 + IVA 22% = € 61,00**
+{% elif impianto.potenza_kw <= 50 %}
+  ▪ potenze in immissione richieste superiori a 10 kW e fino a 50kW: **€ 100 + IVA 22% = € 122,00**
+{% elif impianto.potenza_kw <= 100 %}
+  ▪ potenze in immissione richieste superiori a 50 kW e fino a 100 kW: **€ 200 + IVA 22% = € 244,00**
+{% elif impianto.potenza_kw <= 500 %}
+  ▪ potenze in immissione richieste superiori a 100 kW e fino a 500 kW: **€ 500 + IVA 22% = € 610,00**
+{% elif impianto.potenza_kw <= 1000 %}
+  ▪ potenze in immissione richieste superiori a 500kW e fino a 1.000 kW: **€ 1.500 + IVA 22% = € 1.830,00**
+{% else %}
+  ▪ potenze in immissione richieste superiori a 1.000 kW: **€ 2.500 + IVA 22% = € 3.050,00**
+{% endif %}
+
+Il pagamento del corrispettivo deve essere effettuato mediante versamento su conto corrente bancario o su conto corrente postale secondo le istruzioni del distributore e verrà richiesto in fase di domanda di connessione.
+
+## Documenti necessari per la FASE 2 (Accettazione del preventivo):
+
+☑ Corrispettivo per l'accettazione del preventivo:
+  ▪ L'importo verrà riportato sul preventivo ricevuto dal distributore.
+
+## Documenti necessari per la FASE 3 (Compilazione del Regolamento di Esercizio):
+
+☑ Schema elettrico AS-built dell'impianto (firmato dal tecnico abilitato)
+☑ Dichiarazione di conformità delle apparecchiature ai sensi dell'Allegato C della Norma CEI 0-21 (da chiedere al fornitore degli apparati)
+☑ Dichiarazione di conformità dell'impianto elettrico di generazione ai sensi della legislazione vigente (D.M. 22/01/08, n. 37) (da richiedere all'installatore)
+☑ Dichiarazione di verifica del sistema di protezione di interfaccia (SPI): Test report prodotto dall'inverter oppure foto del display dell'inverter. Per impianti con SPI esterno (impianti con potenza > 11,06kw) allegare il test report prodotto dalla cassetta prova relè. (da richiedere all'installatore)
+
+## Documenti necessari per la FASE 4 (Stipula della convenzione il GSE):
+
+☑ Verbali di allaccio (saranno rilasciati dal Distributore al momento dell'attivazione dell'impianto).
+☑ Attestazione CENSIMP (saranno rilasciati da Terna al momento della registrazione dell'impianto).
+
+{% if impianto.potenza_kw > 20 %}
+## PER IMPIANTI > 20kW
+
+### Documenti necessari per la FASE 5 (Registrazione all'Agenzia delle Dogane):
+
+☑ foto del gruppo di misura installato da e-distribuzione con relativo modello e matricola
+☑ modulo di Denuncia Attività di Officina Elettrica (dovrà essere firmata dall'intestatario dell'impianto)
+☑ planimetria generale dell'officina
+☑ Relazione Tecnica (a cura del tecnico abilitato)
+☑ schema unifilare dell'impianto elettrico secondo la normativa tecnica vigente (firmato dal tecnico abilitato)
+☑ documentazione comprovante la conformità degli strumenti di misura al d.lgs. 2_2_07 n.22; (da chiedere a ditta specializzata)
+☑ fotocopia di un documento di identità in corso di validità del sottoscrittore.
+☑ Copia del versamento oneri di licenza di 23,24 €
+☑ Autocertificazione pagamento n.2 marche da bollo istanza e licenza da 16,00€.
+
+Successivamente al rilascio della licenza la ditta dovrà:
+- versare annualmente il diritto di licenza per l'anno successivo (ad oggi previsto in misura pari a 23,24€ per uso proprio e 77,47 per scopo commerciale ai sensi dell'art. 63, comma 3 del TUA), da pagare entro il 16 del mese di dicembre (art. 63 comma 4 del TUA);
+- effettuare le letture e registrare i dati sul registro di produzione, giornalmente o secondo le diverse tempistiche indicate dall'Ufficio competente;
+- presentare, in via telematica, la dichiarazione annuale contenente i dati relativi all'energia elettrica prodotta consumata nonché quella ceduta alla rete e le perdite, entro il mese di marzo dell'anno successivo a quello cui si riferisce.
+{% endif %}
+
+---
+
+**Data**: {{ data_generazione }}
+
+**Firma del Richiedente**: _______________________________
+
+**Contatti supporto tecnico**: {{ supporto_tecnico|default('[Inserire riferimenti del gestore pratiche]', true) }}

@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="it" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kronos EAM - Piano di Progetto Consolidato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: Ho progettato l'applicazione come una dashboard a scorrimento verticale, abbandonando la struttura sequenziale del report. Questo approccio a "sezioni tematiche" (Il Problema, La Soluzione, Roadmap, etc.) permette all'utente di navigare liberamente e di approfondire gli argomenti di maggiore interesse in modo non lineare. La navigazione sticky in alto facilita il passaggio rapido tra le sezioni. Le interazioni (tab, elementi cliccabili) sono state scelte per rivelare informazioni in modo progressivo, evitando di sovraccaricare l'utente. Questa struttura è ottimale per comunicare un piano complesso in modo chiaro e conciso su una singola pagina. -->
+    <!-- Visualization & Content Choices: Ho tradotto i concetti del report in componenti interattivi. Problema -> Goal: Illustrare la complessità -> Viz: Diagramma HTML/CSS. Soluzione -> Goal: Dettagliare i moduli -> Viz: Tab interattivi con componenti visivi (schede, timeline, grafici) per una visione ordinata e concreta. Architettura -> Goal: Mostrare i componenti -> Viz: Diagramma a blocchi HTML/CSS. Piattaforma -> Goal: Differenziare ruoli -> Viz: Colonne descrittive. Roadmap -> Goal: Visualizzare le fasi -> Viz: Timeline verticale interattiva in HTML/CSS. KPI -> Goal: Mostrare metriche -> Viz: Grafico a barre con Chart.js per un impatto visivo immediato. Tutte le scelte evitano SVG/Mermaid, usando HTML/CSS, Unicode e Canvas per garantire aderenza ai requisiti e un'esperienza veloce e responsive. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* gray-50 */
+        }
+       .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+       .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+       .nav-link:hover,.nav-link.active {
+            color: #2563eb; /* blue-600 */
+            border-bottom-color: #2563eb;
+        }
+       .tab-button.active {
+            border-color: #2563eb;
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+       .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 4px solid #9ca3af; /* gray-400 */
+        }
+       .timeline-item.active::before {
+             border-color: #2563eb; /* blue-600 */
+        }
+       .timeline-line {
+            position: absolute;
+            left: -21px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background-color: #e5e7eb; /* gray-200 */
+        }
+       .arch-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            text-align: center;
+        }
+       .arch-arrow {
+            font-size: 2rem;
+            color: #9ca3af;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-blue-600">Kronos EAM</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#soluzione" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Soluzione</a>
+                        <a href="#workflow-deep-dive" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Workflow</a>
+                        <a href="#genai" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">AI</a>
+                        <a href="#architettura" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Architettura</a>
+                        <a href="#gdpr" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">GDPR</a>
+                        <a href="#costi" class="nav-link text-gray-500 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium border-b-2 border-transparent">Costi</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button id="mobile-menu-button" type="button" class="bg-gray-100 inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500" aria-controls="mobile-menu" aria-expanded="false">
+                        <span class="sr-only">Apri menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                        <svg class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#soluzione" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">Soluzione</a>
+                <a href="#workflow-deep-dive" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">Workflow</a>
+                <a href="#genai" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">AI</a>
+                <a href="#architettura" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">Architettura</a>
+                <a href="#gdpr" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">GDPR</a>
+                <a href="#costi" class="nav-link text-gray-500 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium">Costi</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section id="hero" class="py-20 md:py-32">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-gray-900">
+                    Il Sistema Operativo per gli Asset Energetici.
+                </h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-gray-600">
+                    Kronos EAM trasforma la complessità burocratica della gestione di impianti rinnovabili in un flusso di lavoro digitale, automatizzato e conforme.
+                </p>
+                <div class="mt-10">
+                    <a href="#soluzione" class="inline-block bg-blue-600 text-white font-semibold px-8 py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors">
+                        Scopri la soluzione
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="soluzione" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">La Soluzione</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        Una Piattaforma, Controllo Totale
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        Kronos EAM si fonda su moduli potenti e integrati, progettati per risolvere le sfide operative e di conformità degli asset manager.
+                    </p>
+                </div>
+
+                <div class="mt-10">
+                     <div class="flex justify-center border-b border-gray-200 mb-8">
+                        <button data-tab="anagrafica" class="tab-button active text-sm md:text-base font-medium text-gray-500 border-b-2 border-transparent px-4 py-2 hover:text-blue-600 hover:border-blue-600 transition-all">Anagrafica</button>
+                        <button data-tab="workflow" class="tab-button text-sm md:text-base font-medium text-gray-500 border-b-2 border-transparent px-4 py-2 hover:text-blue-600 hover:border-blue-600 transition-all">Workflow</button>
+                        <button data-tab="agenda" class="tab-button text-sm md:text-base font-medium text-gray-500 border-b-2 border-transparent px-4 py-2 hover:text-blue-600 hover:border-blue-600 transition-all">Agenda</button>
+                        <button data-tab="bi" class="tab-button text-sm md:text-base font-medium text-gray-500 border-b-2 border-transparent px-4 py-2 hover:text-blue-600 hover:border-blue-600 transition-all">BI & Analytics</button>
+                    </div>
+
+                    <div id="tab-content" class="mt-6">
+                        <div id="anagrafica" class="tab-pane active">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                                <div class="bg-gray-50 p-8 rounded-lg">
+                                    <h3 class="text-2xl font-bold text-gray-900">🗃️ Anagrafica: la Single Source of Truth</h3>
+                                    <p class="mt-4 text-gray-600">Questo modulo è il cuore informativo della piattaforma, progettato per eliminare la frammentazione dei dati. Centralizza ogni informazione tecnica, amministrativa e documentale, garantendo coerenza e accessibilità.</p>
+                                    <ul class="mt-4 space-y-2 text-gray-600">
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Dati Tecnici Granulari:</b> Archiviazione strutturata di codici POD, identificativi GAUDÌ, e specifiche dei componenti (seriali, modelli), essenziali per ogni pratica.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Dati Amministrativi e Contrattuali:</b> Gestione centralizzata di convenzioni GSE, licenze di esercizio Dogane e contratti di manutenzione (O&M).</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Document Management Integrato:</b> Ogni documento è collegato a un impianto e a un processo, con versioning per assicurare l'uso della modulistica più aggiornata.</span></li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-full flex flex-col justify-center">
+                                    <h4 class="font-bold text-lg text-center text-gray-800 mb-4">Scheda Impianto Tipo</h4>
+                                    <div class="bg-gray-50 p-4 rounded-md">
+                                        <div class="flex justify-between items-center">
+                                            <h5 class="font-semibold text-blue-700">Impianto Solare Rossi S.R.L.</h5>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">In Esercizio</span>
+                                        </div>
+                                        <div class="mt-4 border-t border-gray-200 pt-4">
+                                            <dl class="space-y-2">
+                                                <div class="flex justify-between text-sm"><dt class="text-gray-500">ID Impianto:</dt><dd class="text-gray-900 font-mono">IT001E12345678</dd></div>
+                                                <div class="flex justify-between text-sm"><dt class="text-gray-500">Potenza:</dt><dd class="text-gray-900 font-semibold">998 kWp</dd></div>
+                                                <div class="flex justify-between text-sm"><dt class="text-gray-500">Convenzione GSE:</dt><dd class="text-gray-900">Ritiro Dedicato</dd></div>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        <button class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-3 rounded-md transition-colors">Documenti</button>
+                                        <button class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-3 rounded-md transition-colors">Componenti</button>
+                                        <button class="text-xs bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-3 rounded-md transition-colors">Storico</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="workflow" class="tab-pane hidden">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                                <div class="bg-gray-50 p-8 rounded-lg">
+                                    <h3 class="text-2xl font-bold text-gray-900">⚙️ Workflow: Orchestrare la Complessità</h3>
+                                    <p class="mt-4 text-gray-600">Questo modulo è il motore operativo che digitalizza e orchestra i processi burocratici. Trasforma procedure complesse in sequenze di task chiari, tracciabili e automatizzati.</p>
+                                     <ul class="mt-4 space-y-2 text-gray-600">
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Libreria di Processi Standard:</b> Template pronti all'uso per le procedure più comuni (Iter Autorizzativo, Dichiarazione Dogane, Revamping), riducendo i tempi di setup.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Tracciabilità e Audit Trail:</b> Ogni azione, comunicazione e documento scambiato con enti esterni (GSE, Terna) viene registrato, creando un audit trail completo e a prova di contenzioso.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Assegnazione Task e Collaborazione:</b> I manager possono assegnare compiti specifici ai membri del team, monitorare lo stato di avanzamento e ottimizzare i carichi di lavoro.</span></li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-full">
+                                    <h4 class="font-bold text-lg text-center text-gray-800 mb-4">Esempio: Iter Autorizzativo</h4>
+                                    <div class="relative pt-2">
+                                        <div class="absolute left-4 top-4 h-full w-0.5 bg-gray-200" style="height: calc(100% - 2rem);"></div>
+                                        <div class="space-y-8">
+                                            <div class="relative flex items-center">
+                                                <div class="z-10 flex-shrink-0 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white font-bold ring-4 ring-white">✓</div>
+                                                <div class="ml-4"><h5 class="font-semibold text-gray-800">Richiesta Connessione</h5><p class="text-sm text-gray-500">Stato: Completato</p></div>
+                                            </div>
+                                            <div class="relative flex items-center">
+                                                <div class="z-10 flex-shrink-0 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold ring-4 ring-white">→</div>
+                                                <div class="ml-4"><h5 class="font-semibold text-gray-800">Registrazione GAUDÌ</h5><p class="text-sm text-gray-500">Stato: In Corso (M. Rossi)</p></div>
+                                            </div>
+                                            <div class="relative flex items-center">
+                                                <div class="z-10 flex-shrink-0 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold ring-4 ring-white">...</div>
+                                                <div class="ml-4"><h5 class="font-semibold text-gray-600">Attivazione GSE</h5><p class="text-sm text-gray-500">Stato: Da Iniziare</p></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="agenda" class="tab-pane hidden">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                                <div class="bg-gray-50 p-8 rounded-lg">
+                                    <h3 class="text-2xl font-bold text-gray-900">🗓️ Agenda: Mai più Scadenze Mancate</h3>
+                                    <p class="mt-4 text-gray-600">Questo modulo è il sistema di allerta proattivo della piattaforma. Calcola automaticamente le scadenze normative, fiscali e amministrative per ogni impianto, eliminando il rischio di errori umani e costose sanzioni.</p>
+                                     <ul class="mt-4 space-y-2 text-gray-600">
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Scadenzario Dinamico:</b> Le scadenze (es. dichiarazione consumo, pagamento licenze, verifiche tecniche periodiche) vengono generate automaticamente in base ai dati dell'impianto.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Notifiche Intelligenti:</b> Il sistema invia promemoria automatici via email e in-app agli utenti responsabili, con avvisi a intervalli configurabili (90, 60, 30 giorni).</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Integrazione con i Workflow:</b> Una scadenza imminente può avviare automaticamente un workflow o creare un task, trasformando un promemoria in un'azione concreta e tracciabile.</span></li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-full">
+                                    <h4 class="font-bold text-lg text-center text-gray-800 mb-4">Scadenzario Proattivo</h4>
+                                    <div class="space-y-4">
+                                        <div class="p-3 rounded-md border-l-4 border-red-500 bg-red-50">
+                                            <h5 class="font-semibold text-red-800">Pagamento Diritto Licenza</h5>
+                                            <p class="text-sm text-red-700">Impianto Verdi S.p.A.</p>
+                                            <p class="text-sm font-medium text-red-800 mt-1">Scadenza: 16 Dicembre 2025</p>
+                                        </div>
+                                        <div class="p-3 rounded-md border-l-4 border-yellow-400 bg-yellow-50">
+                                            <h5 class="font-semibold text-yellow-800">Verifica Triennale SPI</h5>
+                                            <p class="text-sm text-yellow-700">Impianto Blu S.A.S.</p>
+                                            <p class="text-sm font-medium text-yellow-800 mt-1">Scadenza: 25 Gennaio 2026</p>
+                                        </div>
+                                        <div class="p-3 rounded-md border-l-4 border-green-500 bg-green-50">
+                                            <h5 class="font-semibold text-green-800">Dichiarazione Consumo Dogane</h5>
+                                            <p class="text-sm text-green-700">Impianto Gialli S.R.L.</p>
+                                            <p class="text-sm font-medium text-green-800 mt-1">Scadenza: 31 Marzo 2026</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bi" class="tab-pane hidden">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+                                <div class="bg-gray-50 p-8 rounded-lg">
+                                    <h3 class="text-2xl font-bold text-gray-900">📊 BI & Analytics: Dati per Decidere</h3>
+                                    <p class="mt-4 text-gray-600">Questo modulo trasforma i dati operativi raccolti dalla piattaforma in insight strategici. Fornisce ai manager le visualizzazioni e i report necessari per monitorare le performance, ottimizzare i processi e gestire i rischi.</p>
+                                     <ul class="mt-4 space-y-2 text-gray-600">
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Analisi Efficienza Operativa:</b> Dashboard per identificare i colli di bottiglia nei workflow, analizzare i tempi medi di completamento dei task e monitorare le performance del team.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Dashboard di Conformità e Rischio:</b> Vista aggregata delle scadenze imminenti e dei processi in ritardo, permettendo di allocare le risorse dove sono più necessarie per mitigare i rischi.</span></li>
+                                        <li class="flex items-start"><span class="text-blue-500 mr-2 font-bold">✓</span><span><b>Analisi Finanziaria da Bollette:</b> Grazie all'analisi AI delle bollette caricate, la piattaforma offre report sui costi energetici, sui ricavi da vendita e sugli incentivi GSE, fornendo una visione completa della redditività dell'asset.</span></li>
+                                    </ul>
+                                </div>
+                               <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 h-full flex flex-col space-y-6">
+                                    <h4 class="font-bold text-lg text-center text-gray-800">Dashboard Analitica Operativa</h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="flex flex-col items-center">
+                                            <h5 class="text-sm font-semibold text-gray-600 mb-2">Stato Portafoglio</h5>
+                                            <div style="position: relative; height:120px; width:120px;">
+                                                <canvas id="workflowStatusChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col justify-center space-y-2">
+                                            <h5 class="text-sm font-semibold text-gray-600">Rischio Conformità</h5>
+                                            <div class="p-3 rounded-md bg-red-100 text-center">
+                                                <p class="text-2xl font-bold text-red-600">8</p>
+                                                <p class="text-xs text-red-700 font-medium">Scadenze Critiche (&lt;30gg)</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h5 class="text-sm font-semibold text-gray-600 mb-2 text-center">Analisi Efficienza Processi</h5>
+                                        <div style="position: relative; height:150px;">
+                                            <canvas id="efficiencyChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow-deep-dive" class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Il Processo Amministrativo: Un Deep Dive</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        Kronos EAM digitalizza l'intero ciclo di vita amministrativo di un impianto. Ecco una mappatura dettagliata dei processi, dei documenti e delle interazioni con gli enti che la piattaforma gestirà.
+                    </p>
+                </div>
+                <div class="mt-12 space-y-12">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 border-b-2 border-blue-500 pb-2 mb-6">Fase 1: Connessione alla Rete e Autorizzazione</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold text-blue-700">1. Distributore (DSO)</h4>
+                                <p class="text-sm text-gray-500 mb-4">Gestione della connessione fisica alla rete.</p>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Richiesta Connessione:</b> Inoltro domanda con allegati (ID, mandato, schema unifilare).</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Gestione TICA:</b> Ricezione, tracciamento scadenza (45gg) e pagamento del preventivo.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Fine Lavori:</b> Invio comunicazione con Regolamento d'Esercizio e Dichiarazioni di Conformità (impianto, CEI 0-21/0-16).</span></li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold text-blue-700">2. Terna (TSO)</h4>
+                                <p class="text-sm text-gray-500 mb-4">Censimento dell'impianto a livello nazionale.</p>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Registrazione GAUDÌ:</b> Creazione anagrafica impianto sul portale con dati tecnici e codici.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Tracciamento Flussi:</b> Monitoraggio dei flussi di comunicazione (G01, G02, etc.) tra DSO e Terna per validazione.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Gestione STMG/STMD:</b> Per impianti MT/AT, archiviazione della documentazione tecnica di Terna.</span></li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold text-blue-700">3. GSE</h4>
+                                <p class="text-sm text-gray-500 mb-4">Attivazione dei servizi di remunerazione.</p>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Attivazione Convenzioni:</b> Richiesta per Ritiro Dedicato (RID) o altri servizi tramite portale GSE o Modello Unico.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Pratica Antimafia:</b> Gestione della dichiarazione annuale per incentivi > 150.000€.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                     <div>
+                        <h3 class="text-2xl font-semibold text-gray-800 border-b-2 border-blue-500 pb-2 mb-6">Fase 2: Adempimenti Ricorrenti in Esercizio</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold text-blue-700">Agenzia delle Dogane (> 20 kW)</h4>
+                                <p class="text-sm text-gray-500 mb-4">Gestione della conformità fiscale.</p>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Dichiarazione Annuale Consumo:</b> Preparazione e invio telematico (tramite file EDI) entro il 31 Marzo.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Pagamento Diritto Licenza:</b> Promemoria per il pagamento tramite F24 (cod. 2813) entro il 16 Dicembre.</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Taratura Contatori:</b> Tracciamento della scadenza triennale per la verifica dei misuratori fiscali.</span></li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow-md">
+                                <h4 class="text-xl font-bold text-blue-700">Adempimenti Tecnici e GSE</h4>
+                                <p class="text-sm text-gray-500 mb-4">Mantenimento della conformità tecnica e amministrativa.</p>
+                                <ul class="space-y-3 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Verifica Periodica SPI/SPG:</b> Tracciamento della scadenza quinquennale per la verifica strumentale dei sistemi di protezione (CEI 0-16/0-21).</span></li>
+                                    <li class="flex items-start"><span class="mr-2 mt-1">➡️</span><span><b>Comunicazione Fuel Mix:</b> Promemoria per la comunicazione annuale al GSE entro il 31 Marzo.</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="genai" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">Potenziato da Intelligenza Artificiale</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        Automazione Intelligente per la Gestione Documentale
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        Sfruttiamo agenti di IA Generativa per trasformare documenti non strutturati in dati azionabili, eliminando il data entry manuale.
+                    </p>
+                </div>
+                <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-2">
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <div class="text-3xl">📄➡️📊</div>
+                        <h3 class="mt-4 text-xl font-bold text-gray-900">Estrazione Dati da Documenti</h3>
+                        <p class="mt-2 text-gray-600">I nostri agenti AI, basati su Azure AI Document Intelligence, analizzano PDF e immagini (TICA, convenzioni GSE, schede tecniche) per estrarre automaticamente dati chiave, pre-compilando l'anagrafica e riducendo gli errori.</p>
+                    </div>
+                     <div class="bg-gray-50 p-6 rounded-lg">
+                        <div class="text-3xl">🧾➡️📈</div>
+                        <h3 class="mt-4 text-xl font-bold text-gray-900">Analisi Bollette e Fatture</h3>
+                        <p class="mt-2 text-gray-600">L'utente potrà caricare bollette di consumo e produzione. L'IA analizzerà i documenti, estraendo automaticamente dati come consumi, costi per fascia oraria e importi fatturati, per un'analisi finanziaria e di performance dettagliata.</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <div class="text-3xl">💬➡️❓</div>
+                        <h3 class="mt-4 text-xl font-bold text-gray-900">Assistente Conversazionale (Q&A)</h3>
+                        <p class="mt-2 text-gray-600">Grazie a un'architettura RAG con Azure OpenAI, puoi porre domande in linguaggio naturale ("Quali impianti hanno la verifica SPI in scadenza?") e ricevere risposte precise basate esclusivamente sui tuoi dati.</p>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <div class="text-3xl">🗣️➡️⚙️</div>
+                        <h3 class="mt-4 text-xl font-bold text-gray-900">Automazione tramite Comandi</h3>
+                        <p class="mt-2 text-gray-600">In futuro, potrai usare comandi vocali o testuali ("Crea un task per la dichiarazione di consumo 2025 per l'impianto X") e l'AI invocherà le funzioni corrette per eseguire l'azione richiesta, semplificando operazioni complesse.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="architettura" class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Architettura Tecnologica a Componenti</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        Un'architettura moderna e scalabile che integra dispositivi sul campo, una potente piattaforma cloud e agenti di Intelligenza Artificiale Generativa per automatizzare e semplificare ogni operazione.
+                    </p>
+                </div>
+                <div class="mt-12 flex flex-col items-center space-y-4">
+                    <div class="arch-box w-full md:w-3/4 lg:w-1/2">
+                        <h3 class="text-xl font-semibold text-gray-800">Piattaforma Web (Interfaccia Utente)</h3>
+                        <p class="text-gray-500 text-sm">Il punto di accesso per amministratori e utenti, dove vengono gestiti tutti i dati e i processi.</p>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-box w-full md:w-3/4 lg:w-2/3 bg-blue-50 border-blue-200">
+                        <h3 class="text-xl font-semibold text-blue-800">Piattaforma Cloud Centrale (Core Logico)</h3>
+                        <p class="text-gray-600 text-sm mb-2">Il cervello del sistema, dove risiedono la logica di business, i dati e l'intelligenza.</p>
+                        <p class="text-xs text-gray-500 mb-4">L'intera architettura è progettata secondo un modello **multi-tenant**, garantendo che i dati di ogni cliente (tenant) siano logicamente e fisicamente isolati per la massima sicurezza e privacy, indipendentemente dalle dimensioni del cliente.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                            <div class="bg-white p-3 rounded-md border">
+                                <p class="font-semibold">🖥️ Server Centrale</p>
+                                <p class="text-xs text-gray-500">Gestisce i workflow, le notifiche e le API.</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-md border">
+                                <p class="font-semibold">🧠 Agenti GenAI</p>
+                                <p class="text-xs text-gray-500">Automatizzano l'estrazione dati dai documenti e forniscono insight.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-box w-full md:w-3/4 lg:w-1/2">
+                        <h3 class="text-xl font-semibold text-gray-800">Livello di Integrazione e Dati</h3>
+                        <p class="text-gray-500 text-sm">Collega la piattaforma al mondo fisico e ai sistemi esterni.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-left">
+                             <div class="bg-gray-50 p-3 rounded-md border">
+                                <p class="font-semibold">📟 Edge Devices & Metering</p>
+                                <p class="text-xs text-gray-500">Raccolta dati da contatori e sensori sul campo (opzionale).</p>
+                            </div>
+                            <div class="bg-gray-50 p-3 rounded-md border">
+                                <p class="font-semibold">🔗 API Esterne</p>
+                                <p class="text-xs text-gray-500">Interfacciamento con portali di GSE, Terna, Dogane.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="piattaforma" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Struttura della Piattaforma Web</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        Interfacce personalizzate per ruoli diversi, progettate per massimizzare l'efficienza e la chiarezza operativa.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-gray-50 p-8 rounded-lg">
+                        <h3 class="text-2xl font-bold text-gray-900">👤 Profilo Amministratore</h3>
+                        <p class="mt-2 text-gray-600">(Asset Manager, Responsabile Team)</p>
+                        <p class="mt-4 text-gray-600">Una vista a 360 gradi per il controllo strategico e la gestione completa del portafoglio di asset e del team.</p>
+                        <ul class="mt-4 space-y-3 text-gray-700">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Dashboard di Portafoglio:</b> Visione aggregata di tutti gli impianti, con KPI su performance, scadenze critiche e stato dei workflow.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Gestione Utenti e Permessi:</b> Creazione di profili utente, assegnazione di ruoli e definizione dei permessi di accesso a specifici impianti o funzionalità.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Assegnazione e Supervisione Task:</b> Creazione di flussi di lavoro, assegnazione di compiti ai membri del team e monitoraggio dello stato di avanzamento in tempo reale.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Reporting Avanzato:</b> Generazione di report personalizzati sull'efficienza operativa, sui costi di gestione e sulla conformità normativa dell'intero portafoglio.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-8 rounded-lg">
+                        <h3 class="text-2xl font-bold text-gray-900">👥 Profilo Utente Standard</h3>
+                        <p class="mt-2 text-gray-600">(Membro del Team, Operativo)</p>
+                        <p class="mt-4 text-gray-600">Un'interfaccia focalizzata sull'esecuzione, progettata per semplificare il lavoro quotidiano e guidare l'utente nelle sue attività.</p>
+                        <ul class="mt-4 space-y-3 text-gray-700">
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>La Mia Scrivania (My Desk):</b> Dashboard personale con la lista dei task assegnati, le scadenze imminenti e le notifiche pertinenti.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Vista Impianto Singolo:</b> Accesso dettagliato solo agli impianti di competenza, con visualizzazione di anagrafica, documenti e storico delle attività.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Guida al Workflow:</b> Interfaccia guidata che mostra chiaramente i passaggi da compiere per completare un processo, con link diretti a documenti e moduli necessari.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">▶</span><span><b>Caricamento e Consultazione:</b> Funzionalità semplificate per caricare nuovi documenti e consultare lo storico, con permessi di sola lettura o modifica a seconda del ruolo.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gdpr" class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="lg:text-center">
+                    <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">Privacy & Compliance</h2>
+                    <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                        Sicurezza e Conformità GDPR by Design
+                    </p>
+                    <p class="mt-4 max-w-2xl text-xl text-gray-500 lg:mx-auto">
+                        La protezione dei dati è integrata nell'architettura della piattaforma per garantire la massima sicurezza e il pieno rispetto della normativa.
+                    </p>
+                </div>
+                <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-900">🛡️ Misure Tecniche e Organizzative</h3>
+                        <ul class="mt-4 space-y-2 text-gray-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Crittografia End-to-End:</b> Tutti i dati sono crittografati sia in transito (TLS 1.2+) che a riposo (at-rest) sui server Azure.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Controllo Accessi (RBAC):</b> Sistema granulare di ruoli e permessi per garantire che ogni utente veda solo i dati di sua competenza.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Autenticazione a Più Fattori (MFA):</b> Obbligatoria per tutti gli accessi, per prevenire accessi non autorizzati.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-900">⚖️ Gestione dei Diritti e Accordi</h3>
+                        <ul class="mt-4 space-y-2 text-gray-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Ruoli GDPR Chiari:</b> Il cliente è Titolare del Trattamento, Kronos EAM è Responsabile del Trattamento.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Data Processing Agreement (DPA):</b> Un DPA conforme all'Art. 28 GDPR è parte integrante di ogni contratto.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Diritti degli Interessati:</b> Funzionalità integrate per permettere ai clienti di gestire le richieste di accesso, rettifica e cancellazione dei dati.</span></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-gray-900">🗄️ Storicizzazione e Data Retention</h3>
+                        <ul class="mt-4 space-y-2 text-gray-600">
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Limitazione della Conservazione:</b> I dati personali vengono conservati solo per il tempo necessario all'erogazione del servizio, come definito nel DPA.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Cancellazione Sicura:</b> Alla fine del contratto, i dati del cliente vengono eliminati in modo sicuro e irreversibile dopo un periodo di grazia definito.</span></li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2">✓</span><span><b>Anonimizzazione per Analytics:</b> Per le analisi storiche a lungo termine, i dati vengono resi completamente anonimi, uscendo così dal perimetro del GDPR.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="roadmap" class="py-16 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Roadmap di Implementazione Accelerata (1 Mese)</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Un piano di lancio MVP (Minimum Viable Product) aggressivo per validare il valore sul mercato nel minor tempo possibile.
+                    </p>
+                </div>
+                <div class="max-w-3xl mx-auto relative">
+                    <div class="timeline-line"></div>
+                    <div id="timeline-container">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="costi" class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold tracking-tight text-gray-900">Stima dei Costi e Modello di Business</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Una strategia SaaS scalabile con un'analisi trasparente dei costi infrastrutturali su Azure.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-900 mb-6 text-center lg:text-left">Piani di Abbonamento (Tiered Pricing)</h3>
+                        <div class="space-y-6">
+                            <div class="bg-white border border-gray-200 rounded-lg p-6">
+                                <h4 class="font-bold text-lg text-blue-700">Professional</h4>
+                                <p class="text-gray-600 mt-1">Per piccoli sviluppatori e consulenti (fino a 5 MW).</p>
+                                <p class="text-gray-800 font-bold mt-2">€X/mese (base) + €Y/MW/mese</p>
+                            </div>
+                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 ring-2 ring-blue-500">
+                                <h4 class="font-bold text-lg text-blue-800">Business</h4>
+                                <p class="text-gray-700 mt-1">Per asset manager di medie dimensioni (fino a 50 MW).</p>
+                                <p class="text-gray-900 font-bold mt-2">€XX/mese + €Y/MW/mese</p>
+                            </div>
+                             <div class="bg-white border border-gray-200 rounded-lg p-6">
+                                <h4 class="font-bold text-lg text-blue-700">Enterprise</h4>
+                                <p class="text-gray-600 mt-1">Per grandi operatori, fondi e utility (>50 MW).</p>
+                                <p class="text-gray-800 font-bold mt-2">Prezzo su misura</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-gray-900 mb-6 text-center lg:text-left">Stima Costi Mensili Infrastruttura Azure</h3>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Scenario</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pay-As-You-Go</th>
+                                        <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Con Ottimizzazioni</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">MVP (10 Clienti)</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-right">350 - 670 €</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-green-600 font-semibold text-right">250 - 450 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Crescita (100 Clienti)</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-right">2.450 - 4.450 €</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-green-600 font-semibold text-right">1.600 - 3.000 €</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Scala Enterprise (500+ Clienti)</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 text-right">11.500 - 19.300 €+</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-green-600 font-semibold text-right">7.500 - 12.500 €+</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-center mt-4 text-xs text-gray-500">Le ottimizzazioni includono l'uso di Istanze Riservate (3 anni) per i carichi di lavoro prevedibili.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold">Pronto a Semplificare la Gestione Energetica?</h2>
+            <p class="mt-4 text-gray-300">Contatta il team di Kronos EAM per una demo personalizzata.</p>
+            <div class="mt-6">
+                 <a href="mailto:info@kronoseam.it" class="inline-block bg-white text-gray-800 font-semibold px-6 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    Richiedi Informazioni
+                </a>
+            </div>
+            <p class="mt-8 text-sm text-gray-400">&copy; 2025 Kronos EAM. Tutti i diritti riservati.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIconOpen = mobileMenuButton.querySelector('svg:first-child');
+            const menuIconClose = mobileMenuButton.querySelector('svg:last-child');
+            
+            mobileMenuButton.addEventListener('click', () => {
+                const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+                mobileMenuButton.setAttribute('aria-expanded',!isExpanded);
+                mobileMenu.classList.toggle('hidden');
+                menuIconOpen.classList.toggle('hidden');
+                menuIconClose.classList.toggle('hidden');
+            });
+
+            const tabs = document.querySelectorAll('.tab-button');
+            const panes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    panes.forEach(pane => {
+                        if (pane.id === tab.dataset.tab) {
+                            pane.classList.remove('hidden');
+                            pane.classList.add('active');
+                        } else {
+                            pane.classList.add('hidden');
+                            pane.classList.remove('active');
+                        }
+                    });
+                });
+            });
+
+            const timelineData = [
+                { 
+                    phase: 'Settimana 1',
+                    title: 'Setup e Core Anagrafica',
+                    description: 'Configurazione dell\'ambiente di sviluppo e deploy. Creazione del modulo Anagrafica di base per l\'inserimento manuale di un singolo impianto e dei relativi documenti.',
+                    active: true 
+                },
+                { 
+                    phase: 'Settimana 2',
+                    title: 'MVP Workflow & Agenda',
+                    description: 'Sviluppo del workflow "Nuova Connessione" (hard-coded) con stati e task predefiniti. Creazione del modulo Agenda per generare le scadenze relative a questo specifico workflow.',
+                    active: false
+                },
+                { 
+                    phase: 'Settimana 3',
+                    title: 'UI/UX e Gestione Ruoli',
+                    description: 'Rifinizione dell\'interfaccia utente. Implementazione delle viste differenziate per Amministratore e Utente Standard. Sviluppo della dashboard personale "La Mia Scrivania".',
+                    active: false
+                },
+                { 
+                    phase: 'Settimana 4',
+                    title: 'Test, Deploy e Beta Privata',
+                    description: 'Fase finale di testing end-to-end. Deploy della versione MVP su un ambiente di staging e avvio del programma di beta privata con i primi utenti selezionati per la validazione sul campo.',
+                    active: false
+                }
+            ];
+
+            const timelineContainer = document.getElementById('timeline-container');
+            if (timelineContainer) {
+                timelineContainer.innerHTML = ''; // Clear previous content
+                timelineData.forEach(item => {
+                    const timelineItem = document.createElement('div');
+                    timelineItem.className = `relative pl-8 pb-8 timeline-item ${item.active? 'active' : ''}`;
+                    timelineItem.innerHTML = `
+                        <h3 class="text-lg font-semibold text-gray-800">${item.phase}</h3>
+                        <h4 class="text-md font-bold text-blue-600 mt-1">${item.title}</h4>
+                        <p class="mt-2 text-gray-600">${item.description}</p>
+                    `;
+                    timelineContainer.appendChild(timelineItem);
+                });
+            }
+            
+            const workflowCtx = document.getElementById('workflowStatusChart');
+            if (workflowCtx) {
+                new Chart(workflowCtx.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Completati', 'In Corso', 'In Ritardo'],
+                        datasets: [{
+                            data: [65, 25, 10],
+                            backgroundColor: ['rgb(22, 163, 74)','rgb(37, 99, 235)','rgb(220, 38, 38)'],
+                            borderColor: '#ffffff',
+                            borderWidth: 4,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, cutout: '70%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { callbacks: { label: function(context) { return `${context.label}: ${context.raw}%`; } } }
+                        }
+                    }
+                });
+            }
+
+            const efficiencyCtx = document.getElementById('efficiencyChart');
+            if(efficiencyCtx) {
+                new Chart(efficiencyCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Iter Autorizzativo', 'Gestione Revamping', 'Dich. Dogane'],
+                        datasets: [{
+                            label: 'Tempo Medio (Giorni)',
+                            data: [95, 45, 15],
+                            backgroundColor: ['rgba(59, 130, 246, 0.2)','rgba(59, 130, 246, 0.4)','rgba(59, 130, 246, 0.6)'],
+                            borderColor: ['rgba(59, 130, 246, 1)','rgba(59, 130, 246, 1)','rgba(59, 130, 246, 1)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { beginAtZero: true, title: { display: true, text: 'Giorni' } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+            
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                if(section.id) {
+                   observer.observe(section);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analisi_Profili_Utenti_Piattaforma_Kronos.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="analisi-profili-utenti-e-design-piattaforma-kronos">Analisi Profili Utenti e Design Piattaforma Kronos</h1>
+<h2 id="1-matrice-profili-utenti">1. Matrice Profili Utenti</h2>
+<h3 id="11-utenti-primari-interazione-diretta-con-piattaforma">1.1 Utenti Primari (Interazione Diretta con Piattaforma)</h3>
+<table>
+<thead>
+<tr>
+<th>Profilo</th>
+<th>Ruolo</th>
+<th>Bisogni Principali</th>
+<th>Funzionalità Piattaforma</th>
+<th>Tasso Adozione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Proprietario Impianto</strong></td>
+<td>Gestione patrimonio</td>
+<td>Visione portfolio, ROI</td>
+<td>Dashboard, report finanziari</td>
+<td>70-80%</td>
+</tr>
+<tr>
+<td><strong>Asset Manager</strong></td>
+<td>Supervisione operativa</td>
+<td>Gestione multi-impianto</td>
+<td>Pannello controllo centralizzato</td>
+<td>60-70%</td>
+</tr>
+<tr>
+<td><strong>Responsabile Tecnico</strong></td>
+<td>Supervisione tecnica</td>
+<td>Monitoraggio prestazioni</td>
+<td>Dashboard tecnici, alert</td>
+<td>50-60%</td>
+</tr>
+<tr>
+<td><strong>Tecnico O&amp;M</strong></td>
+<td>Operazioni campo</td>
+<td>Ordini lavoro, documentazione</td>
+<td>App mobile, modalità offline</td>
+<td>40-50%</td>
+</tr>
+<tr>
+<td><strong>Impiegato Amministrativo</strong></td>
+<td>Gestione documenti</td>
+<td>Archiviazione, scadenze</td>
+<td>Hub documenti, calendario</td>
+<td>80-90%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-utenti-secondari-uso-occasionale-piattaforma">1.2 Utenti Secondari (Uso Occasionale Piattaforma)</h3>
+<table>
+<thead>
+<tr>
+<th>Profilo</th>
+<th>Ruolo</th>
+<th>Bisogni Principali</th>
+<th>Funzionalità Piattaforma</th>
+<th>Tasso Adozione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Consulente Esterno</strong></td>
+<td>Servizi specializzati</td>
+<td>Accesso dati progetto</td>
+<td>Accesso ospite, export</td>
+<td>20-30%</td>
+</tr>
+<tr>
+<td><strong>Installatore</strong></td>
+<td>Setup/upgrade impianti</td>
+<td>Specifiche tecniche, conformità</td>
+<td>Accesso lettura, checklist</td>
+<td>15-20%</td>
+</tr>
+<tr>
+<td><strong>Energy Manager (EGE)</strong></td>
+<td>Ottimizzazione energetica</td>
+<td>Analytics, benchmarking</td>
+<td>Suite analytics, confronti</td>
+<td>30-40%</td>
+</tr>
+<tr>
+<td><strong>Commercialista</strong></td>
+<td>Gestione finanziaria</td>
+<td>Fatture, tracking incentivi</td>
+<td>Modulo finanziario, integrazioni</td>
+<td>25-35%</td>
+</tr>
+<tr>
+<td><strong>RSPP</strong></td>
+<td>Sicurezza e conformità</td>
+<td>Tracking incidenti, certificazioni</td>
+<td>Modulo sicurezza, promemoria</td>
+<td>20-25%</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-beneficiari-indiretti-senza-accesso-diretto">1.3 Beneficiari Indiretti (Senza Accesso Diretto)</h3>
+<table>
+<thead>
+<tr>
+<th>Profilo</th>
+<th>Relazione</th>
+<th>Benefici</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GSE</strong></td>
+<td>Riceve comunicazioni</td>
+<td>Documentazione accurata e tempestiva</td>
+</tr>
+<tr>
+<td><strong>Terna</strong></td>
+<td>Registrazioni GAUDÌ</td>
+<td>Dati produzione, previsioni</td>
+</tr>
+<tr>
+<td><strong>Agenzia Dogane</strong></td>
+<td>Dichiarazioni UTF</td>
+<td>Moduli compilati correttamente</td>
+</tr>
+<tr>
+<td><strong>E-Distribuzione</strong></td>
+<td>Connessioni rete</td>
+<td>Richieste strutturate</td>
+</tr>
+<tr>
+<td><strong>Assicurazioni</strong></td>
+<td>Valutazione rischi</td>
+<td>Record manutenzione</td>
+</tr>
+<tr>
+<td><strong>Banche/Finanziatori</strong></td>
+<td>Monitoraggio investimenti</td>
+<td>Report performance, ROI</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-mappe-del-percorso-utente">2. Mappe del Percorso Utente</h2>
+<h3 id="21-percorso-proprietario-impianto">2.1 Percorso Proprietario Impianto</h3>
+<pre class="hljs"><code><div>SCOPERTA → ONBOARDING → MONITORAGGIO → OTTIMIZZAZIONE → ESPANSIONE
+    ↓           ↓             ↓               ↓              ↓
+[Sito Web]  [Setup]      [Dashboard]     [Report]      [Aggiungi]
+            [Import]      [Notifiche]     [Azioni]      [Impianti]
+            [Config]      [Mobile]
+</div></code></pre>
+<h3 id="22-percorso-asset-manager">2.2 Percorso Asset Manager</h3>
+<pre class="hljs"><code><div>LOGIN → PANORAMICA → DETTAGLIO → AZIONE → REPORT
+  ↓         ↓           ↓          ↓        ↓
+[SSO]   [Portfolio]  [Vista]    [Workflow] [Export]
+        [Alert]      [Documenti] [Assegna]  [Condividi]
+        [Calendario] [Timeline]  [Traccia]
+</div></code></pre>
+<h3 id="23-percorso-tecnico-om">2.3 Percorso Tecnico O&amp;M</h3>
+<pre class="hljs"><code><div>RICEVI → ACCEDI → ESEGUI → DOCUMENTA → CHIUDI
+  ↓        ↓        ↓          ↓          ↓
+[Mobile] [Offline] [Checklist] [Foto]    [Invia]
+[Push]   [Mappe]   [Manuali]   [Moduli]  [Prossimo]
+</div></code></pre>
+<hr>
+<h2 id="3-architettura-piattaforma-per-tipo-utente">3. Architettura Piattaforma per Tipo Utente</h2>
+<h3 id="31-livelli-di-accesso">3.1 Livelli di Accesso</h3>
+<table>
+<thead>
+<tr>
+<th>Livello</th>
+<th>Utenti</th>
+<th>Permessi</th>
+<th>Funzionalità</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Amministratore</strong></td>
+<td>Admin piattaforma</td>
+<td>Accesso completo</td>
+<td>Gestione utenti, impostazioni</td>
+</tr>
+<tr>
+<td><strong>Proprietario</strong></td>
+<td>Titolari impianto</td>
+<td>Accesso totale impianto</td>
+<td>Tutte le funzioni per propri asset</td>
+</tr>
+<tr>
+<td><strong>Gestore</strong></td>
+<td>Asset manager</td>
+<td>Accesso multi-impianto</td>
+<td>Funzioni operative</td>
+</tr>
+<tr>
+<td><strong>Operatore</strong></td>
+<td>Tecnici</td>
+<td>Accesso task specifici</td>
+<td>Solo lavori assegnati</td>
+</tr>
+<tr>
+<td><strong>Visualizzatore</strong></td>
+<td>Consulenti</td>
+<td>Accesso sola lettura</td>
+<td>Report ed export</td>
+</tr>
+<tr>
+<td><strong>Ospite</strong></td>
+<td>Utenti temporanei</td>
+<td>Accesso limitato tempo</td>
+<td>Documenti/dati specifici</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-matrice-funzionalit%C3%A0-per-ruolo">3.2 Matrice Funzionalità per Ruolo</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Proprietario</th>
+<th>Gestore</th>
+<th>Operatore</th>
+<th>Visualizzatore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard</td>
+<td>✅ Completa</td>
+<td>✅ Completa</td>
+<td>✅ Limitata</td>
+<td>✅ Lettura</td>
+</tr>
+<tr>
+<td>Documenti</td>
+<td>✅ Tutti</td>
+<td>✅ Tutti</td>
+<td>✅ Assegnati</td>
+<td>✅ Visualizza</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>✅ Crea</td>
+<td>✅ Crea</td>
+<td>✅ Esegue</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Report</td>
+<td>✅ Tutti</td>
+<td>✅ Tutti</td>
+<td>✅ Propri</td>
+<td>✅ Visualizza</td>
+</tr>
+<tr>
+<td>Impostazioni</td>
+<td>✅ Impianto</td>
+<td>✅ Limitate</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Integrazioni</td>
+<td>✅</td>
+<td>✅</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="4-principi-di-design-fondamentali">4. Principi di Design Fondamentali</h2>
+<h3 id="41-architettura-informativa">4.1 Architettura Informativa</h3>
+<pre class="hljs"><code><div>HOME
+├── Dashboard (Vista specifica per ruolo)
+├── Impianti
+│   ├── Panoramica
+│   ├── Prestazioni
+│   ├── Manutenzione
+│   └── Documenti
+├── Flussi Lavoro
+│   ├── Attivi
+│   ├── Template
+│   └── Storico
+├── Calendario
+│   ├── Scadenze
+│   ├── Manutenzioni
+│   └── Ispezioni
+├── Documenti
+│   ├── Normativi
+│   ├── Tecnici
+│   └── Finanziari
+└── Report
+    ├── Performance
+    ├── Finanziari
+    └── Conformità
+</div></code></pre>
+<h3 id="42-linee-guida-uiux">4.2 Linee Guida UI/UX</h3>
+<table>
+<thead>
+<tr>
+<th>Principio</th>
+<th>Implementazione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Mobile-First</strong></td>
+<td>Design responsive, capacità offline</td>
+</tr>
+<tr>
+<td><strong>Viste per Ruolo</strong></td>
+<td>Dashboard personalizzate per tipo utente</td>
+</tr>
+<tr>
+<td><strong>Disclosure Progressivo</strong></td>
+<td>Mostra complessità solo quando necessario</td>
+</tr>
+<tr>
+<td><strong>Orientato all'Azione</strong></td>
+<td>CTA chiari, minimi click per azione</td>
+</tr>
+<tr>
+<td><strong>Gerarchia Visiva</strong></td>
+<td>Info importanti prominenti, dettagli su richiesta</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="5-workflow-chiave-per-tipo-utente">5. Workflow Chiave per Tipo Utente</h2>
+<h3 id="51-workflow-proprietario-impianto">5.1 Workflow Proprietario Impianto</h3>
+<ol>
+<li>
+<p><strong>Revisione Mensile</strong></p>
+<ul>
+<li>Login → Dashboard → Metriche performance → Riepilogo finanziario → Export report</li>
+</ul>
+</li>
+<li>
+<p><strong>Verifica Conformità</strong></p>
+<ul>
+<li>Calendario → Scadenze imminenti → Stato documenti → Azione → Conferma completamento</li>
+</ul>
+</li>
+<li>
+<p><strong>Risoluzione Problemi</strong></p>
+<ul>
+<li>Notifica ricevuta → Visualizza dettagli → Assegna a gestore → Traccia progresso → Rivedi esito</li>
+</ul>
+</li>
+</ol>
+<h3 id="52-workflow-asset-manager">5.2 Workflow Asset Manager</h3>
+<ol>
+<li>
+<p><strong>Operazioni Quotidiane</strong></p>
+<ul>
+<li>Dashboard → Problemi attivi → Prioritizza → Assegna task → Monitora progresso</li>
+</ul>
+</li>
+<li>
+<p><strong>Pianificazione Manutenzione</strong></p>
+<ul>
+<li>Calendario → Schedula manutenzione → Crea ordine lavoro → Assegna tecnico → Traccia completamento</li>
+</ul>
+</li>
+<li>
+<p><strong>Invio Pratiche</strong></p>
+<ul>
+<li>Alert scadenza → Raccogli documenti → Verifica completezza → Invia → Conferma ricezione</li>
+</ul>
+</li>
+</ol>
+<h3 id="53-workflow-tecnico-om">5.3 Workflow Tecnico O&amp;M</h3>
+<ol>
+<li>
+<p><strong>Lavoro in Campo</strong></p>
+<ul>
+<li>Notifica mobile → Accetta task → Naviga al sito → Esegui checklist → Invia report</li>
+</ul>
+</li>
+<li>
+<p><strong>Documentazione</strong></p>
+<ul>
+<li>Completa lavoro → Scatta foto → Compila modulo → Carica → Chiudi ticket</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="6-priorit%C3%A0-funzionalit%C3%A0-piattaforma">6. Priorità Funzionalità Piattaforma</h2>
+<h3 id="61-funzionalit%C3%A0-essenziali-mvp">6.1 Funzionalità Essenziali (MVP)</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Utenti Serviti</th>
+<th>Valore Business</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dashboard multi-tenant</td>
+<td>Tutti</td>
+<td>Valore core piattaforma</td>
+</tr>
+<tr>
+<td>Gestione documenti</td>
+<td>Tutti</td>
+<td>Conformità critica</td>
+</tr>
+<tr>
+<td>Calendario scadenze</td>
+<td>Proprietari, Gestori</td>
+<td>Evita sanzioni</td>
+</tr>
+<tr>
+<td>App mobile</td>
+<td>Tecnici</td>
+<td>Efficienza campo</td>
+</tr>
+<tr>
+<td>Workflow base</td>
+<td>Gestori</td>
+<td>Automazione processi</td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-funzionalit%C3%A0-importanti-fase-2">6.2 Funzionalità Importanti (Fase 2)</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Utenti Serviti</th>
+<th>Valore Business</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Analytics avanzati</td>
+<td>Proprietari, Gestori</td>
+<td>Ottimizzazione performance</td>
+</tr>
+<tr>
+<td>API integrazioni</td>
+<td>Tutti</td>
+<td>Connettività ecosistema</td>
+</tr>
+<tr>
+<td>Report automatici</td>
+<td>Gestori</td>
+<td>Risparmio tempo</td>
+</tr>
+<tr>
+<td>Strumenti collaborazione</td>
+<td>Team</td>
+<td>Efficienza</td>
+</tr>
+<tr>
+<td>Moduli formazione</td>
+<td>Tutti</td>
+<td>Sviluppo competenze</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-funzionalit%C3%A0-future">6.3 Funzionalità Future</h3>
+<table>
+<thead>
+<tr>
+<th>Funzionalità</th>
+<th>Utenti Serviti</th>
+<th>Valore Business</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predizioni AI</td>
+<td>Gestori</td>
+<td>Azioni preventive</td>
+</tr>
+<tr>
+<td>Documenti blockchain</td>
+<td>Enti normativi</td>
+<td>Fiducia e verifica</td>
+</tr>
+<tr>
+<td>Training VR</td>
+<td>Tecnici</td>
+<td>Miglioramento sicurezza</td>
+</tr>
+<tr>
+<td>Integrazione IoT</td>
+<td>Tecnici</td>
+<td>Dati real-time</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="7-metriche-di-successo-per-tipo-utente">7. Metriche di Successo per Tipo Utente</h2>
+<h3 id="71-metriche-quantitative">7.1 Metriche Quantitative</h3>
+<table>
+<thead>
+<tr>
+<th>Tipo Utente</th>
+<th>Metriche Chiave</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Proprietari</strong></td>
+<td>Visibilità ROI, tasso conformità</td>
+<td>95%+ conformità</td>
+</tr>
+<tr>
+<td><strong>Gestori</strong></td>
+<td>Task completati in tempo</td>
+<td>90%+ puntuali</td>
+</tr>
+<tr>
+<td><strong>Tecnici</strong></td>
+<td>Interventi/giorno, fix al primo tentativo</td>
+<td>+20% produttività</td>
+</tr>
+<tr>
+<td><strong>Amministrativi</strong></td>
+<td>Documenti processati</td>
+<td>-50% tempo</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-metriche-qualitative">7.2 Metriche Qualitative</h3>
+<table>
+<thead>
+<tr>
+<th>Aspetto</th>
+<th>Misurazione</th>
+<th>Obiettivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Soddisfazione</strong></td>
+<td>Survey NPS</td>
+<td>&gt;50 NPS</td>
+</tr>
+<tr>
+<td><strong>Adozione</strong></td>
+<td>Utenti attivi giornalieri</td>
+<td>60%+ DAU</td>
+</tr>
+<tr>
+<td><strong>Efficienza</strong></td>
+<td>Tempo risparmiato</td>
+<td>4+ ore/settimana</td>
+</tr>
+<tr>
+<td><strong>Affidabilità</strong></td>
+<td>Uptime piattaforma</td>
+<td>99.5%+</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="8-roadmap-implementazione">8. Roadmap Implementazione</h2>
+<h3 id="fase-1-fondamenta-mesi-1-3">Fase 1: Fondamenta (Mesi 1-3)</h3>
+<ul>
+<li>Gestione utenti core</li>
+<li>Dashboard base</li>
+<li>Upload/storage documenti</li>
+<li>Calendario con alert</li>
+</ul>
+<h3 id="fase-2-workflow-mesi-4-6">Fase 2: Workflow (Mesi 4-6)</h3>
+<ul>
+<li>Template workflow</li>
+<li>Assegnazione task</li>
+<li>App mobile (base)</li>
+<li>Strumenti reporting</li>
+</ul>
+<h3 id="fase-3-intelligence-mesi-7-9">Fase 3: Intelligence (Mesi 7-9)</h3>
+<ul>
+<li>Dashboard analytics</li>
+<li>Workflow automatizzati</li>
+<li>API integrazioni</li>
+<li>Funzioni mobile avanzate</li>
+</ul>
+<h3 id="fase-4-ottimizzazione-mesi-10-12">Fase 4: Ottimizzazione (Mesi 10-12)</h3>
+<ul>
+<li>Raccomandazioni AI</li>
+<li>Manutenzione predittiva</li>
+<li>Integrazioni avanzate</li>
+<li>Ottimizzazione performance</li>
+</ul>
+<hr>
+<h2 id="9-mitigazione-rischi-per-tipo-utente">9. Mitigazione Rischi per Tipo Utente</h2>
+<table>
+<thead>
+<tr>
+<th>Tipo Utente</th>
+<th>Preoccupazioni Principali</th>
+<th>Strategia Mitigazione</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Proprietari</strong></td>
+<td>Sicurezza dati, ROI</td>
+<td>Crittografia, metriche valore chiare</td>
+</tr>
+<tr>
+<td><strong>Gestori</strong></td>
+<td>Complessità, adozione</td>
+<td>UI intuitiva, formazione</td>
+</tr>
+<tr>
+<td><strong>Tecnici</strong></td>
+<td>Barriere tecnologiche</td>
+<td>UI mobile semplice, modalità offline</td>
+</tr>
+<tr>
+<td><strong>Consulenti</strong></td>
+<td>Controllo accessi</td>
+<td>Permessi granulari</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="10-punti-chiave">10. Punti Chiave</h2>
+<h3 id="%E2%9C%85-fare">✅ FARE:</h3>
+<ul>
+<li>Progettare esperienze specifiche per ruolo</li>
+<li>Prioritizzare mobile per utenti campo</li>
+<li>Mantenere UI semplice e task-focused</li>
+<li>Fornire capacità offline</li>
+<li>Focus su funzioni risparmia-tempo</li>
+</ul>
+<h3 id="%E2%9D%8C-non-fare">❌ NON FARE:</h3>
+<ul>
+<li>Creare interfaccia unica per tutti</li>
+<li>Aggiungere complessità senza valore</li>
+<li>Ignorare esperienza mobile</li>
+<li>Implementare valutazioni pubbliche</li>
+<li>Forzare funzionalità non necessarie</li>
+</ul>
+<h3 id="%F0%9F%8E%AF-formula-del-successo">🎯 Formula del Successo:</h3>
+<p><strong>Funzione Giusta + Utente Giusto + Momento Giusto = Adozione Piattaforma</strong></p>
+
+</body>
+</html>

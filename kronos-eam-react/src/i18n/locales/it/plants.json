@@ -1,0 +1,123 @@
+{
+  "title": "Impianti",
+  "plantList": "Elenco Impianti",
+  "addPlant": "Aggiungi Impianto",
+  "plantDetails": "Dettagli Impianto",
+  "searchPlaceholder": "Cerca impianti...",
+  "noPlants": "Nessun impianto trovato",
+  "table": {
+    "name": "Nome",
+    "code": "Codice",
+    "type": "Tipologia",
+    "power": "Potenza",
+    "location": "Località",
+    "status": "Stato",
+    "integrations": "Integrazioni",
+    "actions": "Azioni"
+  },
+  "fields": {
+    "name": "Nome",
+    "code": "Codice",
+    "power": "Potenza",
+    "location": "Località",
+    "type": "Tipologia",
+    "status": "Stato",
+    "municipality": "Comune",
+    "province": "Provincia",
+    "region": "Regione",
+    "owner": "Proprietario",
+    "operationDate": "Data Esercizio",
+    "nextDeadline": "Prossima Scadenza",
+    "integrations": "Integrazioni"
+  },
+  "types": {
+    "photovoltaic": "Fotovoltaico",
+    "wind": "Eolico",
+    "hydroelectric": "Idroelettrico",
+    "biomass": "Biomasse",
+    "geothermal": "Geotermico"
+  },
+  "status": {
+    "inoperation": "In Esercizio",
+    "underauthorization": "In Autorizzazione",
+    "underconstruction": "In Costruzione",
+    "decommissioned": "Dismesso"
+  },
+  "tabs": {
+    "overview": "Panoramica",
+    "registry": "Anagrafica",
+    "performance": "Performance",
+    "maintenance": "Manutenzione",
+    "compliance": "Conformità",
+    "documents": "Documenti",
+    "workflows": "Workflow"
+  },
+  "performance": {
+    "productionChart": "Grafico Produzione",
+    "expected": "Attesa",
+    "actual": "Effettiva",
+    "performanceRatio": "Performance Ratio",
+    "availability": "Disponibilità",
+    "capacityFactor": "Fattore di Capacità"
+  },
+  "maintenance": {
+    "title": "Manutenzione",
+    "scheduleMaintenance": "Pianifica Manutenzione",
+    "history": "Storico Manutenzioni",
+    "nextMaintenance": "Prossima Manutenzione",
+    "types": {
+      "ordinary": "Ordinaria",
+      "extraordinary": "Straordinaria",
+      "predictive": "Predittiva",
+      "corrective": "Correttiva"
+    },
+    "status": {
+      "planned": "Pianificato",
+      "inProgress": "In Corso",
+      "completed": "Completato",
+      "cancelled": "Annullato"
+    }
+  },
+  "compliance": {
+    "title": "Checklist Conformità",
+    "score": "Punteggio Conformità",
+    "items": {
+      "dsoConnection": "Connessione DSO",
+      "ternaRegistration": "Registrazione Terna",
+      "gseActivation": "Attivazione GSE",
+      "customsLicense": "Licenza Dogane",
+      "spiVerification": "Verifica SPI",
+      "consumptionDeclaration": "Dichiarazione Consumo",
+      "antimafia": "Documentazione Antimafia",
+      "fuelMix": "Dichiarazione Fuel Mix"
+    },
+    "status": {
+      "complete": "Completo",
+      "pending": "In Attesa",
+      "expired": "Scaduto",
+      "notRequired": "Non Richiesto"
+    }
+  },
+  "messages": {
+    "createSuccess": "Impianto creato con successo",
+    "updateSuccess": "Impianto aggiornato con successo",
+    "deleteSuccess": "Impianto eliminato con successo",
+    "exportSuccess": "Export completato con successo",
+    "confirmDelete": "Sei sicuro di voler eliminare questo impianto?",
+    "noPlants": "Nessun impianto trovato"
+  },
+  "filters": {
+    "allStatuses": "Tutti gli stati",
+    "allTypes": "Tutte le tipologie"
+  },
+  "modal": {
+    "title": "Nuovo Impianto",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "fields": {
+      "generalInfo": "Informazioni Generali",
+      "location": "Ubicazione",
+      "technical": "Dati Tecnici"
+    }
+  }
+}

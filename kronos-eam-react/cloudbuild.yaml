@@ -1,0 +1,57 @@
+steps:
+  # Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/kronos-eam-react:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/kronos-eam-react:latest'
+      - '.'
+    timeout: '1200s'
+
+  # Push the Docker image to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/$PROJECT_ID/kronos-eam-react'
+
+  # Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'kronos-eam-react'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/kronos-eam-react:$COMMIT_SHA'
+      - '--region'
+      - 'europe-west1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '80'
+      - '--memory'
+      - '512Mi'
+      - '--cpu'
+      - '1'
+      - '--max-instances'
+      - '10'
+      - '--min-instances'
+      - '0'
+      - '--set-env-vars'
+      - 'REACT_APP_API_URL=https://kronos-eam-api-xxxxx.a.run.app/api/v1'
+
+# Store images in Container Registry
+images:
+  - 'gcr.io/$PROJECT_ID/kronos-eam-react:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/kronos-eam-react:latest'
+
+# Build timeout
+timeout: '1800s'
+
+options:
+  machineType: 'E2_HIGHCPU_8'
+  logging: CLOUD_LOGGING_ONLY

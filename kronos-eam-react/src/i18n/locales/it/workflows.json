@@ -1,0 +1,91 @@
+{
+  "title": "Workflow",
+  "workflowList": "Elenco Workflow",
+  "newWorkflow": "Nuovo Workflow",
+  "workflowDetails": "Dettagli Workflow",
+  "templates": "Template Workflow",
+  "fields": {
+    "name": "Nome",
+    "description": "Descrizione",
+    "type": "Tipologia",
+    "category": "Categoria",
+    "status": "Stato",
+    "progress": "Progresso",
+    "createdDate": "Data Creazione",
+    "dueDate": "Data Scadenza",
+    "completionDate": "Data Completamento",
+    "plant": "Impianto",
+    "assignee": "Assegnatario"
+  },
+  "categories": {
+    "activation": "Attivazione",
+    "fiscal": "Fiscale",
+    "incentives": "Incentivi",
+    "changes": "Variazioni",
+    "maintenance": "Manutenzione",
+    "compliance": "Conformità"
+  },
+  "phases": {
+    "design": "Progettazione",
+    "connection": "Connessione",
+    "registration": "Registrazione",
+    "fiscal": "Fiscale"
+  },
+  "entities": {
+    "dso": "DSO",
+    "terna": "Terna",
+    "gse": "GSE",
+    "customs": "Dogane",
+    "municipality": "Comune",
+    "region": "Regione",
+    "superintendence": "Soprintendenza"
+  },
+  "task": {
+    "title": "Attività",
+    "tasks": "Attività",
+    "newTask": "Nuova Attività",
+    "taskDetails": "Dettagli Attività",
+    "fields": {
+      "title": "Titolo",
+      "description": "Descrizione",
+      "status": "Status",
+      "priority": "Priorità",
+      "assignee": "Assegnatario",
+      "dueDate": "Data Scadenza",
+      "estimatedHours": "Ore Stimate",
+      "actualHours": "Ore Effettive",
+      "dependencies": "Dipendenze",
+      "documents": "Documenti"
+    }
+  },
+  "stage": {
+    "title": "Fase",
+    "stages": "Fasi",
+    "newStage": "Nuova Fase",
+    "stageDetails": "Dettagli Fase"
+  },
+  "actions": {
+    "start": "Avvia",
+    "pause": "Pausa",
+    "resume": "Riprendi",
+    "complete": "Completa",
+    "cancel": "Annulla",
+    "createFromTemplate": "Crea da Template",
+    "saveAsTemplate": "Salva come Template"
+  },
+  "messages": {
+    "workflowCreated": "Workflow creato con successo",
+    "workflowUpdated": "Workflow aggiornato con successo",
+    "workflowDeleted": "Workflow eliminato con successo",
+    "taskCompleted": "Attività completata con successo",
+    "confirmCancel": "Sei sicuro di voler annullare questo workflow?",
+    "noWorkflows": "Nessun workflow trovato"
+  },
+  "timeline": {
+    "title": "Timeline",
+    "today": "Oggi",
+    "upcoming": "In Arrivo",
+    "overdue": "Scaduto",
+    "completed": "Completato"
+  }
+}

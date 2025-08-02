@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .sidebar-link {
+    @apply flex items-center px-4 py-2 rounded-lg transition-all duration-200 ease-in-out;
+  }
+  
+  .sidebar-link:hover {
+    @apply bg-blue-700 text-white;
+  }
+  
+  .sidebar-link.active {
+    @apply bg-blue-700 text-white;
+  }
+  
+  .modal-backdrop {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+  
+  .modal-content {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+  
+  .kanban-card {
+    @apply cursor-pointer transition-all duration-200;
+  }
+  
+  .kanban-card:hover {
+    @apply transform -translate-y-0.5 shadow-md;
+  }
+  
+  .kanban-card:active {
+    @apply cursor-grabbing;
+  }
+  
+  .tab-link.active {
+    @apply border-blue-600 text-blue-600;
+  }
+  
+  .checklist-item.completed .checklist-icon {
+    @apply bg-green-500 text-white;
+  }
+  
+  .checklist-item.pending .checklist-icon {
+    @apply bg-gray-200 text-gray-500;
+  }
+  
+  .checklist-item.completed .checklist-text {
+    @apply line-through text-gray-500;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 rounded;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500;
+}
+
+/* Chart.js responsive container */
+.chart-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+/* Loading spinner */
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Drag and drop styles */
+.drag-over {
+  @apply bg-blue-50 border-2 border-dashed border-blue-400;
+}
+
+/* Dark mode support */
+.dark {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.dark .sidebar {
+  @apply bg-gray-800;
+}
+
+/* Notification badge */
+.notification-badge {
+  @apply absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center;
+}
+
+/* Toast animations */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}

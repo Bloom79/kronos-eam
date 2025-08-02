@@ -1,0 +1,24 @@
+WARNING:__main__:Could not override Smart Assistant auth: No module named 'app.models.impianti'
+ERROR:__main__:Failed to load Smart Assistant router: No module named 'app.models.impianti'
+WARNING:__main__:Auth router not loaded: Invalid args for response field! Hint: check that typing.Optional[app.core.security.TokenData] is a valid Pydantic field type. If you are using a return type annotation that is not a valid Pydantic field (e.g. Union[Response, dict, None]) you can disable generating the response model from the type annotation with the path operation decorator parameter response_model=None. Read more: https://fastapi.tiangolo.com/tutorial/response-model/
+/home/bloom/sentrics/kronos-eam-backend/venv/lib/python3.12/site-packages/pydantic/_internal/_config.py:373: UserWarning: Valid config keys have changed in V2:
+* 'orm_mode' has been renamed to 'from_attributes'
+  warnings.warn(message, UserWarning)
+INFO:__main__:Impianti router loaded
+INFO:     Started server process [118573]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [118573]
+🚀 Starting Kronos EAM Backend (Full)
+==================================================
+Environment: development
+Database: sqlite:///./kronos_local.db
+API Base URL: http://localhost:8000
+API Docs: http://localhost:8000/docs
+Smart Assistant: http://localhost:8000/api/v1/smart-assistant
+Demo Plant: http://localhost:8000/demo/plant
+==================================================

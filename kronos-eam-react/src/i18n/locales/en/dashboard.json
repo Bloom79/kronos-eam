@@ -1,0 +1,65 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome to Kronos EAM",
+  "overview": "Overview",
+  "statistics": {
+    "totalPlants": "Total Plants",
+    "activeWorkflows": "Active Workflows",
+    "pendingTasks": "Pending Tasks",
+    "upcomingDeadlines": "Upcoming Deadlines"
+  },
+  "widgets": {
+    "plantStatus": {
+      "title": "Plant Status",
+      "operational": "Operational",
+      "maintenance": "Under Maintenance",
+      "offline": "Offline"
+    },
+    "workflowProgress": {
+      "title": "Workflow Progress",
+      "onTrack": "On Track",
+      "delayed": "Delayed",
+      "completed": "Completed This Month"
+    },
+    "complianceOverview": {
+      "title": "Compliance Overview",
+      "compliant": "Compliant",
+      "attention": "Needs Attention",
+      "critical": "Critical"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "viewAll": "View All"
+    },
+    "upcomingTasks": {
+      "title": "Upcoming Tasks",
+      "dueToday": "Due Today",
+      "dueThisWeek": "Due This Week",
+      "overdue": "Overdue"
+    }
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "newWorkflow": "Start New Workflow",
+    "uploadDocument": "Upload Document",
+    "scheduleInspection": "Schedule Inspection",
+    "generateReport": "Generate Report"
+  },
+  "performance": {
+    "title": "Performance Metrics",
+    "energy": "Energy Production",
+    "efficiency": "System Efficiency",
+    "availability": "Availability",
+    "month": "Month",
+    "quarter": "Quarter",
+    "year": "Year"
+  },
+  "alerts": {
+    "title": "Alerts & Notifications",
+    "high": "High Priority",
+    "medium": "Medium Priority",
+    "low": "Low Priority",
+    "markAsRead": "Mark as Read",
+    "viewDetails": "View Details"
+  }
+}

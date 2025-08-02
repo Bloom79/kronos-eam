@@ -1,0 +1,40 @@
+DATABASE ALIGNMENT REPORT
+============================================================
+Generated: 2025-08-02
+
+Current Migration: f2d81f9341a6
+
+## ENUM ALIGNMENT
+----------------------------------------
+
+userroleenum:
+  Current values: Admin, Asset Manager, Operator, Viewer
+  ❌ Missing values: Plant Owner
+  
+plantstatusenum:
+  Current values: IN_OPERATION, IN_AUTHORIZATION, UNDER_CONSTRUCTION, DECOMMISSIONED
+  ❌ Wrong format: Should be "In Operation", "In Authorization", "Under Construction", "Decommissioned"
+  
+planttypeenum:
+  Current values: PHOTOVOLTAIC, WIND, HYDROELECTRIC, BIOMASS, GEOTHERMAL
+  ❌ Wrong format: Should be "Photovoltaic", "Wind", "Hydroelectric", "Biomass", "Geothermal"
+
+## DATA FORMAT ISSUES
+----------------------------------------
+  ❌ plants: Multiple rows have underscore-based enum values
+     - status values: IN_OPERATION, UNDER_CONSTRUCTION
+     - type values: PHOTOVOLTAIC, WIND, BIOMASS
+
+## SUMMARY
+----------------------------------------
+❌ Found critical alignment issues:
+   - Missing "Plant Owner" role in userroleenum
+   - All plant status/type enums use old underscore format
+   - Existing plant data uses old enum formats
+   
+## REQUIRED ACTIONS
+----------------------------------------
+1. Create migration to add "Plant Owner" to userroleenum
+2. Create migration to update enum value formats
+3. Create data migration to update existing plant records
+4. Update init_data.py to use correct enum formats
