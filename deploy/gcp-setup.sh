@@ -143,6 +143,12 @@ create_secret "redis-password" "$(openssl rand -base64 32)"
 # 7. Create service accounts
 echo -e "\n${YELLOW}Step 7: Creating service accounts${NC}"
 
+# Deployment service account (for GitHub Actions)
+if ! gcloud iam service-accounts describe kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com &>/dev/null; then
+    gcloud iam service-accounts create kronos-deploy \
+        --display-name="Kronos Deployment Service Account"
+fi
+
 # Backend service account
 if ! gcloud iam service-accounts describe kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com &>/dev/null; then
     gcloud iam service-accounts create kronos-backend \
@@ -155,7 +161,47 @@ if ! gcloud iam service-accounts describe kronos-frontend@${PROJECT_ID}.iam.gser
         --display-name="Kronos Frontend Service Account"
 fi
 
-# Grant permissions
+# Grant deployment service account permissions
+echo "Granting deployment service account permissions..."
+
+# Grant Cloud Run Admin to deployment service account
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/run.admin"
+
+# Grant Storage Admin for artifact registry
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/storage.admin"
+
+# Grant Artifact Registry Admin
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/artifactregistry.admin"
+
+# Grant Cloud SQL Admin for database management
+gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/cloudsql.admin"
+
+# CRITICAL: Grant deployment service account permission to act as other service accounts
+echo "Granting service account user permissions..."
+
+gcloud iam service-accounts add-iam-policy-binding \
+    kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountUser" \
+    --project=${PROJECT_ID}
+
+gcloud iam service-accounts add-iam-policy-binding \
+    kronos-frontend@${PROJECT_ID}.iam.gserviceaccount.com \
+    --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountUser" \
+    --project=${PROJECT_ID}
+
+# Grant backend service account permissions
+echo "Granting backend service account permissions..."
+
 gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member="serviceAccount:kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/cloudsql.client"
@@ -168,10 +214,19 @@ gcloud projects add-iam-policy-binding ${PROJECT_ID} \
     --member="serviceAccount:kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com" \
     --role="roles/redis.editor"
 
+# Grant specific secret permissions
+echo "Granting access to individual secrets..."
+for secret in jwt-secret redis-password db-password; do
+    gcloud secrets add-iam-policy-binding $secret \
+        --member="serviceAccount:kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com" \
+        --role="roles/secretmanager.secretAccessor" \
+        --project=${PROJECT_ID} 2>/dev/null || true
+done
+
 # 8. Create Artifact Registry repositories
 echo -e "\n${YELLOW}Step 8: Creating Artifact Registry repositories${NC}"
-if ! gcloud artifacts repositories describe kronos-docker --location=${REGION} &>/dev/null; then
-    gcloud artifacts repositories create kronos-docker \
+if ! gcloud artifacts repositories describe kronos-eam --location=${REGION} &>/dev/null; then
+    gcloud artifacts repositories create kronos-eam \
         --repository-format=docker \
         --location=${REGION} \
         --description="Docker images for Kronos EAM"
@@ -186,11 +241,11 @@ cat > cloudbuild.yaml << EOF
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/backend:latest', '.']
+    args: ['build', '-t', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest', '.']
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/backend:latest']
+    args: ['push', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest']
   
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -200,7 +255,7 @@ steps:
       - 'deploy'
       - '${BACKEND_SERVICE_NAME}'
       - '--image'
-      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/backend:latest'
+      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest'
       - '--region'
       - '${REGION}'
       - '--platform'
@@ -226,7 +281,7 @@ steps:
       - '8000'
 
 images:
-  - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/backend:latest'
+  - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest'
 EOF
 
 # Submit build
@@ -249,7 +304,7 @@ steps:
       - '--build-arg'
       - 'REACT_APP_API_URL=${BACKEND_URL}/api/v1'
       - '-t'
-      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/frontend:latest'
+      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest'
       - '.'
   
   # Push the container image to Artifact Registry
@@ -264,7 +319,7 @@ steps:
       - 'deploy'
       - '${FRONTEND_SERVICE_NAME}'
       - '--image'
-      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/frontend:latest'
+      - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest'
       - '--region'
       - '${REGION}'
       - '--platform'
@@ -284,18 +339,32 @@ steps:
       - '80'
 
 images:
-  - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/frontend:latest'
+  - '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest'
 EOF
 
 # Submit build
 gcloud builds submit --config=cloudbuild.yaml .
 
-# 11. Database initialization
-echo -e "\n${YELLOW}Step 11: Database initialization${NC}"
+# 11. Generate service account key for GitHub Actions
+echo -e "\n${YELLOW}Step 11: Generating service account key for GitHub Actions${NC}"
+echo "Creating service account key for kronos-deploy..."
+
+# Create the key
+gcloud iam service-accounts keys create ~/kronos-deploy-key.json \
+    --iam-account=kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com
+
+echo -e "${GREEN}Service account key saved to: ~/kronos-deploy-key.json${NC}"
+echo -e "${YELLOW}IMPORTANT: Add this key to GitHub Secrets as GCP_SA_KEY${NC}"
+echo "1. Copy the contents: cat ~/kronos-deploy-key.json"
+echo "2. Go to GitHub repository settings > Secrets"
+echo "3. Add new secret named GCP_SA_KEY with the JSON contents"
+
+# 12. Database initialization
+echo -e "\n${YELLOW}Step 12: Database initialization${NC}"
 echo "Database will be initialized automatically when the backend service starts"
 echo "The entrypoint script will run Alembic migrations and load initial data"
 
-# 12. Get service URLs
+# 13. Get service URLs
 echo -e "\n${GREEN}======================================${NC}"
 echo -e "${GREEN}Deployment Complete!${NC}"
 echo -e "${GREEN}======================================${NC}"

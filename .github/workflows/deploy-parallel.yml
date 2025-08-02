@@ -1,0 +1,207 @@
+name: Parallel Deploy (Faster)
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: europe-west1
+  BACKEND_SERVICE: kronos-backend
+  FRONTEND_SERVICE: kronos-frontend
+  SQL_INSTANCE: kronos-db
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+      - name: Build and Push Backend
+        working-directory: ./kronos-eam-backend
+        run: |
+          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest .
+          docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest
+
+  build-frontend:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${REGION}-docker.pkg.dev
+
+      # Get Backend URL first (if exists)
+      - name: Get Backend URL
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${BACKEND_SERVICE} --region=${REGION} --format='value(status.url)' 2>/dev/null || echo "https://kronos-backend-placeholder.run.app")
+          echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Frontend
+        working-directory: ./kronos-eam-react
+        run: |
+          docker build \
+            --build-arg REACT_APP_API_URL=${{ steps.backend-url.outputs.BACKEND_URL }}/api/v1 \
+            -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest .
+          docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest
+
+  deploy-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    outputs:
+      backend-url: ${{ steps.get-url.outputs.BACKEND_URL }}
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Backend to Cloud Run
+        run: |
+          gcloud run deploy ${BACKEND_SERVICE} \
+            --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest \
+            --region ${REGION} \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE}" \
+            --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest" \
+            --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
+            --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
+            --memory 512Mi \
+            --cpu 1 \
+            --min-instances 1 \
+            --max-instances 10 \
+            --port 8000 \
+            --no-traffic
+
+      - name: Get Backend URL
+        id: get-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${BACKEND_SERVICE} --region=${REGION} --format='value(status.url)')
+          echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+  deploy-frontend:
+    needs: [build-frontend, deploy-backend]
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          gcloud run deploy ${FRONTEND_SERVICE} \
+            --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest \
+            --region ${REGION} \
+            --platform managed \
+            --allow-unauthenticated \
+            --service-account kronos-frontend@${PROJECT_ID}.iam.gserviceaccount.com \
+            --memory 256Mi \
+            --cpu 1 \
+            --min-instances 1 \
+            --max-instances 10 \
+            --port 80 \
+            --no-traffic
+
+  finalize:
+    needs: [deploy-backend, deploy-frontend]
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # Route traffic to new revisions
+      - name: Route Traffic to New Revisions
+        run: |
+          echo "🚦 Routing traffic to new backend revision..."
+          gcloud run services update-traffic ${BACKEND_SERVICE} \
+            --to-latest \
+            --region=${REGION}
+          
+          echo "🚦 Routing traffic to new frontend revision..."
+          gcloud run services update-traffic ${FRONTEND_SERVICE} \
+            --to-latest \
+            --region=${REGION}
+
+      - name: Get Service URLs
+        id: urls
+        run: |
+          FRONTEND_URL=$(gcloud run services describe ${FRONTEND_SERVICE} --region=${REGION} --format='value(status.url)')
+          BACKEND_URL=${{ needs.deploy-backend.outputs.backend-url }}
+          echo "FRONTEND_URL=${FRONTEND_URL}" >> $GITHUB_OUTPUT
+          echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
+
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Parallel Deployment Complete!"
+          echo "Frontend URL: ${{ steps.urls.outputs.FRONTEND_URL }}"
+          echo "Backend API: ${{ steps.urls.outputs.BACKEND_URL }}"
+          echo "Demo Login: demo@kronos-eam.local / Demo2024!"

@@ -77,7 +77,27 @@ Add these repository secrets:
 
 ## Google Cloud Setup
 
-### 1. Create Project
+### Option 1: Automated Setup (Recommended)
+
+Use the provided script for complete setup:
+
+```bash
+cd /home/bloom/sentrics/deploy
+export GCP_PROJECT_ID="kronos-eam-prod-$(date +%Y%m%d)"
+./gcp-setup.sh
+```
+
+This script will:
+- Create the project (if needed)
+- Enable all required APIs
+- Create all service accounts with proper IAM permissions
+- Set up Cloud SQL and Redis
+- Create Artifact Registry repository (kronos-eam)
+- Generate service account key for GitHub Actions
+
+### Option 2: Manual Setup
+
+#### 1. Create Project
 ```bash
 # Create new project
 gcloud projects create kronos-eam-prod-$(date +%Y%m%d) \
@@ -87,12 +107,12 @@ gcloud projects create kronos-eam-prod-$(date +%Y%m%d) \
 gcloud config set project kronos-eam-prod-20250802
 ```
 
-### 2. Enable Billing
+#### 2. Enable Billing
 1. Go to: https://console.cloud.google.com/billing
 2. Link billing account to project
 3. Verify: `gcloud beta billing projects describe kronos-eam-prod-20250802`
 
-### 3. Enable APIs
+#### 3. Enable APIs
 ```bash
 gcloud services enable \
   cloudbuild.googleapis.com \
@@ -103,24 +123,56 @@ gcloud services enable \
   secretmanager.googleapis.com \
   cloudresourcemanager.googleapis.com \
   iam.googleapis.com \
+  redis.googleapis.com \
+  monitoring.googleapis.com \
+  logging.googleapis.com \
   --project=kronos-eam-prod-20250802
 ```
 
-### 4. Create Service Account
-```bash
-# Using the provided script
-cd /home/bloom/sentrics/deploy
-./create-service-account.sh kronos-eam-prod-20250802
+### 4. Create Service Accounts and IAM Permissions
 
-# This creates ~/kronos-sa-key.json
-# Copy entire contents for GCP_SA_KEY secret
+The `gcp-setup.sh` script will automatically create all necessary service accounts:
+- `kronos-deploy` - For GitHub Actions deployment
+- `kronos-backend` - For backend service runtime
+- `kronos-frontend` - For frontend service runtime
+
+**Important IAM Permissions Set by Script:**
+1. **Deployment Service Account** (`kronos-deploy`):
+   - `roles/run.admin` - Deploy to Cloud Run
+   - `roles/storage.admin` - Push to Artifact Registry
+   - `roles/artifactregistry.admin` - Manage artifacts
+   - `roles/cloudsql.admin` - Manage database
+   - `roles/iam.serviceAccountUser` - Act as other service accounts (CRITICAL)
+
+2. **Backend Service Account** (`kronos-backend`):
+   - `roles/cloudsql.client` - Connect to database
+   - `roles/secretmanager.secretAccessor` - Read secrets
+   - `roles/redis.editor` - Use Redis
+
+### 5. Service Account Key for GitHub
+
+#### Automated (via gcp-setup.sh)
+The `gcp-setup.sh` script automatically generates the key at `~/kronos-deploy-key.json`.
+
+#### Manual Generation
+```bash
+# Generate key for deployment service account
+gcloud iam service-accounts keys create ~/kronos-deploy-key.json \
+  --iam-account=kronos-deploy@kronos-eam-prod-20250802.iam.gserviceaccount.com
+
+# View the key
+cat ~/kronos-deploy-key.json
 ```
 
-### 5. Create Artifact Registry
+Copy the entire JSON content and add it as `GCP_SA_KEY` in GitHub Secrets.
+
+### 6. Create Artifact Registry
 ```bash
+# Note: Repository name must be 'kronos-eam' to match GitHub Actions workflow
 gcloud artifacts repositories create kronos-eam \
   --repository-format=docker \
   --location=europe-west1 \
+  --description="Docker images for Kronos EAM" \
   --project=kronos-eam-prod-20250802
 ```
 
@@ -172,21 +224,44 @@ Key tables:
 
 ### Automatic via GitHub Actions
 
-1. **Push to main branch**:
+1. **Push to main branch** (Full deployment with tests):
    ```bash
    git push origin main
    ```
 
-2. **GitHub Actions workflow**:
-   - Runs tests
-   - Builds Docker images
-   - Pushes to Artifact Registry
-   - Deploys to Cloud Run
-   - Creates/updates Cloud SQL
-   - Runs migrations
+2. **Manual trigger with skip tests option**:
+   - Go to: https://github.com/Bloom79/kronos-eam/actions
+   - Click "Deploy to Google Cloud Run"
+   - Click "Run workflow"
+   - Check "Skip test phase" for faster deployment
 
-3. **Monitor progress**:
+3. **Quick Deploy workflow** (No tests):
+   - Go to Actions → Quick Deploy (No Tests)
+   - Click "Run workflow"
+   - Select environment (production/staging)
+
+4. **Parallel Deploy workflow** (Fastest - builds in parallel):
+   - Go to Actions → Parallel Deploy (Faster)
+   - Click "Run workflow"
+   - Builds backend and frontend simultaneously
+   - Uses `--no-traffic` flag for faster initial deployment
+
+5. **GitHub Actions workflow**:
+   - Runs tests (unless skipped)
+   - Builds Docker images
+   - Pushes to Artifact Registry (kronos-eam repository)
+   - Deploys to Cloud Run with proper service accounts
+   - Runs database migrations automatically
+
+6. **Monitor progress**:
    - https://github.com/Bloom79/kronos-eam/actions
+
+### Speed Optimization Tips
+
+1. **Use Parallel Deploy**: Saves ~5-10 minutes by building images simultaneously
+2. **Skip Tests**: Use skip_tests option or Quick Deploy workflow
+3. **Use --no-traffic**: Deploy without routing traffic immediately
+4. **Optimize Docker Images**: .dockerignore file reduces build context
 
 ### Manual Deployment (if needed)
 
@@ -264,8 +339,43 @@ gcloud logging read "resource.type=cloudsql_database" \
 
 ### Common Issues
 
-#### 1. Deployment Fails
-**Symptom**: GitHub Actions workflow fails
+#### Secret Not Found Error
+**Error**: `Secret projects/949811571472/secrets/jwt-secret/versions/latest was not found`
+
+**Solution**: Run the fix-secrets.sh script:
+```bash
+cd /home/bloom/sentrics/deploy
+./fix-secrets.sh
+```
+
+This will create the required secrets (jwt-secret, redis-password) and grant access permissions.
+
+#### IAM Permission Error: "Permission 'iam.serviceAccounts.actAs' denied"
+**Error**: `[kronos-deploy@***.iam.gserviceaccount.com] does not have permission to access namespaces instance [***] (or it may not exist): Permission 'iam.serviceAccounts.actAs' denied on service account kronos-backend@***.iam.gserviceaccount.com`
+
+**Solution**: Run the fix-iam-permissions.sh script:
+```bash
+cd /home/bloom/sentrics/deploy
+./fix-iam-permissions.sh
+```
+
+Or manually grant permissions:
+```bash
+# Allow deployment SA to act as backend SA
+gcloud iam service-accounts add-iam-policy-binding \
+  kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
+  --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+
+# Allow deployment SA to act as frontend SA  
+gcloud iam service-accounts add-iam-policy-binding \
+  kronos-frontend@${PROJECT_ID}.iam.gserviceaccount.com \
+  --member="serviceAccount:kronos-deploy@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/iam.serviceAccountUser"
+```
+
+#### 2. Deployment Fails
+**Symptom**: GitHub Actions workflow fails (general issues)
 
 **Solutions**:
 - Check billing is enabled
@@ -379,6 +489,27 @@ gcloud sql operations list \
    - Set up alerts
    - Review logs regularly
    - Track failed logins
+
+## Deployment Scripts Reference
+
+### Available Scripts in `/home/bloom/sentrics/deploy/`
+
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `gcp-setup.sh` | Complete GCP infrastructure setup | Initial deployment |
+| `fix-iam-permissions.sh` | Fix service account permissions | IAM errors |
+| `manage-services.sh` | Interactive service management | Local development |
+| `create-service-account.sh` | Create deployment SA and key | Manual SA setup |
+| `init-database.sh` | Initialize database schema | Database setup |
+| `monitoring-setup.sh` | Configure monitoring | Production setup |
+| `verify-deployment.sh` | Verify deployment success | Post-deployment |
+
+### Key Changes in Latest Update
+
+1. **Service Accounts**: Now creates 3 SAs (deploy, backend, frontend)
+2. **IAM Permissions**: Automatically sets `serviceAccountUser` role
+3. **Artifact Registry**: Uses `kronos-eam` not `kronos-docker`
+4. **Deployment Options**: Added skip tests and quick deploy workflows
 
 ## Next Steps
 
