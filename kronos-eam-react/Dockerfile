@@ -35,8 +35,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy built assets from builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Create non-root user
-RUN adduser -D -g 'nginx' nginx
+# nginx user already exists in nginx:alpine image
+# No need to create it
 
 # Change ownership of nginx directories
 RUN chown -R nginx:nginx /var/cache/nginx && \
