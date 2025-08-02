@@ -52,7 +52,7 @@ def init_demo_data(engine):
             if not demo_user:
                 demo_user = User(
                     email="demo@kronos-eam.local",
-                    password_hash=get_password_hash("demo123"),
+                    password_hash=get_password_hash("Demo2024!"),
                     name="Demo",
                     surname="User",
                     role=UserRoleEnum.ADMIN,

@@ -124,7 +124,7 @@ jobs:
             --region ${REGION} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE}" \
+            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE},ENVIRONMENT=production,DISABLE_REDIS=true,DISABLE_QDRANT=true" \
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest" \
             --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
             --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
@@ -133,6 +133,7 @@ jobs:
             --min-instances 1 \
             --max-instances 10 \
             --port 8000 \
+            --timeout 300 \
             --no-traffic
 
       - name: Get Backend URL
