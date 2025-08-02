@@ -1,17 +1,16 @@
-name: Deploy to Google Cloud Run
+name: Quick Deploy (No Tests)
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
-      skip_tests:
-        description: 'Skip test phase'
-        required: false
-        type: boolean
-        default: false
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -21,83 +20,8 @@ env:
   SQL_INSTANCE: kronos-db
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_dispatch' || !github.event.inputs.skip_tests
-    
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_USER: kronos
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_DB: kronos_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Cache Python dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install backend dependencies
-        working-directory: ./kronos-eam-backend
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
-
-      - name: Run backend tests
-        working-directory: ./kronos-eam-backend
-        env:
-          DATABASE_URL: postgresql://kronos:test_password@localhost:5432/kronos_test
-          SECRET_KEY: test-secret-key
-          ENVIRONMENT: test
-        run: |
-          pytest --cov=app tests/ || echo "No tests found, skipping"
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: ./kronos-eam-react/package-lock.json
-
-      - name: Install frontend dependencies
-        working-directory: ./kronos-eam-react
-        run: npm ci
-
-      - name: Run frontend tests
-        working-directory: ./kronos-eam-react
-        run: npm test -- --watchAll=false --passWithNoTests
-
-      - name: Build frontend
-        working-directory: ./kronos-eam-react
-        run: npm run build
-
   deploy:
-    needs: test
     runs-on: ubuntu-latest
-    if: |
-      always() && 
-      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
-      (github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     
     permissions:
       contents: 'read'
@@ -179,23 +103,9 @@ jobs:
           echo "FRONTEND_URL=${FRONTEND_URL}" >> $GITHUB_OUTPUT
           echo "BACKEND_URL=${{ steps.backend-url.outputs.BACKEND_URL }}" >> $GITHUB_OUTPUT
 
-      # Database migrations are handled automatically by the backend entrypoint script
-
-      - name: Comment PR with URLs
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `## 🚀 Deployment Successful!\n\n**Frontend URL:** ${{ steps.urls.outputs.FRONTEND_URL }}\n**Backend API:** ${{ steps.urls.outputs.BACKEND_URL }}\n\n**Demo Credentials:**\n- Email: \`demo@kronos-eam.local\`\n- Password: \`demo123\``
-            })
-
       - name: Deployment Summary
         run: |
-          echo "🎉 Deployment Complete!"
+          echo "🎉 Quick Deployment Complete!"
           echo "Frontend URL: ${{ steps.urls.outputs.FRONTEND_URL }}"
           echo "Backend API: ${{ steps.urls.outputs.BACKEND_URL }}"
-          echo "Demo Login: demo@kronos-eam.local / demo123"
+          echo "Demo Login: demo@kronos-eam.local / Demo2024!"

@@ -1,9 +1,15 @@
 # Kronos EAM - Enterprise Asset Management for Renewable Energy
 
-[![Deploy to Google Cloud Run](https://github.com/YOUR_USERNAME/kronos-eam/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/kronos-eam/actions/workflows/deploy.yml)
-[![CI](https://github.com/YOUR_USERNAME/kronos-eam/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/kronos-eam/actions/workflows/ci.yml)
+[![Deploy to Google Cloud Run](https://github.com/Bloom79/kronos-eam/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bloom79/kronos-eam/actions/workflows/deploy.yml)
+[![CI](https://github.com/Bloom79/kronos-eam/actions/workflows/ci.yml/badge.svg)](https://github.com/Bloom79/kronos-eam/actions/workflows/ci.yml)
 
 Kronos EAM is a cloud-native SaaS platform for managing administrative and compliance workflows for renewable energy assets in Italy. The platform centralizes asset data, provides intelligent assistance for bureaucratic processes, and manages regulatory deadlines for photovoltaic and wind power plants.
+
+## 📚 Documentation
+- **[Architecture Guide](docs/architecture.md)** - Complete system architecture with diagrams
+- **[Database Architecture](docs/database-architecture.md)** - Database design and schema documentation
+- **[Deployment Guide](docs/deployment-complete.md)** - Comprehensive deployment instructions
+- **[All Documentation](docs/)** - Full documentation directory
 
 ## 🚀 Features
 
