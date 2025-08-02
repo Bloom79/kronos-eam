@@ -431,9 +431,60 @@ sequenceDiagram
    - IAM-based access
 
 4. **Secret Management**
-   - Google Secret Manager
-   - GitHub encrypted secrets
-   - Environment separation
+   - Google Secret Manager for runtime secrets
+   - GitHub encrypted secrets for deployment
+   - Environment separation (dev/staging/prod)
+   
+### Secret Architecture
+
+```mermaid
+graph TB
+    subgraph "Google Secret Manager"
+        JWT[jwt-secret<br/>Random 32-byte key]
+        REDIS[redis-password<br/>Random 32-byte key]
+        DB[db-password<br/>PostgreSQL password]
+    end
+    
+    subgraph "Cloud Run Backend"
+        ENV1[Environment Variables]
+        APP[FastAPI Application]
+    end
+    
+    subgraph "Usage"
+        AUTH[JWT Authentication]
+        CACHE[Redis Cache]
+        DATABASE[PostgreSQL]
+    end
+    
+    JWT -->|Maps to SECRET_KEY| ENV1
+    REDIS -->|Maps to REDIS_PASSWORD| ENV1
+    DB -->|Used in DATABASE_URL| ENV1
+    
+    ENV1 --> APP
+    
+    APP -->|Signs tokens| AUTH
+    APP -->|Secures cache| CACHE
+    APP -->|Connects to| DATABASE
+    
+    style JWT fill:#ff6b6b
+    style REDIS fill:#4ecdc4
+    style DB fill:#95e1d3
+```
+
+**Required Secrets:**
+
+| Secret Name | Purpose | Why It's Critical |
+|------------|---------|-------------------|
+| `jwt-secret` | Signs JWT tokens | Without it, authentication system cannot start |
+| `redis-password` | Redis authentication | Required even for internal Redis instances |
+| `db-password` | Database access | Can use GitHub Secrets instead |
+
+**Security Benefits:**
+- Secrets never exposed in logs or container images
+- Automatic encryption at rest
+- IAM-controlled access per service account
+- Audit trail for all secret access
+- Version control with rollback capability
 
 ## Cost Analysis
 

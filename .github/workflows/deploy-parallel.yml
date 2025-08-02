@@ -11,6 +11,15 @@ on:
           - production
           - staging
         default: production
+      deploy_target:
+        description: 'What to deploy'
+        required: true
+        type: choice
+        options:
+          - both
+          - backend-only
+          - frontend-only
+        default: both
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -21,6 +30,7 @@ env:
 
 jobs:
   build-backend:
+    if: ${{ github.event.inputs.deploy_target == 'both' || github.event.inputs.deploy_target == 'backend-only' }}
     runs-on: ubuntu-latest
     
     permissions:
@@ -49,6 +59,7 @@ jobs:
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest
 
   build-frontend:
+    if: ${{ github.event.inputs.deploy_target == 'both' || github.event.inputs.deploy_target == 'frontend-only' }}
     runs-on: ubuntu-latest
     
     permissions:
@@ -86,6 +97,7 @@ jobs:
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest
 
   deploy-backend:
+    if: ${{ github.event.inputs.deploy_target == 'both' || github.event.inputs.deploy_target == 'backend-only' }}
     needs: build-backend
     runs-on: ubuntu-latest
     
@@ -130,7 +142,14 @@ jobs:
           echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
 
   deploy-frontend:
-    needs: [build-frontend, deploy-backend]
+    if: |
+      always() && 
+      (github.event.inputs.deploy_target == 'both' || github.event.inputs.deploy_target == 'frontend-only') &&
+      (needs.build-frontend.result == 'success') &&
+      (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped' || github.event.inputs.deploy_target == 'frontend-only')
+    needs: 
+      - build-frontend
+      - deploy-backend
     runs-on: ubuntu-latest
     
     permissions:
@@ -162,6 +181,10 @@ jobs:
             --no-traffic
 
   finalize:
+    if: |
+      always() && 
+      (needs.deploy-backend.result == 'success' || needs.deploy-backend.result == 'skipped') &&
+      (needs.deploy-frontend.result == 'success' || needs.deploy-frontend.result == 'skipped')
     needs: [deploy-backend, deploy-frontend]
     runs-on: ubuntu-latest
     
@@ -181,15 +204,21 @@ jobs:
       # Route traffic to new revisions
       - name: Route Traffic to New Revisions
         run: |
-          echo "🚦 Routing traffic to new backend revision..."
-          gcloud run services update-traffic ${BACKEND_SERVICE} \
-            --to-latest \
-            --region=${REGION}
+          DEPLOY_TARGET="${{ github.event.inputs.deploy_target }}"
           
-          echo "🚦 Routing traffic to new frontend revision..."
-          gcloud run services update-traffic ${FRONTEND_SERVICE} \
-            --to-latest \
-            --region=${REGION}
+          if [[ "$DEPLOY_TARGET" == "both" ]] || [[ "$DEPLOY_TARGET" == "backend-only" ]]; then
+            echo "🚦 Routing traffic to new backend revision..."
+            gcloud run services update-traffic ${BACKEND_SERVICE} \
+              --to-latest \
+              --region=${REGION}
+          fi
+          
+          if [[ "$DEPLOY_TARGET" == "both" ]] || [[ "$DEPLOY_TARGET" == "frontend-only" ]]; then
+            echo "🚦 Routing traffic to new frontend revision..."
+            gcloud run services update-traffic ${FRONTEND_SERVICE} \
+              --to-latest \
+              --region=${REGION}
+          fi
 
       - name: Get Service URLs
         id: urls
@@ -201,7 +230,18 @@ jobs:
 
       - name: Deployment Summary
         run: |
+          DEPLOY_TARGET="${{ github.event.inputs.deploy_target }}"
           echo "🎉 Parallel Deployment Complete!"
-          echo "Frontend URL: ${{ steps.urls.outputs.FRONTEND_URL }}"
-          echo "Backend API: ${{ steps.urls.outputs.BACKEND_URL }}"
+          echo "Deployment Target: $DEPLOY_TARGET"
+          echo ""
+          
+          if [[ "$DEPLOY_TARGET" == "both" ]] || [[ "$DEPLOY_TARGET" == "frontend-only" ]]; then
+            echo "Frontend URL: ${{ steps.urls.outputs.FRONTEND_URL }}"
+          fi
+          
+          if [[ "$DEPLOY_TARGET" == "both" ]] || [[ "$DEPLOY_TARGET" == "backend-only" ]]; then
+            echo "Backend API: ${{ steps.urls.outputs.BACKEND_URL }}"
+          fi
+          
+          echo ""
           echo "Demo Login: demo@kronos-eam.local / Demo2024!"

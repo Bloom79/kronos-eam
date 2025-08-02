@@ -152,17 +152,18 @@ Set these before running scripts:
    - Full deployment with tests
    - Triggered on push to main
    - Option to skip tests via workflow_dispatch
+   - Total time: ~30-40 minutes
 
-2. **Quick Deploy** (`deploy-quick.yml`)
-   - Skips all tests for faster deployment
-   - Manual trigger only
-   - ~10 minutes faster
-
-3. **Parallel Deploy** (`deploy-parallel.yml`)
+2. **Parallel Deploy** (`deploy-parallel.yml`)
    - Builds backend and frontend in parallel
+   - Selective deployment options:
+     - `both` - Deploy frontend and backend (default)
+     - `backend-only` - Deploy only backend service
+     - `frontend-only` - Deploy only frontend service
    - Uses --no-traffic for faster initial deployment
-   - Routes traffic after both are deployed
-   - Fastest option (~15 minutes faster)
+   - Routes traffic after deployment is complete
+   - Fastest option (~15-20 minutes for both, ~10 minutes for single service)
+   - Skips tests for speed
 
 ## Deployment Flow
 

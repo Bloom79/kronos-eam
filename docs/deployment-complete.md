@@ -176,6 +176,67 @@ gcloud artifacts repositories create kronos-eam \
   --project=kronos-eam-prod-20250802
 ```
 
+## Secret Management
+
+### Required Secrets in Google Secret Manager
+
+The application requires the following secrets to be created in Secret Manager:
+
+| Secret Name | Purpose | Used By | Required Permissions |
+|------------|---------|---------|---------------------|
+| `jwt-secret` | JWT token signing key for authentication | Backend API | `secretmanager.secretAccessor` |
+| `redis-password` | Redis cache authentication | Backend API | `secretmanager.secretAccessor` |
+| `db-password` | PostgreSQL database password (optional) | Backend API | Via DATABASE_URL env var |
+
+### Why These Secrets Are Required
+
+1. **jwt-secret**:
+   - Signs and verifies JWT tokens for user authentication
+   - Must be kept secret to prevent token forgery
+   - Used by FastAPI's authentication middleware
+   - Without it: `SECRET_KEY` environment variable fails to resolve
+
+2. **redis-password**:
+   - Secures Redis cache containing session data
+   - Prevents unauthorized access to cached information
+   - Required even if Redis is internal to the VPC
+   - Without it: `REDIS_PASSWORD` environment variable fails to resolve
+
+3. **db-password** (optional):
+   - PostgreSQL database authentication
+   - Can be passed directly via GitHub Secrets
+   - Not always needed if using default passwords
+
+### How Secrets Are Used in Deployment
+
+In the Cloud Run deployment command:
+```yaml
+--set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest"
+```
+
+This maps:
+- Secret Manager's `jwt-secret` → Environment variable `SECRET_KEY`
+- Secret Manager's `redis-password` → Environment variable `REDIS_PASSWORD`
+
+### Creating and Managing Secrets
+
+Secrets are automatically created by `gcp-setup.sh` or can be created manually:
+
+```bash
+# Quick fix script
+cd /home/bloom/sentrics/deploy
+./fix-secrets.sh
+
+# Or manually
+gcloud secrets create jwt-secret --data-file=- <<< "$(openssl rand -base64 32)"
+gcloud secrets create redis-password --data-file=- <<< "$(openssl rand -base64 32)"
+
+# Grant permissions
+gcloud secrets add-iam-policy-binding jwt-secret \
+  --member="serviceAccount:kronos-backend@PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
 ## Database Configuration
 
 ### Local Development
@@ -235,18 +296,18 @@ Key tables:
    - Click "Run workflow"
    - Check "Skip test phase" for faster deployment
 
-3. **Quick Deploy workflow** (No tests):
-   - Go to Actions → Quick Deploy (No Tests)
-   - Click "Run workflow"
-   - Select environment (production/staging)
-
-4. **Parallel Deploy workflow** (Fastest - builds in parallel):
+3. **Parallel Deploy workflow** (Fastest - builds in parallel):
    - Go to Actions → Parallel Deploy (Faster)
    - Click "Run workflow"
-   - Builds backend and frontend simultaneously
+   - Select deployment target:
+     - `both` - Deploy both frontend and backend (default)
+     - `backend-only` - Deploy only backend service
+     - `frontend-only` - Deploy only frontend service
+   - Builds selected services in parallel
    - Uses `--no-traffic` flag for faster initial deployment
+   - Total time: ~15-20 minutes (full), ~10 minutes (single service)
 
-5. **GitHub Actions workflow**:
+4. **GitHub Actions workflow**:
    - Runs tests (unless skipped)
    - Builds Docker images
    - Pushes to Artifact Registry (kronos-eam repository)
@@ -259,7 +320,7 @@ Key tables:
 ### Speed Optimization Tips
 
 1. **Use Parallel Deploy**: Saves ~5-10 minutes by building images simultaneously
-2. **Skip Tests**: Use skip_tests option or Quick Deploy workflow
+2. **Skip Tests**: Use skip_tests option in standard workflow
 3. **Use --no-traffic**: Deploy without routing traffic immediately
 4. **Optimize Docker Images**: .dockerignore file reduces build context
 
