@@ -14,7 +14,7 @@ on:
         default: false
 
 env:
-  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PROJECT_ID: kronos-eam-prod
   REGION: europe-west1
   BACKEND_SERVICE: kronos-backend
   FRONTEND_SERVICE: kronos-frontend
