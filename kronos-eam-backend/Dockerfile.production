@@ -1,0 +1,30 @@
+# Production Dockerfile with minimal startup time
+FROM python:3.11-slim AS builder
+
+RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --root-user-action=ignore --no-cache-dir --upgrade pip && \
+    pip install --root-user-action=ignore --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y libpq-dev curl && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -u 1000 kronos
+WORKDIR /app
+
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+COPY --chown=kronos:kronos . .
+
+# Use production entrypoint for fastest startup
+RUN chmod +x /app/entrypoint-production.sh
+
+USER kronos
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PORT=8000
+EXPOSE 8000
+
+# Simple health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+ENTRYPOINT ["/app/entrypoint-production.sh"]
