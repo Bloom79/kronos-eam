@@ -106,6 +106,7 @@ docker-compose.override.yml
 *.crt
 *.p12
 secrets/
+.git-token
 
 # Google Cloud SDK
 google-cloud-sdk/

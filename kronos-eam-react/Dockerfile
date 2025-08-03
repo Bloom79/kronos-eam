@@ -1,6 +1,9 @@
 # Frontend Dockerfile for Kronos EAM
 # Multi-stage build for optimized production image
 
+# Add build argument for cache busting
+ARG CACHEBUST=1
+
 # Stage 1: Build stage
 FROM node:18-alpine AS builder
 
@@ -36,14 +39,10 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/build /usr/share/nginx/html
 
 # nginx user already exists in nginx:alpine image
-# No need to create it
-
-# Change ownership of nginx directories
-RUN chown -R nginx:nginx /var/cache/nginx && \
-    chown -R nginx:nginx /var/log/nginx && \
-    chown -R nginx:nginx /etc/nginx/conf.d && \
+# Ensure directories exist with correct permissions
+RUN mkdir -p /var/cache/nginx /var/log/nginx /etc/nginx/conf.d && \
     touch /var/run/nginx.pid && \
-    chown -R nginx:nginx /var/run/nginx.pid
+    chown -R nginx:nginx /var/cache/nginx /var/log/nginx /etc/nginx/conf.d /var/run/nginx.pid
 
 # Switch to non-root user
 USER nginx
