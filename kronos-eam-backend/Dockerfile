@@ -60,5 +60,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
+# Make all entrypoints executable
+RUN chmod +x /app/entrypoint*.sh
+
 # Run the application
 ENTRYPOINT ["/app/entrypoint.sh"]

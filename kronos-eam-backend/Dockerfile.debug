@@ -1,0 +1,16 @@
+# Debug Dockerfile to test PORT binding
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy just the debug entrypoint
+COPY entrypoint-debug.sh /app/
+
+# Make it executable
+RUN chmod +x /app/entrypoint-debug.sh
+
+# Expose port
+EXPOSE 8000
+
+# Run debug entrypoint
+ENTRYPOINT ["/app/entrypoint-debug.sh"]
