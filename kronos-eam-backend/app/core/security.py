@@ -6,7 +6,6 @@ Implements JWT tokens with tenant isolation
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
