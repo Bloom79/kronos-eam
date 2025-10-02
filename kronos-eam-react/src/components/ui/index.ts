@@ -5,3 +5,5 @@ export * from './ErrorMessage';
 export * from './EmptyState';
 export * from './Pagination';
 export * from './ConfirmDialog';
+export * from './SkeletonLoader';
+export * from './SuspenseWrapper';

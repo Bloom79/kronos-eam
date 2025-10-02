@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
 import { plantsService, PlantCreate } from '../services/api';
 import type { Plant, PlantFilters, PlantListResponse } from '../services/api';
-import { LoadingSpinner, ErrorMessage, EmptyState, Pagination } from '../components/ui';
+import { LoadingSpinner, ErrorMessage, EmptyState, Pagination, TableSkeleton } from '../components/ui';
 import { AddPlantModal } from '../components/plants/AddPlantModal';
 import { PlantsTable } from '../components/plants/PlantsTable';
 import ComplianceStats from '../components/plants/ComplianceStats';
@@ -228,8 +228,8 @@ const Plants: React.FC = () => {
 
           {/* Content */}
           {loading ? (
-            <div className="h-64 flex items-center justify-center">
-              <LoadingSpinner text={t('loading')} />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+              <TableSkeleton rows={5} columns={6} />
             </div>
           ) : plants.length === 0 ? (
             <EmptyState

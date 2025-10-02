@@ -2,8 +2,25 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Testing Guide
-For comprehensive testing procedures, authentication details, and troubleshooting steps, see: **[TESTING_GUIDE.md](./TESTING_GUIDE.md)**
+## Project Documentation Workflow
+
+### Primary Development Documents
+1. **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Current system state, completed features, critical issues
+2. **[PROJECT_PLAN.md](./PROJECT_PLAN.md)** - Sprint-based enhancement roadmap with priorities
+3. **[TECHNICAL_DEBT.md](./TECHNICAL_DEBT.md)** - Debt register with effort estimates and quick wins
+4. **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing procedures and authentication details
+
+### Development Workflow
+1. **Before Starting Work**: Review PROJECT_STATUS.md for current issues and PROJECT_PLAN.md for sprint priorities
+2. **During Development**: Follow priorities (P0 → P1 → P2 → P3) and update TODO lists
+3. **After Completing Tasks**: Update PROJECT_STATUS.md with progress and mark items complete in PROJECT_PLAN.md
+4. **Weekly Reviews**: Update all three documents with current status, new issues, and adjusted timelines
+
+### Document Update Requirements
+- **PROJECT_STATUS.md**: Update after completing major features or fixing critical issues
+- **PROJECT_PLAN.md**: Update sprint progress weekly, adjust timelines as needed
+- **TECHNICAL_DEBT.md**: Update when debt is resolved or new debt is identified
+- **All Documents**: Must reflect current reality - no outdated status allowed
 
 ## Critical Development Standards
 
@@ -88,12 +105,31 @@ The platform must handle heterogeneous government systems:
 
 ## Development Guidelines
 
+### Priority-Based Development Process
+1. **Always Start with P0 (Blocking)**: Fix critical issues before adding features
+2. **Follow Sprint Plan**: Use PROJECT_PLAN.md sprint goals as development roadmap
+3. **Address Technical Debt**: Allocate 20% of time to TECHNICAL_DEBT.md items
+4. **Update Documentation**: After each significant change, update relevant .md files
+
+### Current Sprint Focus (Sprint 1 - Critical Fixes)
+**P0 - Must Complete This Week**:
+- [ ] Fix i18n system (translation keys showing instead of values)
+- [ ] Fix Error Boundary import in App.tsx
+- [ ] Fix backend API router syntax error
+- [ ] Implement consistent loading states
+
+**P1 - High Priority**:
+- [ ] Add form validation framework (react-hook-form + zod)
+- [ ] Standardize API error handling
+- [ ] Create reusable components
+
 ### When implementing features:
 1. **Compliance First**: Every feature must consider GDPR compliance and data segregation
 2. **Audit Trail**: All stakeholder interactions must be logged and traceable
 3. **Document Versioning**: Maintain version history for all regulatory documents
 4. **Deadline Management**: Critical deadlines must trigger proactive notifications
 5. **Multi-Entity Support**: Design for managing portfolios from 3 kW residential to 10 MW commercial plants
+6. **Test-Driven**: Add tests for new features (current coverage: 0% - needs improvement)
 
 ### Security Considerations
 - Encrypt all data at rest and in transit
@@ -137,8 +173,59 @@ The Minimum Viable Product concentrates on the "New Plant Connection" workflow, 
 
 ## Development Commands
 
-Since this is primarily a documentation and planning repository, there are no specific build or test commands at this stage. When development begins, this section should be updated with:
-- Environment setup instructions
-- Docker commands for local development
-- API testing procedures
-- Deployment pipelines
+### Frontend (React + TypeScript)
+```bash
+# Development
+cd kronos-eam-react
+npm install
+npm run dev
+
+# Testing
+npm run test
+npm run test:coverage
+
+# Build
+npm run build
+npm run preview
+```
+
+### Backend (FastAPI + Python)
+```bash
+# Development
+cd kronos-eam-backend
+pip install -r requirements.txt
+python run_full_backend.py
+
+# Testing
+pytest
+pytest --coverage
+
+# Database
+alembic upgrade head
+python scripts/migrate_to_english.py  # If needed
+```
+
+### Documentation Update Workflow
+```bash
+# After completing tasks, update status
+# 1. Mark completed items in PROJECT_PLAN.md
+# 2. Update metrics in PROJECT_STATUS.md
+# 3. Remove resolved items from TECHNICAL_DEBT.md
+# 4. Update CLAUDE.md current sprint focus
+```
+
+### Quick Status Check
+```bash
+# Check current priority tasks
+grep -E "P0|P1" PROJECT_PLAN.md
+grep -E "Critical|High Priority" TECHNICAL_DEBT.md
+
+# Check completion status
+grep -c "✅\|completed" PROJECT_STATUS.md
+```
+
+### Document Maintenance Schedule
+- **Daily**: Check TECHNICAL_DEBT.md for quick wins
+- **Weekly**: Update all three main documents with progress
+- **Sprint End**: Complete sprint review and plan next sprint
+- **Monthly**: Full document review and stakeholder update

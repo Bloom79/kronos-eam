@@ -59,6 +59,7 @@ echo -e "\n${YELLOW}Step 2: Enabling required APIs${NC}"
 gcloud services enable \
     run.googleapis.com \
     cloudbuild.googleapis.com \
+    artifactregistry.googleapis.com \
     sqladmin.googleapis.com \
     secretmanager.googleapis.com \
     cloudresourcemanager.googleapis.com \
@@ -309,7 +310,7 @@ steps:
   
   # Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-docker/frontend:latest']
+    args: ['push', '${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest']
   
   # Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
