@@ -130,6 +130,8 @@ jobs:
             --set-env-vars "DISABLE_REDIS=true" \
             --set-env-vars "DISABLE_QDRANT=true" \
             --set-env-vars "DISABLE_RATE_LIMIT=true" \
+            --set-env-vars "RUN_MIGRATIONS=true" \
+            --set-env-vars "RUN_INIT_DATA=true" \
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest,DB_PASSWORD=db-password:latest" \
             --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
             --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
