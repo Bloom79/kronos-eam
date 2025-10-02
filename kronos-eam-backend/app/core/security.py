@@ -18,12 +18,9 @@ from app.core.config import settings
 from app.core.database import get_db
 import os
 
-# Password hashing
-pwd_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=settings.BCRYPT_ROUNDS
-)
+# Password hashing - using bcrypt directly instead of passlib
+# passlib 1.7.4 is incompatible with bcrypt 4.x
+import bcrypt as bcrypt_lib
 
 # OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(
@@ -132,13 +129,23 @@ def verify_token(token: str, credentials_exception) -> TokenData:
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    """Verify password against hash using bcrypt directly"""
+    try:
+        return bcrypt_lib.checkpw(
+            plain_password.encode('utf-8'),
+            hashed_password.encode('utf-8')
+        )
+    except Exception as e:
+        # Log error but don't expose details
+        import logging
+        logging.error(f"Password verification failed: {e}")
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Hash password"""
-    return pwd_context.hash(password)
+    """Hash password using bcrypt directly"""
+    salt = bcrypt_lib.gensalt(rounds=settings.BCRYPT_ROUNDS)
+    return bcrypt_lib.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 
 def generate_password(length: int = 12) -> str:
