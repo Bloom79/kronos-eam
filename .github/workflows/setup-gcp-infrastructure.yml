@@ -1,0 +1,423 @@
+name: Setup GCP Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+          - development
+        default: production
+      force_recreate:
+        description: 'Force recreate existing resources (dangerous!)'
+        required: false
+        type: boolean
+        default: false
+      skip_sql:
+        description: 'Skip Cloud SQL setup'
+        required: false
+        type: boolean
+        default: false
+      skip_secrets:
+        description: 'Skip Secret Manager setup'
+        required: false
+        type: boolean
+        default: false
+      skip_iam:
+        description: 'Skip IAM setup'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  PROJECT_ID: kronos-eam-prod-20250802
+  REGION: europe-west1
+  BACKEND_SERVICE: kronos-backend
+  FRONTEND_SERVICE: kronos-frontend
+  SQL_INSTANCE: kronos-db
+  DATABASE_NAME: kronos_eam
+
+jobs:
+  setup-infrastructure:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      # ============================================================================
+      # SECTION 1: Cloud SQL Setup
+      # ============================================================================
+
+      - name: Check if Cloud SQL instance exists
+        if: ${{ !inputs.skip_sql }}
+        id: check-sql
+        run: |
+          if gcloud sql instances describe ${SQL_INSTANCE} --project=${PROJECT_ID} &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✓ Cloud SQL instance '${SQL_INSTANCE}' already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✗ Cloud SQL instance '${SQL_INSTANCE}' does not exist"
+          fi
+
+      - name: Create Cloud SQL instance
+        if: ${{ !inputs.skip_sql && steps.check-sql.outputs.exists == 'false' }}
+        run: |
+          echo "Creating Cloud SQL PostgreSQL instance..."
+
+          # Generate a secure random password
+          ROOT_PASSWORD=$(openssl rand -base64 32)
+
+          gcloud sql instances create ${SQL_INSTANCE} \
+            --database-version=POSTGRES_15 \
+            --tier=db-f1-micro \
+            --region=${REGION} \
+            --root-password="${ROOT_PASSWORD}" \
+            --storage-type=SSD \
+            --storage-size=10GB \
+            --backup \
+            --backup-start-time=03:00 \
+            --maintenance-window-day=SUN \
+            --maintenance-window-hour=04 \
+            --maintenance-release-channel=production \
+            --deletion-protection \
+            --project=${PROJECT_ID}
+
+          echo "✓ Cloud SQL instance created successfully"
+
+          # Store root password in Secret Manager
+          echo -n "${ROOT_PASSWORD}" | gcloud secrets create sql-root-password \
+            --data-file=- \
+            --replication-policy="automatic" \
+            --project=${PROJECT_ID} 2>/dev/null || \
+          echo -n "${ROOT_PASSWORD}" | gcloud secrets versions add sql-root-password \
+            --data-file=- \
+            --project=${PROJECT_ID}
+
+      - name: Wait for Cloud SQL instance to be ready
+        if: ${{ !inputs.skip_sql && steps.check-sql.outputs.exists == 'false' }}
+        run: |
+          echo "Waiting for Cloud SQL instance to be RUNNABLE..."
+
+          for i in {1..60}; do
+            STATE=$(gcloud sql instances describe ${SQL_INSTANCE} \
+              --project=${PROJECT_ID} \
+              --format='value(state)')
+
+            echo "Attempt $i/60: Instance state = $STATE"
+
+            if [ "$STATE" = "RUNNABLE" ]; then
+              echo "✓ Instance is ready!"
+              break
+            fi
+
+            if [ $i -eq 60 ]; then
+              echo "✗ Timeout waiting for instance to be ready"
+              exit 1
+            fi
+
+            sleep 10
+          done
+
+      - name: Skip Cloud SQL creation (already exists)
+        if: ${{ !inputs.skip_sql && steps.check-sql.outputs.exists == 'true' }}
+        run: |
+          echo "⏭️  Skipping Cloud SQL instance creation - already exists"
+
+          # Show instance details
+          gcloud sql instances describe ${SQL_INSTANCE} \
+            --project=${PROJECT_ID} \
+            --format="table(name,databaseVersion,state,region,settings.tier)"
+
+      - name: Check if database exists
+        if: ${{ !inputs.skip_sql }}
+        id: check-db
+        run: |
+          if gcloud sql databases describe ${DATABASE_NAME} \
+            --instance=${SQL_INSTANCE} \
+            --project=${PROJECT_ID} &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✓ Database '${DATABASE_NAME}' already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "✗ Database '${DATABASE_NAME}' does not exist"
+          fi
+
+      - name: Create database
+        if: ${{ !inputs.skip_sql && steps.check-db.outputs.exists == 'false' }}
+        run: |
+          echo "Creating database '${DATABASE_NAME}'..."
+
+          gcloud sql databases create ${DATABASE_NAME} \
+            --instance=${SQL_INSTANCE} \
+            --project=${PROJECT_ID}
+
+          echo "✓ Database created successfully"
+
+      - name: Skip database creation (already exists)
+        if: ${{ !inputs.skip_sql && steps.check-db.outputs.exists == 'true' }}
+        run: |
+          echo "⏭️  Skipping database creation - already exists"
+
+      # ============================================================================
+      # SECTION 2: Secret Manager Setup
+      # ============================================================================
+
+      - name: Setup Secret Manager secrets
+        if: ${{ !inputs.skip_secrets }}
+        run: |
+          echo "Setting up Secret Manager secrets..."
+
+          # Function to create or update secret
+          create_or_update_secret() {
+            local secret_name=$1
+            local secret_value=$2
+
+            if gcloud secrets describe ${secret_name} --project=${PROJECT_ID} &>/dev/null; then
+              echo "  ⏭️  Secret '${secret_name}' already exists, updating version..."
+              echo -n "${secret_value}" | gcloud secrets versions add ${secret_name} \
+                --data-file=- \
+                --project=${PROJECT_ID}
+            else
+              echo "  ➕ Creating secret '${secret_name}'..."
+              echo -n "${secret_value}" | gcloud secrets create ${secret_name} \
+                --data-file=- \
+                --replication-policy="automatic" \
+                --project=${PROJECT_ID}
+            fi
+            echo "  ✓ Secret '${secret_name}' ready"
+          }
+
+          # JWT Secret Key
+          if [ -n "${{ secrets.JWT_SECRET }}" ]; then
+            create_or_update_secret "jwt-secret" "${{ secrets.JWT_SECRET }}"
+          else
+            JWT_SECRET=$(openssl rand -base64 64)
+            create_or_update_secret "jwt-secret" "${JWT_SECRET}"
+          fi
+
+          # Redis Password
+          if [ -n "${{ secrets.REDIS_PASSWORD }}" ]; then
+            create_or_update_secret "redis-password" "${{ secrets.REDIS_PASSWORD }}"
+          else
+            REDIS_PASS=$(openssl rand -base64 32)
+            create_or_update_secret "redis-password" "${REDIS_PASS}"
+          fi
+
+          # Database Password
+          if [ -n "${{ secrets.DB_PASSWORD }}" ]; then
+            create_or_update_secret "db-password" "${{ secrets.DB_PASSWORD }}"
+          else
+            DB_PASS=$(openssl rand -base64 32)
+            create_or_update_secret "db-password" "${DB_PASS}"
+          fi
+
+          echo ""
+          echo "✓ All secrets configured successfully"
+
+      - name: List configured secrets
+        if: ${{ !inputs.skip_secrets }}
+        run: |
+          echo "📋 Configured secrets:"
+          gcloud secrets list --project=${PROJECT_ID} --format="table(name,createTime,replication.automatic)"
+
+      # ============================================================================
+      # SECTION 3: IAM Permissions Setup
+      # ============================================================================
+
+      - name: Setup IAM permissions for service accounts
+        if: ${{ !inputs.skip_iam }}
+        run: |
+          echo "Setting up IAM permissions..."
+
+          # Backend service account
+          BACKEND_SA="kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com"
+
+          # Check if service account exists
+          if ! gcloud iam service-accounts describe ${BACKEND_SA} --project=${PROJECT_ID} &>/dev/null; then
+            echo "Creating backend service account..."
+            gcloud iam service-accounts create kronos-backend \
+              --display-name="Kronos EAM Backend Service Account" \
+              --project=${PROJECT_ID}
+          else
+            echo "⏭️  Backend service account already exists"
+          fi
+
+          # Grant Cloud SQL Client role
+          echo "Granting Cloud SQL Client role..."
+          gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+            --member="serviceAccount:${BACKEND_SA}" \
+            --role="roles/cloudsql.client" \
+            --condition=None
+
+          # Grant Secret Manager Secret Accessor role
+          echo "Granting Secret Manager access..."
+          for secret in jwt-secret redis-password db-password; do
+            gcloud secrets add-iam-policy-binding ${secret} \
+              --member="serviceAccount:${BACKEND_SA}" \
+              --role="roles/secretmanager.secretAccessor" \
+              --project=${PROJECT_ID} 2>/dev/null || echo "  ⏭️  Already has access to ${secret}"
+          done
+
+          # Frontend service account
+          FRONTEND_SA="kronos-frontend@${PROJECT_ID}.iam.gserviceaccount.com"
+
+          if ! gcloud iam service-accounts describe ${FRONTEND_SA} --project=${PROJECT_ID} &>/dev/null; then
+            echo "Creating frontend service account..."
+            gcloud iam service-accounts create kronos-frontend \
+              --display-name="Kronos EAM Frontend Service Account" \
+              --project=${PROJECT_ID}
+          else
+            echo "⏭️  Frontend service account already exists"
+          fi
+
+          echo ""
+          echo "✓ All IAM permissions configured successfully"
+
+      - name: List service accounts
+        if: ${{ !inputs.skip_iam }}
+        run: |
+          echo "📋 Service accounts:"
+          gcloud iam service-accounts list --project=${PROJECT_ID} \
+            --filter="email:kronos-*" \
+            --format="table(email,displayName)"
+
+      # ============================================================================
+      # SECTION 4: Verification & Summary
+      # ============================================================================
+
+      - name: Verify infrastructure setup
+        run: |
+          echo "🔍 Verifying infrastructure setup..."
+          echo ""
+
+          ERRORS=0
+
+          # Check Cloud SQL
+          if [ "${{ inputs.skip_sql }}" != "true" ]; then
+            if gcloud sql instances describe ${SQL_INSTANCE} --project=${PROJECT_ID} &>/dev/null; then
+              echo "✓ Cloud SQL instance: ${SQL_INSTANCE}"
+            else
+              echo "✗ Cloud SQL instance NOT FOUND"
+              ERRORS=$((ERRORS + 1))
+            fi
+
+            if gcloud sql databases describe ${DATABASE_NAME} --instance=${SQL_INSTANCE} --project=${PROJECT_ID} &>/dev/null; then
+              echo "✓ Database: ${DATABASE_NAME}"
+            else
+              echo "✗ Database NOT FOUND"
+              ERRORS=$((ERRORS + 1))
+            fi
+          fi
+
+          # Check Secrets
+          if [ "${{ inputs.skip_secrets }}" != "true" ]; then
+            for secret in jwt-secret redis-password db-password; do
+              if gcloud secrets describe ${secret} --project=${PROJECT_ID} &>/dev/null; then
+                echo "✓ Secret: ${secret}"
+              else
+                echo "✗ Secret NOT FOUND: ${secret}"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+          fi
+
+          # Check Service Accounts
+          if [ "${{ inputs.skip_iam }}" != "true" ]; then
+            for sa in kronos-backend kronos-frontend; do
+              if gcloud iam service-accounts describe ${sa}@${PROJECT_ID}.iam.gserviceaccount.com --project=${PROJECT_ID} &>/dev/null; then
+                echo "✓ Service account: ${sa}"
+              else
+                echo "✗ Service account NOT FOUND: ${sa}"
+                ERRORS=$((ERRORS + 1))
+              fi
+            done
+          fi
+
+          echo ""
+          if [ $ERRORS -eq 0 ]; then
+            echo "✅ All infrastructure components verified successfully!"
+          else
+            echo "⚠️  Found $ERRORS error(s) in infrastructure setup"
+            exit 1
+          fi
+
+      - name: Infrastructure Summary
+        run: |
+          echo ""
+          echo "╔════════════════════════════════════════════════════════════════╗"
+          echo "║           GCP Infrastructure Setup Complete                    ║"
+          echo "╚════════════════════════════════════════════════════════════════╝"
+          echo ""
+          echo "📊 Summary:"
+          echo ""
+
+          if [ "${{ inputs.skip_sql }}" != "true" ]; then
+            CONNECTION_NAME="${PROJECT_ID}:${REGION}:${SQL_INSTANCE}"
+            echo "🗄️  Cloud SQL:"
+            echo "   Instance: ${SQL_INSTANCE}"
+            echo "   Database: ${DATABASE_NAME}"
+            echo "   Connection: ${CONNECTION_NAME}"
+            echo "   Region: ${REGION}"
+            echo ""
+          fi
+
+          if [ "${{ inputs.skip_secrets }}" != "true" ]; then
+            echo "🔐 Secrets (stored in Secret Manager):"
+            echo "   - jwt-secret"
+            echo "   - redis-password"
+            echo "   - db-password"
+            echo ""
+          fi
+
+          if [ "${{ inputs.skip_iam }}" != "true" ]; then
+            echo "👤 Service Accounts:"
+            echo "   - kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com"
+            echo "   - kronos-frontend@${PROJECT_ID}.iam.gserviceaccount.com"
+            echo ""
+          fi
+
+          echo "📝 Next Steps:"
+          echo "   1. Run database migrations (if needed)"
+          echo "   2. Deploy backend: gh workflow run deploy-parallel.yml"
+          echo "   3. Verify deployment: ./deploy/diagnose-latest-deployment.sh"
+          echo ""
+          echo "🔗 Useful Commands:"
+          echo "   # Connect to Cloud SQL"
+          echo "   gcloud sql connect ${SQL_INSTANCE} --user=postgres --project=${PROJECT_ID}"
+          echo ""
+          echo "   # View secrets"
+          echo "   gcloud secrets versions access latest --secret=db-password --project=${PROJECT_ID}"
+          echo ""
+          echo "   # Check service account permissions"
+          echo "   gcloud projects get-iam-policy ${PROJECT_ID} --flatten='bindings[].members' --filter='bindings.members:kronos-backend@*'"
+          echo ""
+
+      # ============================================================================
+      # SECTION 5: Optional - Database Migrations
+      # ============================================================================
+
+      - name: Run database migrations (optional)
+        if: ${{ !inputs.skip_sql && github.event.inputs.environment == 'production' }}
+        continue-on-error: true
+        run: |
+          echo "Note: Database migrations should be run separately via Cloud Run job or local connection"
+          echo "To run migrations locally:"
+          echo "  gcloud sql connect ${SQL_INSTANCE} --user=postgres --project=${PROJECT_ID}"
+          echo "  # Then run your migration scripts"
