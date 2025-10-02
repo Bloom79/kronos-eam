@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     # Service Toggles (set by start.sh script)
     DISABLE_REDIS: bool = False
     DISABLE_QDRANT: bool = False
+    DISABLE_RATE_LIMIT: bool = False
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = []

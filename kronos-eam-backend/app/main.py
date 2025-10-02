@@ -130,24 +130,31 @@ def setup_middleware(app: FastAPI) -> None:
     """Configure all application middleware."""
     # Error handling (outermost)
     app.add_middleware(ErrorHandlingMiddleware)
-    
-    # Rate limiting
-    app.add_middleware(RateLimitMiddleware)
-    
+
+    # Rate limiting (only if not disabled)
+    if not settings.DISABLE_RATE_LIMIT:
+        try:
+            app.add_middleware(RateLimitMiddleware)
+            logger.info("Rate limiting middleware enabled")
+        except Exception as e:
+            logger.warning(f"Failed to enable rate limiting: {e}")
+    else:
+        logger.info("Rate limiting disabled via DISABLE_RATE_LIMIT setting")
+
     # Request tracking
     app.add_middleware(
         RequestTrackingMiddleware,
         request_counter=REQUEST_COUNT,
         request_duration=REQUEST_DURATION
     )
-    
+
     # Tenant context
     app.add_middleware(TenantContextMiddleware)
-    
+
     # CORS
     if settings.BACKEND_CORS_ORIGINS:
         setup_cors_middleware(app, settings.BACKEND_CORS_ORIGINS)
-    
+
     # Trusted hosts
     setup_trusted_host_middleware(app)
 
