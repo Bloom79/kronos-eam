@@ -13,51 +13,51 @@ from app.models.document import (
 
 class DocumentBase(BaseModel):
     """Base document schema"""
-    nome: str
-    descrizione: Optional[str] = None
-    categoria: DocumentCategoryEnum
-    data_scadenza: Optional[datetime] = None
+    name: str
+    description: Optional[str] = None
+    category: DocumentCategoryEnum
+    due_date: Optional[datetime] = None
     tags: Optional[List[str]] = []
     model_metadata: Optional[Dict[str, Any]] = {}
     is_standard: bool = False
-    riferimenti_normativi: Optional[List[str]] = []
-    link_esterni: Optional[List[str]] = []
+    regulatory_references: Optional[List[str]] = []
+    external_links: Optional[List[str]] = []
 
 
 class DocumentCreate(DocumentBase):
     """Schema for creating documents"""
-    impianto_id: Optional[int] = None
+    plant_id: Optional[int] = None
     workflow_id: Optional[int] = None
     task_id: Optional[int] = None
 
 
 class DocumentUpdate(BaseModel):
     """Schema for updating documents"""
-    nome: Optional[str] = None
-    descrizione: Optional[str] = None
-    data_scadenza: Optional[datetime] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
     tags: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
-    riferimenti_normativi: Optional[List[str]] = None
-    link_esterni: Optional[List[str]] = None
+    regulatory_references: Optional[List[str]] = None
+    external_links: Optional[List[str]] = None
     version_note: Optional[str] = None
 
 
 class DocumentResponse(DocumentBase):
     """Document response schema"""
     id: int
-    tipo: DocumentTypeEnum
-    stato: DocumentStatusEnum
+    type: DocumentTypeEnum
+    status: DocumentStatusEnum
     file_size: Optional[int] = None
     mime_type: Optional[str] = None
     checksum: Optional[str] = None
-    impianto_id: Optional[int] = None
+    plant_id: Optional[int] = None
     workflow_id: Optional[int] = None
     task_id: Optional[int] = None
-    data_caricamento: datetime
-    data_ultima_modifica: datetime
-    versione: int
-    dimensione: Optional[str] = None
+    upload_date: datetime
+    last_modified_date: datetime
+    version: int
+    size_display: Optional[str] = None
     
     class Config:
         from_attributes = True
@@ -66,14 +66,14 @@ class DocumentResponse(DocumentBase):
 class DocumentSearchRequest(BaseModel):
     """Document search request schema"""
     query: Optional[str] = None
-    categoria: Optional[DocumentCategoryEnum] = None
-    tipo: Optional[DocumentTypeEnum] = None
-    stato: Optional[DocumentStatusEnum] = None
-    impianto_id: Optional[int] = None
+    category: Optional[DocumentCategoryEnum] = None
+    type: Optional[DocumentTypeEnum] = None
+    status: Optional[DocumentStatusEnum] = None
+    plant_id: Optional[int] = None
     workflow_id: Optional[int] = None
     tags: Optional[List[str]] = None
     is_standard: Optional[bool] = None
-    riferimento_normativo: Optional[str] = None
+    regulatory_reference: Optional[str] = None
     data_scadenza_start: Optional[datetime] = None
     data_scadenza_end: Optional[datetime] = None
     limit: int = Field(default=50, ge=1, le=100)
@@ -93,18 +93,18 @@ class DocumentSearchResponse(BaseModel):
 
 class DocumentCopyRequest(BaseModel):
     """Request schema for copying documents"""
-    nome_copia: Optional[str] = None
+    copy_name: Optional[str] = None
     target_impianto_id: Optional[int] = None
     customizations: Optional[Dict[str, Any]] = None
-    note: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class DocumentVersionResponse(BaseModel):
     """Document version response schema"""
     id: int
-    versione: int
-    modifiche: Optional[str] = None
-    modificato_da: Optional[str] = None
+    version: int
+    changes: Optional[str] = None
+    modified_by: Optional[str] = None
     created_at: datetime
     
     class Config:
@@ -114,13 +114,13 @@ class DocumentVersionResponse(BaseModel):
 class DocumentCopyResponse(BaseModel):
     """Document copy response schema"""
     id: int
-    documento_originale_id: int
-    nome_copia: Optional[str] = None
-    contenuto_customizzato: Optional[str] = None
-    data_copia: datetime
-    ultima_modifica_copia: datetime
-    modifiche_applicate: Optional[Dict[str, Any]] = {}
-    note_personalizzazione: Optional[str] = None
+    original_document_id: int
+    copy_name: Optional[str] = None
+    customized_content: Optional[str] = None
+    copy_date: datetime
+    last_modified_copy: datetime
+    applied_changes: Optional[Dict[str, Any]] = {}
+    customization_notes: Optional[str] = None
     
     class Config:
         from_attributes = True

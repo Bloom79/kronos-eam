@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
-import { Notifica } from '../types';
+import { Notifica } from '../types/notification';
 
 interface NotificationContextType {
   notifications: Notifica[];
@@ -29,31 +29,31 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     {
       id: '1',
       type: 'scadenza',
-      titolo: 'Pagamento Diritto Licenza in scadenza',
+      title: 'Pagamento Diritto Licenza in scadenza',
       messaggio: 'Il pagamento del diritto di licenza per plant Verdi S.p.A. scade tra 7 giorni',
       timestamp: new Date(Date.now() - 3600000).toISOString(),
       letta: false,
-      priorita: 'alta',
+      priority: 'alta',
       link: '/agenda'
     },
     {
       id: '2',
       type: 'task',
-      titolo: 'Nuovo task assegnato',
+      title: 'Nuovo task assegnato',
       messaggio: 'Ti è status assegnato il task "Censisci su GAUDÌ" per FV Tetto Sicuro',
       timestamp: new Date(Date.now() - 7200000).toISOString(),
       letta: false,
-      priorita: 'media',
+      priority: 'media',
       link: '/workflows/1'
     },
     {
       id: '3',
       type: 'integrazione',
-      titolo: 'Connessione GSE ripristinata',
+      title: 'Connessione GSE ripristinata',
       messaggio: 'La connessione con il portale GSE è stata ripristinata con successo',
       timestamp: new Date(Date.now() - 86400000).toISOString(),
       letta: true,
-      priorita: 'bassa',
+      priority: 'bassa',
       link: '/integrations'
     }
   ]);
@@ -94,22 +94,22 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         const sampleNotifications = [
           {
             type: 'scadenza' as const,
-            titolo: 'Verifica SPI in scadenza',
+            title: 'Verifica SPI in scadenza',
             messaggio: 'La verifica quinquennale SPI per plant Blu S.A.S. scade tra 30 giorni',
-            priorita: 'media' as const,
+            priority: 'media' as const,
             link: '/agenda'
           },
           {
             type: 'sistema' as const,
-            titolo: 'Backup completato',
+            title: 'Backup completato',
             messaggio: 'Il backup automatico del sistema è status completato con successo',
-            priorita: 'bassa' as const
+            priority: 'bassa' as const
           },
           {
             type: 'task' as const,
-            titolo: 'Task completato',
+            title: 'Task completato',
             messaggio: 'Laura Neri ha completato il task "Verifica Verbale SPI"',
-            priorita: 'bassa' as const,
+            priority: 'bassa' as const,
             link: '/workflows'
           }
         ];

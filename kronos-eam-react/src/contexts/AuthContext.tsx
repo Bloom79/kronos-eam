@@ -1,9 +1,10 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Utente } from '../types';
+import { User } from '../types';
 import { authService, tokenStorage } from '../services/api';
+import { UserRole, UserStatus } from '../types';
 
 interface AuthContextType {
-  user: Utente | null;
+  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -26,22 +27,19 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<Utente | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Map backend role names to frontend role names
-  const mapRole = (backendRole: string | undefined): 'Admin' | 'Asset Manager' | 'Plant Owner' | 'Operativo' | 'Viewer' => {
-    if (!backendRole) return 'Viewer';
-    
-    const roleMap: Record<string, 'Admin' | 'Asset Manager' | 'Plant Owner' | 'Operativo' | 'Viewer'> = {
-      'Admin': 'Admin',
-      'Asset Manager': 'Asset Manager',
-      'Plant Owner': 'Plant Owner',
-      'Operator': 'Operativo',
-      'Viewer': 'Viewer'
-    };
-    return roleMap[backendRole] || 'Viewer';
+  const mapRole = (role?: string): UserRole => {
+    switch (role) {
+      case 'Admin': return UserRole.ADMIN;
+      case 'Asset Manager': return UserRole.ASSET_MANAGER;
+      case 'Plant Owner': return UserRole.PLANT_OWNER;
+      case 'Operativo': return UserRole.OPERATIVE;
+      case 'Viewer': return UserRole.VIEWER;
+      default: return UserRole.VIEWER;
+    }
   };
 
   // Check for existing session on mount
@@ -56,10 +54,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: storedUser.id,
               name: storedUser.name,
               email: storedUser.email,
-              ruolo: mapRole(storedUser.role || storedUser.ruolo),
-              status: 'Attivo',
-              tenant: storedUser.tenant_id,
-              ultimoAccesso: new Date().toISOString()
+              role: mapRole(storedUser.role),
+              status: UserStatus.ACTIVE,
             });
           }
           
@@ -70,14 +66,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               id: userData.id,
               name: userData.name,
               email: userData.email,
-              ruolo: mapRole(userData.role || userData.ruolo),
-              status: 'Attivo',
-              tenant: userData.tenant_id,
-              ultimoAccesso: new Date().toISOString()
+              role: mapRole(userData.role),
+              status: UserStatus.ACTIVE,
             });
           } catch (error) {
             // If fetching fresh data fails, keep the stored user data
-            console.error('Failed to fetch fresh user data:', error);
+            console.error('Failed to fetch fresh user date:', error);
           }
         }
       } catch (error) {
@@ -104,10 +98,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: userData.id,
         name: userData.name,
         email: userData.email,
-        ruolo: mapRole(userData.role),
-        status: 'Attivo',
-        tenant: userData.tenant_id,
-        ultimoAccesso: new Date().toISOString()
+        role: mapRole(userData.role),
+        status: UserStatus.ACTIVE,
       });
     } catch (error: any) {
       setError(error.message || 'Login failed');

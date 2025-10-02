@@ -7,23 +7,40 @@ import clsx from 'clsx';
 
 interface WorkflowStage {
   name: string;
-  ordine: number;
-  durata_giorni?: number;
+  order: number;
+  duration_days?: number;
   tasks: WorkflowTask[];
 }
 
 interface WorkflowTask {
   name?: string;
   title?: string;
-  descrizione?: string;
-  responsabile?: string;
-  durata_giorni?: number;
-  ente_responsabile?: string;
-  type_pratica?: string;
-  documenti_richiesti?: string[];
+  description?: string;
+  assignee?: string;
+  duration_days?: number;
+  responsible_entity?: string;
+  practice_type?: string;
+  required_documents?: string[];
   checkpoints?: string[];
-  condizioni?: any;
-  priorita?: string;
+  conditions?: any;
+  priority?: string;
+  // New fields for bureaucratic process
+  portal_url?: string;
+  portal_login_url?: string;
+  required_credentials?: string;
+  documents_to_generate?: string[];
+  regulatory_deadline?: string;
+  deadline_type?: string;
+  deadline_consequences?: string;
+  cost_amount?: number;
+  cost_description?: string;
+  payment_method?: string;
+  external_protocol_number?: string;
+  submission_method?: string;
+  requires_human_auth?: boolean;
+  requires_physical_signature?: boolean;
+  requires_site_inspection?: boolean;
+  template_download_url?: string;
 }
 
 interface WorkflowDiagramProps {
@@ -37,9 +54,9 @@ const WorkflowDiagram: React.FC<WorkflowDiagramProps> = ({ stages, className }) 
       case 'DSO': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 border-blue-300 dark:border-blue-700';
       case 'Terna': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700';
       case 'GSE': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 border-green-300 dark:border-green-700';
-      case 'Dogane': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-300 dark:border-red-700';
-      case 'Comune': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700';
-      case 'Soprintendenza': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-700';
+      case 'Customs': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 border-red-300 dark:border-red-700';
+      case 'Municipality': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 border-purple-300 dark:border-purple-700';
+      case 'Superintendency': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 border-orange-300 dark:border-orange-700';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600';
     }
   };
@@ -49,16 +66,16 @@ const WorkflowDiagram: React.FC<WorkflowDiagramProps> = ({ stages, className }) 
       case 'DSO': return Activity;
       case 'Terna': return Zap;
       case 'GSE': return Building2;
-      case 'Dogane': return FileText;
+      case 'Customs': return FileText;
       default: return Building2;
     }
   };
 
   const getPriorityColor = (priority?: string) => {
     switch (priority) {
-      case 'Alta': return 'text-red-600 dark:text-red-400';
-      case 'Media': return 'text-yellow-600 dark:text-yellow-400';
-      case 'Bassa': return 'text-green-600 dark:text-green-400';
+      case 'High': return 'text-red-600 dark:text-red-400';
+      case 'Medium': return 'text-yellow-600 dark:text-yellow-400';
+      case 'Low': return 'text-green-600 dark:text-green-400';
       default: return 'text-gray-600 dark:text-gray-400';
     }
   };
@@ -87,9 +104,9 @@ const WorkflowDiagram: React.FC<WorkflowDiagramProps> = ({ stages, className }) 
                   <h3 className="font-semibold text-gray-800 dark:text-gray-100 max-w-[150px]">
                     {stage.name}
                   </h3>
-                  {stage.durata_giorni && (
+                  {stage.duration_days && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      ~{stage.durata_giorni} giorni
+                      ~{stage.duration_days} giorni
                     </p>
                   )}
                 </div>
@@ -111,68 +128,183 @@ const WorkflowDiagram: React.FC<WorkflowDiagramProps> = ({ stages, className }) 
               </h4>
               {stage.tasks.map((task, taskIndex) => {
                 const taskName = task.name || task.title || 'Task';
-                const EntityIcon = getEntityIcon(task.ente_responsabile);
+                const taskType = task.practice_type;
+                const EntityIcon = getEntityIcon(task.responsible_entity);
                 
                 return (
                   <div
                     key={taskIndex}
                     className={clsx(
                       'border-2 rounded-lg p-3 transition-all hover:shadow-md',
-                      getEntityColor(task.ente_responsabile)
+                      getEntityColor(task.responsible_entity)
                     )}
                   >
                     {/* Task Header */}
-                    <div className="flex items-start justify-between mb-2">
-                      <h5 className="font-medium text-sm flex-1 pr-2">
-                        {taskName}
-                      </h5>
-                      {task.ente_responsabile && (
-                        <EntityIcon className="h-4 w-4 flex-shrink-0" />
+                    <div className="mb-2">
+                      <div className="flex items-start justify-between">
+                        <h5 className="font-medium text-sm flex-1 pr-2 text-gray-900 dark:text-gray-100">
+                          {taskName}
+                        </h5>
+                        {task.responsible_entity && (
+                          <EntityIcon className="h-4 w-4 flex-shrink-0" />
+                        )}
+                      </div>
+                      {task.description && (
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                          {task.description}
+                        </p>
                       )}
                     </div>
 
                     {/* Task Details */}
                     <div className="space-y-2">
-                      {task.type_pratica && (
+                      {taskType && (
                         <div className="text-xs bg-white/50 dark:bg-gray-800/50 rounded px-2 py-1">
-                          {task.type_pratica}
+                          {taskType}
                         </div>
                       )}
                       
-                      <div className="flex flex-wrap gap-2 text-xs">
-                        {task.responsabile && (
-                          <span className="flex items-center gap-1">
+                      <div className="flex flex-wrap gap-2 text-xs mb-1">
+                        {task.assignee && (
+                          <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                             <Users className="h-3 w-3" />
-                            {task.responsabile}
+                            <span className="font-medium">{task.assignee}</span>
                           </span>
                         )}
-                        {task.durata_giorni && (
-                          <span className="flex items-center gap-1">
+                        {task.duration_days && (
+                          <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                             <Clock className="h-3 w-3" />
-                            {task.durata_giorni}g
+                            <span className="font-medium">{task.duration_days}g</span>
                           </span>
                         )}
                       </div>
 
-                      {task.priorita && (
-                        <div className={clsx('text-xs font-medium', getPriorityColor(task.priorita))}>
-                          Priorità {task.priorita}
+                      {task.priority && (
+                        <div className={clsx('text-xs font-medium', getPriorityColor(task.priority))}>
+                          Priorità {task.priority}
                         </div>
                       )}
 
-                      {task.documenti_richiesti && task.documenti_richiesti.length > 0 && (
-                        <div className="text-xs">
-                          <FileText className="h-3 w-3 inline mr-1" />
-                          {task.documenti_richiesti.length} documenti
+                      {task.required_documents && task.required_documents.length > 0 && (
+                        <details className="text-xs">
+                          <summary className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400">
+                            <FileText className="h-3 w-3 inline mr-1" />
+                            📄 Documenti richiesti ({task.required_documents.length})
+                          </summary>
+                          <ul className="ml-4 mt-1 space-y-0.5">
+                            {task.required_documents.map((doc, idx) => (
+                              <li key={idx} className="text-gray-600 dark:text-gray-400">• {doc}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+
+                      {task.conditions && (
+                        <div className="text-xs bg-orange-100/50 dark:bg-orange-900/50 rounded px-2 py-1 mt-1">
+                          <div className="flex items-center text-orange-800 dark:text-orange-200">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            <span className="font-medium">⚠️ Condizionale</span>
+                          </div>
+                          {task.conditions.se && (
+                            <div className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">
+                              Se: {task.conditions.se}
+                            </div>
+                          )}
                         </div>
                       )}
 
-                      {task.condizioni && (
-                        <div className="text-xs text-orange-600 dark:text-orange-400">
-                          <AlertCircle className="h-3 w-3 inline mr-1" />
-                          Condizionale
+                      {/* Portal and credentials info */}
+                      {task.portal_url && (
+                        <div className="text-xs bg-blue-100/50 dark:bg-blue-900/50 rounded px-2 py-1 mt-1">
+                          <div className="font-medium text-blue-800 dark:text-blue-200">🌐 Portale</div>
+                          <div className="text-gray-700 dark:text-gray-300 truncate">
+                            {task.portal_url.split('//')[1]?.split('/')[0] || task.portal_url}
+                          </div>
                         </div>
                       )}
+                      
+                      {task.required_credentials && (
+                        <div className="text-xs bg-purple-100/50 dark:bg-purple-900/50 rounded px-2 py-1 mt-1">
+                          <span className="font-medium text-purple-800 dark:text-purple-200">🔐 Accesso:</span>
+                          <span className="ml-1 text-gray-700 dark:text-gray-300">{task.required_credentials}</span>
+                        </div>
+                      )}
+
+                      {/* Documents to generate */}
+                      {task.documents_to_generate && task.documents_to_generate.length > 0 && (
+                        <details className="text-xs mt-1">
+                          <summary className="cursor-pointer text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
+                            <CheckCircle className="h-3 w-3 inline mr-1" />
+                            ✅ Genera ({task.documents_to_generate.length})
+                          </summary>
+                          <ul className="ml-4 mt-1 space-y-0.5">
+                            {task.documents_to_generate.map((doc, idx) => (
+                              <li key={idx} className="text-gray-600 dark:text-gray-400">• {doc}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
+                      
+                      {/* Template download links */}
+                      {task.template_download_url && (
+                        <div className="text-xs mt-1">
+                          <a 
+                            href={task.template_download_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline flex items-center gap-1"
+                          >
+                            <FileText className="h-3 w-3" />
+                            📥 Scarica template ufficiale
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Regulatory deadline */}
+                      {task.regulatory_deadline && (
+                        <div className="text-xs bg-red-100/50 dark:bg-red-900/50 rounded px-2 py-1 mt-1">
+                          <div className="flex items-center">
+                            <Clock className="h-3 w-3 mr-1" />
+                            <span className="font-medium text-red-800 dark:text-red-200">⏰ Scadenza</span>
+                          </div>
+                          <div className="text-gray-700 dark:text-gray-300">{task.regulatory_deadline}</div>
+                          {task.deadline_type && (
+                            <div className="text-red-700 dark:text-red-300 text-xs">
+                              Tipo: {task.deadline_type === 'peremptory' ? 'Perentorio' : 'Ordinatorio'}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Cost info */}
+                      {task.cost_amount && (
+                        <div className="text-xs bg-yellow-100/50 dark:bg-yellow-900/50 rounded px-2 py-1 mt-1">
+                          <span className="font-medium text-yellow-800 dark:text-yellow-200">💰 Costo:</span>
+                          <span className="ml-1 text-gray-700 dark:text-gray-300">€{task.cost_amount}</span>
+                          {task.payment_method && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400">({task.payment_method})</div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Human checkpoints */}
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {task.requires_human_auth && (
+                          <div className="text-xs bg-yellow-100/50 dark:bg-yellow-900/50 rounded px-2 py-0.5">
+                            <span className="font-medium text-yellow-800 dark:text-yellow-200">🔑 Auth Umano</span>
+                          </div>
+                        )}
+                        {task.requires_physical_signature && (
+                          <div className="text-xs bg-yellow-100/50 dark:bg-yellow-900/50 rounded px-2 py-0.5">
+                            <span className="font-medium text-yellow-800 dark:text-yellow-200">✍️ Firma Fisica</span>
+                          </div>
+                        )}
+                        {task.requires_site_inspection && (
+                          <div className="text-xs bg-yellow-100/50 dark:bg-yellow-900/50 rounded px-2 py-0.5">
+                            <span className="font-medium text-yellow-800 dark:text-yellow-200">🔍 Sopralluogo</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

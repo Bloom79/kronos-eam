@@ -51,16 +51,12 @@ class DocumentService:
         categoria: DocumentCategoryEnum,
         tenant_id: int,
         user_id: int,
-        descrizione: Optional[str] = None,
-        impianto_id: Optional[int] = None,
+        descrizione: Optional[str] = None, plant_id: Optional[int] = None,
         workflow_id: Optional[int] = None,
-        task_id: Optional[int] = None,
-        data_scadenza: Optional[datetime] = None,
+        task_id: Optional[int] = None, expiry_date: Optional[datetime] = None,
         tags: Optional[List[str]] = None,
         metadata: Optional[Dict[str, Any]] = None,
-        is_standard: bool = False,
-        riferimenti_normativi: Optional[List[str]] = None,
-        link_esterni: Optional[List[str]] = None
+        is_standard: bool = False, regulatory_references: Optional[List[str]] = None, external_links: Optional[List[str]] = None
     ) -> Document:
         """
         Create a new document with versioning and audit trail
@@ -72,15 +68,15 @@ class DocumentService:
             tenant_id: Tenant ID
             user_id: User creating the document
             descrizione: Document description
-            impianto_id: Related plant ID
+            plant_id: Related plant ID
             workflow_id: Related workflow ID
             task_id: Related task ID
-            data_scadenza: Expiry date
+            expiry_date: Expiry date
             tags: Document tags
             metadata: Additional metadata
             is_standard: Whether this is a standard document
-            riferimenti_normativi: Normative references
-            link_esterni: External links
+            regulatory_references: Normative references
+            external_links: External links
             
         Returns:
             Created document
@@ -122,24 +118,24 @@ class DocumentService:
         
         # Create document record
         document = Document(
-            nome=nome,
-            descrizione=descrizione,
-            tipo=tipo,
-            categoria=categoria,
-            stato=DocumentStatusEnum.VALIDO,
+            name=nome,
+            description=descrizione,
+            type=tipo,
+            category=categoria,
+            status=DocumentStatusEnum.VALIDO,
             file_path=file_path,
             file_size=file_size,
             mime_type=mime_type,
             checksum=checksum,
-            impianto_id=impianto_id,
+            plant_id= plant_id,
             workflow_id=workflow_id,
             task_id=task_id,
-            data_scadenza=data_scadenza,
+            due_date= expiry_date,
             tags=tags or [],
             model_metadata=metadata or {},
             is_standard=is_standard,
-            riferimenti_normativi=riferimenti_normativi or [],
-            link_esterni=link_esterni or [],
+            regulatory_references= regulatory_references or [],
+            external_links= external_links or [],
             tenant_id=tenant_id
         )
         
@@ -172,12 +168,9 @@ class DocumentService:
         user_id: int,
         tenant_id: int,
         nome: Optional[str] = None,
-        descrizione: Optional[str] = None,
-        data_scadenza: Optional[datetime] = None,
+        descrizione: Optional[str] = None, expiry_date: Optional[datetime] = None,
         tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        riferimenti_normativi: Optional[List[str]] = None,
-        link_esterni: Optional[List[str]] = None,
+        metadata: Optional[Dict[str, Any]] = None, regulatory_references: Optional[List[str]] = None, external_links: Optional[List[str]] = None,
         new_file: Optional[BinaryIO] = None,
         version_note: Optional[str] = None
     ) -> Document:
@@ -192,26 +185,26 @@ class DocumentService:
         
         # Capture old values for audit
         old_values = {
-            "nome": document.nome,
-            "descrizione": document.descrizione,
-            "data_scadenza": document.data_scadenza.isoformat() if document.data_scadenza else None
+            "nome": document.name,
+            "descrizione": document.description,
+            "expiry_date": document.due_date.isoformat() if document.due_date else None
         }
         
         # Update fields
         if nome is not None:
-            document.nome = nome
+            document.name = nome
         if descrizione is not None:
-            document.descrizione = descrizione
-        if data_scadenza is not None:
-            document.data_scadenza = data_scadenza
+            document.description = descrizione
+        if expiry_date is not None:
+            document.due_date = expiry_date
         if tags is not None:
             document.tags = tags
         if metadata is not None:
             document.model_metadata.update(metadata)
-        if riferimenti_normativi is not None:
-            document.riferimenti_normativi = riferimenti_normativi
-        if link_esterni is not None:
-            document.link_esterni = link_esterni
+        if regulatory_references is not None:
+            document.regulatory_references = regulatory_references
+        if external_links is not None:
+            document.external_links = external_links
         
         # Handle new file upload
         if new_file:
@@ -223,27 +216,27 @@ class DocumentService:
             file_size = len(content)
             checksum = hashlib.sha256(content).hexdigest()
             
-            filename = getattr(new_file, 'filename', document.nome)
+            filename = getattr(new_file, 'filename', document.name)
             file_path = self.storage.store_file(
                 content=content,
                 filename=filename,
                 tenant_id=tenant_id,
-                subfolder=f"documents/{document.categoria.value.lower()}"
+                subfolder=f"documents/{document.category.value.lower()}"
             )
             
             # Update document
             document.file_path = file_path
             document.file_size = file_size
             document.checksum = checksum
-            document.versione += 1
+            document.version += 1
         
-        document.data_ultima_modifica = datetime.utcnow()
+        document.last_modified_date = datetime.utcnow()
         
         # Capture new values
         new_values = {
-            "nome": document.nome,
-            "descrizione": document.descrizione,
-            "data_scadenza": document.data_scadenza.isoformat() if document.data_scadenza else None
+            "nome": document.name,
+            "descrizione": document.description,
+            "expiry_date": document.due_date.isoformat() if document.due_date else None
         }
         
         self.db.commit()
@@ -258,7 +251,7 @@ class DocumentService:
             tenant_id=tenant_id,
             old_values=old_values,
             new_values=new_values,
-            note=version_note
+            notes=version_note
         )
         
         # TODO: Notify if standard document updated (requires async handling)
@@ -271,8 +264,7 @@ class DocumentService:
         self,
         document_id: int,
         user_id: int,
-        tenant_id: int,
-        nome_copia: Optional[str] = None,
+        tenant_id: int, copy_name: Optional[str] = None,
         target_impianto_id: Optional[int] = None,
         customizations: Optional[Dict[str, Any]] = None,
         note: Optional[str] = None
@@ -284,7 +276,7 @@ class DocumentService:
             document_id: Source document ID
             user_id: User creating the copy
             tenant_id: Tenant ID
-            nome_copia: Name for the copy
+            copy_name: Name for the copy
             target_impianto_id: Target plant ID
             customizations: Customization parameters
             note: Notes about customization
@@ -305,7 +297,7 @@ class DocumentService:
         source_content = self.storage.retrieve_file(source.file_path)
         
         # Apply customizations if needed (e.g., template processing)
-        if customizations and source.tipo in [DocumentTypeEnum.DOC, DocumentTypeEnum.DOCX]:
+        if customizations and source.type in [DocumentTypeEnum.DOC, DocumentTypeEnum.DOCX]:
             # This would process templates with customizations
             # For now, just copy as-is
             content = source_content
@@ -313,27 +305,27 @@ class DocumentService:
             content = source_content
         
         # Create new document
-        nome = nome_copia or f"Copia di {source.nome}"
+        nome = copy_name or f"Copia di {source.name}"
         
         new_file_path = self.storage.store_file(
             content=content,
             filename=nome,
             tenant_id=tenant_id,
-            subfolder=f"documents/{source.categoria.value.lower()}/copies"
+            subfolder=f"documents/{source.category.value.lower()}/copies"
         )
         
         # Create document record
         copy = Document(
-            nome=nome,
-            descrizione=f"Copia personalizzata di: {source.nome}",
-            tipo=source.tipo,
-            categoria=source.categoria,
-            stato=DocumentStatusEnum.VALIDO,
+            name=nome,
+            description=f"Copia personalizzata di: {source.name}",
+            type=source.type,
+            category=source.category,
+            status=DocumentStatusEnum.VALIDO,
             file_path=new_file_path,
             file_size=len(content),
             mime_type=source.mime_type,
             checksum=hashlib.sha256(content).hexdigest(),
-            impianto_id=target_impianto_id or source.impianto_id,
+            plant_id=target_impianto_id or source.plant_id,
             tags=source.tags.copy() if source.tags else [],
             is_standard=False,  # Copies are not standard
             tenant_id=tenant_id
@@ -345,12 +337,12 @@ class DocumentService:
         
         # Create copy record
         copy_record = DocumentCopy(
-            documento_originale_id=source.id,
-            utente_creazione_id=user_id,
-            nome_copia=nome,
-            contenuto_customizzato=str(customizations) if customizations else None,
-            modifiche_applicate=customizations or {},
-            note_personalizzazione=note,
+            original_document_id=source.id,
+            created_by_user_id=user_id,
+            copy_name=nome,
+            customized_content=str(customizations) if customizations else None,
+            applied_changes=customizations or {},
+            customization_notes=note,
             tenant_id=tenant_id
         )
         
@@ -378,12 +370,10 @@ class DocumentService:
         query: Optional[str] = None,
         categoria: Optional[DocumentCategoryEnum] = None,
         tipo: Optional[DocumentTypeEnum] = None,
-        stato: Optional[DocumentStatusEnum] = None,
-        impianto_id: Optional[int] = None,
+        stato: Optional[DocumentStatusEnum] = None, plant_id: Optional[int] = None,
         workflow_id: Optional[int] = None,
         tags: Optional[List[str]] = None,
-        is_standard: Optional[bool] = None,
-        riferimento_normativo: Optional[str] = None,
+        is_standard: Optional[bool] = None, regulatory_reference: Optional[str] = None,
         data_scadenza_start: Optional[datetime] = None,
         data_scadenza_end: Optional[datetime] = None,
         limit: int = 50,
@@ -406,22 +396,22 @@ class DocumentService:
             # Full-text search on nome and descrizione
             base_query = base_query.filter(
                 or_(
-                    Document.nome.ilike(f"%{query}%"),
-                    Document.descrizione.ilike(f"%{query}%")
+                    Document.name.ilike(f"%{query}%"),
+                    Document.description.ilike(f"%{query}%")
                 )
             )
         
         if categoria:
-            base_query = base_query.filter(Document.categoria == categoria)
+            base_query = base_query.filter(Document.category == categoria)
         
         if tipo:
-            base_query = base_query.filter(Document.tipo == tipo)
+            base_query = base_query.filter(Document.type == tipo)
         
         if stato:
-            base_query = base_query.filter(Document.stato == stato)
+            base_query = base_query.filter(Document.status == stato)
         
-        if impianto_id:
-            base_query = base_query.filter(Document.impianto_id == impianto_id)
+        if plant_id:
+            base_query = base_query.filter(Document.plant_id == plant_id)
         
         if workflow_id:
             base_query = base_query.filter(Document.workflow_id == workflow_id)
@@ -434,16 +424,16 @@ class DocumentService:
         if is_standard is not None:
             base_query = base_query.filter(Document.is_standard == is_standard)
         
-        if riferimento_normativo:
+        if regulatory_reference:
             base_query = base_query.filter(
-                Document.riferimenti_normativi.contains([riferimento_normativo])
+                Document.regulatory_references.contains([regulatory_reference])
             )
         
         if data_scadenza_start:
-            base_query = base_query.filter(Document.data_scadenza >= data_scadenza_start)
+            base_query = base_query.filter(Document.due_date >= data_scadenza_start)
         
         if data_scadenza_end:
-            base_query = base_query.filter(Document.data_scadenza <= data_scadenza_end)
+            base_query = base_query.filter(Document.due_date <= data_scadenza_end)
         
         # Get total count
         total = base_query.count()
@@ -480,15 +470,15 @@ class DocumentService:
         
         query = self.db.query(Document).filter(
             Document.tenant_id == tenant_id,
-            Document.data_scadenza <= expiry_date,
-            Document.data_scadenza >= datetime.utcnow(),
-            Document.stato == DocumentStatusEnum.VALIDO
+            Document.due_date <= expiry_date,
+            Document.due_date >= datetime.utcnow(),
+            Document.status == DocumentStatusEnum.VALIDO
         )
         
         if categoria:
-            query = query.filter(Document.categoria == categoria)
+            query = query.filter(Document.category == categoria)
         
-        return query.order_by(Document.data_scadenza).all()
+        return query.order_by(Document.due_date).all()
     
     def get_standard_documents(
         self,
@@ -499,13 +489,13 @@ class DocumentService:
         query = self.db.query(Document).filter(
             Document.tenant_id == tenant_id,
             Document.is_standard == True,
-            Document.stato == DocumentStatusEnum.VALIDO
+            Document.status == DocumentStatusEnum.VALIDO
         )
         
         if categoria:
-            query = query.filter(Document.categoria == categoria)
+            query = query.filter(Document.category == categoria)
         
-        return query.order_by(Document.nome).all()
+        return query.order_by(Document.name).all()
     
     def link_document_to_task(
         self,
@@ -566,12 +556,12 @@ class DocumentService:
         
         version = DocumentVersion(
             document_id=document.id,
-            versione=document.versione,
+            version=document.version,
             file_path=document.file_path,
             file_size=document.file_size,
             checksum=document.checksum,
-            modifiche=note,
-            modificato_da=user.email if user else "Sistema",
+            changes=note,
+            modified_by=user.email if user else "Sistema",
             tenant_id=document.tenant_id
         )
         
@@ -587,19 +577,19 @@ class DocumentService:
         # Category counts
         category_counts = {}
         for categoria in DocumentCategoryEnum:
-            count = base_query.filter(Document.categoria == categoria).count()
+            count = base_query.filter(Document.category == categoria).count()
             category_counts[categoria.value] = count
         
         # Type counts
         type_counts = {}
         for tipo in DocumentTypeEnum:
-            count = base_query.filter(Document.tipo == tipo).count()
+            count = base_query.filter(Document.type == tipo).count()
             type_counts[tipo.value] = count
         
         # Status counts
         status_counts = {}
         for stato in DocumentStatusEnum:
-            count = base_query.filter(Document.stato == stato).count()
+            count = base_query.filter(Document.status == stato).count()
             status_counts[stato.value] = count
         
         # Get unique tags
@@ -618,7 +608,7 @@ class DocumentService:
             "tags": tags,
             "has_standard_docs": base_query.filter(Document.is_standard == True).count() > 0,
             "has_expiring_docs": base_query.filter(
-                Document.data_scadenza <= datetime.utcnow() + timedelta(days=30)
+                Document.due_date <= datetime.utcnow() + timedelta(days=30)
             ).count() > 0
         }
     
@@ -631,18 +621,18 @@ class DocumentService:
         """Notify users who have copies of a standard document"""
         # Find all copies
         copies = self.db.query(DocumentCopy).filter(
-            DocumentCopy.documento_originale_id == document.id
+            DocumentCopy.original_document_id == document.id
         ).all()
         
         # Notify copy owners
         notified_users = set()
         for copy in copies:
-            if copy.utente_creazione_id not in notified_users:
+            if copy.created_by_user_id not in notified_users:
                 await self.notification_service.send_notification(
-                    user_id=copy.utente_creazione_id,
-                    tipo="documento",
-                    titolo=f"Documento standard aggiornato: {document.nome}",
-                    messaggio=f"Il documento standard '{document.nome}' è stato aggiornato. Verifica se è necessario aggiornare la tua copia personalizzata.",
+                    user_id=copy.created_by_user_id,
+                    type="documento",
+                    title=f"Documento standard aggiornato: {document.name}",
+                    messaggio=f"Il documento standard '{document.name}' è stato aggiornato. Verifica se è necessario aggiornare la tua copia personalizzata.",
                     tenant_id=tenant_id,
                     documento_id=document.id,
                     link=f"/documents/{document.id}",
@@ -651,7 +641,7 @@ class DocumentService:
                         "copy_count": len(copies)
                     }
                 )
-                notified_users.add(copy.utente_creazione_id)
+                notified_users.add(copy.created_by_user_id)
     
     def generate_from_template(
         self,
@@ -661,8 +651,7 @@ class DocumentService:
         user_id: int,
         tenant_id: int,
         workflow_id: Optional[int] = None,
-        task_id: Optional[int] = None,
-        impianto_id: Optional[int] = None
+        task_id: Optional[int] = None, plant_id: Optional[int] = None
     ) -> Document:
         """
         Generate a document from a template
@@ -675,7 +664,7 @@ class DocumentService:
             tenant_id: Tenant ID
             workflow_id: Associated workflow ID
             task_id: Associated task ID
-            impianto_id: Associated plant ID
+            plant_id: Associated plant ID
             
         Returns:
             Generated document
@@ -684,7 +673,7 @@ class DocumentService:
         template = self.db.query(DocumentTemplate).filter(
             DocumentTemplate.id == template_id,
             DocumentTemplate.tenant_id == tenant_id,
-            DocumentTemplate.attivo == True
+            DocumentTemplate.active == True
         ).first()
         
         if not template:
@@ -700,21 +689,21 @@ class DocumentService:
             ).first()
             if workflow:
                 context['workflow'] = {
-                    'nome': workflow.nome,
-                    'tipo': workflow.tipo,
+                    'nome': workflow.name,
+                    'tipo': workflow.type,
                     'stato': workflow.stato_corrente,
-                    'data_inizio': workflow.data_inizio.isoformat() if workflow.data_inizio else None
+                    'data_inizio': workflow.start_date.isoformat() if workflow.start_date else None
                 }
         
-        if impianto_id:
+        if plant_id:
             impianto = self.db.query(Plant).filter(
-                Plant.id == impianto_id,
+                Plant.id == plant_id,
                 Plant.tenant_id == tenant_id
             ).first()
             if impianto:
                 context['impianto'] = {
-                    'nome': impianto.nome,
-                    'tipo': impianto.tipo,
+                    'nome': impianto.name,
+                    'tipo': impianto.type,
                     'potenza_kw': impianto.potenza_kw,
                     'indirizzo': impianto.indirizzo,
                     'comune': impianto.comune,
@@ -741,28 +730,28 @@ class DocumentService:
             raise ValueError(f"Unsupported output format: {output_format}")
         
         # Create filename
-        filename = f"{template.nome}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{extension}"
+        filename = f"{template.name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}{extension}"
         
         # Store file
         file_path = self.storage.store_file(
             content=content,
             filename=filename,
             tenant_id=tenant_id,
-            subfolder=f"documents/{template.categoria.value.lower()}/generated"
+            subfolder=f"documents/{template.category.value.lower()}/generated"
         )
         
         # Create document record
         document = Document(
-            nome=filename,
-            descrizione=f"Generato da template: {template.nome}",
-            tipo=tipo,
-            categoria=template.categoria,
-            stato=DocumentStatusEnum.VALIDO,
+            name=filename,
+            description=f"Generato da template: {template.name}",
+            type=tipo,
+            category=template.category,
+            status=DocumentStatusEnum.VALIDO,
             file_path=file_path,
             file_size=len(content),
             mime_type=mime_type,
             checksum=hashlib.sha256(content).hexdigest(),
-            impianto_id=impianto_id,
+            plant_id= plant_id,
             workflow_id=workflow_id,
             task_id=task_id,
             tenant_id=tenant_id,
@@ -866,12 +855,12 @@ class DocumentService:
     
     def _get_default_template_content(self, template: DocumentTemplate, context: Dict[str, Any]) -> str:
         """Get default template content for connection request"""
-        if template.uso == "Richiesta Connessione":
+        if template.usage_type == "Richiesta Connessione":
             return self._get_connection_request_template(context)
         else:
             # Generic template
             return f"""
-# {template.nome}
+# {template.name}
 
 Data: {context.get('data_generazione', '')}
 
@@ -880,7 +869,7 @@ Nome: {context.get('nome_richiedente', '')}
 Codice Fiscale: {context.get('codice_fiscale', '')}
 
 ## Dati Plant
-{context.get('impianto', {}).get('nome', '')}
+{context.get('impianto', {}).get('name', '')}
 Potenza: {context.get('impianto', {}).get('potenza_kw', '')} kW
 Indirizzo: {context.get('impianto', {}).get('indirizzo', '')}
 """
@@ -893,11 +882,11 @@ Indirizzo: {context.get('impianto', {}).get('indirizzo', '')}
         return f"""
 # Plant Fotovoltaico Intestato a
 
-Nome e Cognome: {richiedente.get('nome', '')} {richiedente.get('cognome', '')} nato/a a {richiedente.get('luogo_nascita', '_________________')} ({richiedente.get('provincia_nascita', '')}) il {richiedente.get('data_nascita', '______________')}
+Nome e Cognome: {richiedente.get('name', '')} {richiedente.get('cognome', '')} nato/a a {richiedente.get('luogo_nascita', '_________________')} ({richiedente.get('provincia_nascita', '')}) il {richiedente.get('data_nascita', '______________')}
 
 Residente in {richiedente.get('indirizzo_residenza', '____________________')} n. {richiedente.get('civico', '')} Comune di {richiedente.get('comune_residenza', '_______________________________________')} Prov. ({richiedente.get('provincia_residenza', '__')})
 
-{'In qualità di ' + richiedente.get('qualifica', '') + ' del/della ' + richiedente.get('ragione_sociale', '') if richiedente.get('tipo') == 'azienda' else ''}
+{'In qualità di ' + richiedente.get('qualifica', '') + ' del/della ' + richiedente.get('ragione_sociale', '') if richiedente.get('type') == 'azienda' else ''}
 
 ## AUTORIZZAZIONI AMMINISTRATIVE
 
@@ -976,12 +965,12 @@ Firma del Richiedente: _______________________________
         )
         
         if task_nome:
-            query = query.filter(WorkflowDocumentTemplate.task_nome == task_nome)
+            query = query.filter(WorkflowDocumentTemplate.task_name == task_nome)
         
         if tenant_id:
             query = query.filter(WorkflowDocumentTemplate.tenant_id == tenant_id)
         
-        return query.order_by(WorkflowDocumentTemplate.ordine).all()
+        return query.order_by(WorkflowDocumentTemplate.order).all()
 
 
 class StorageBackend:

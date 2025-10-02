@@ -14,18 +14,18 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
     
     templates = [
         {
-            "nome": "Attivazione Plant Fotovoltaico Standard",
-            "descrizione": "Processo completo per l'attivazione di un impianto fotovoltaico standard con tutte le pratiche necessarie",
-            "categoria": WorkflowCategoryEnum.ATTIVAZIONE,
-            "workflow_purpose": WorkflowPurposeEnum.ACTIVATION_COMPLETE,
+            "name": "Installazione Completa Impianto Fotovoltaico",
+            "description": "Processo completo dall'analisi iniziale all'attivazione finale, conforme alle normative italiane 2025",
+            "category": WorkflowCategoryEnum.ACTIVATION,
+            "workflow_purpose": WorkflowPurposeEnum.COMPLETE_ACTIVATION,
             "is_complete_workflow": True,
-            "tipo_impianto": "Fotovoltaico",
-            "potenza_minima": 0,
-            "potenza_massima": 50,
-            "durata_stimata_giorni": 180,
-            "ricorrenza": "Una tantum",
-            "enti_richiesti": ["DSO", "Terna", "GSE", "Comune"],
-            "documenti_base": [
+            "plant_type": "Fotovoltaico",
+            "min_power": 0,
+            "max_power": 50,
+            "estimated_duration_days": 180,
+            "recurrence": "Una tantum",
+            "required_entities": ["DSO", "Terna", "GSE", "Comune"],
+            "base_documents": [
                 "Documento identità titolare",
                 "Visura camerale",
                 "Titolo disponibilità sito",
@@ -34,58 +34,58 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
             ],
             "stages": [
                 {
-                    "nome": "Connessione DSO",
-                    "ordine": 1,
-                    "durata_giorni": 60,
+                    "name": "Connessione DSO",
+                    "order": 1,
+                    "duration_days": 60,
                     "tasks": [
                         {
-                            "nome": "Richiesta preventivo TICA",
-                            "descrizione": "Presentazione richiesta di connessione al DSO",
-                            "responsabile": "Asset Manager",
-                            "durata_giorni": 7,
-                            "priorita": "Alta",
-                            "ente_responsabile": "DSO",
-                            "tipo_pratica": "TICA"
+                            "name": "Richiesta preventivo TICA",
+                            "description": "Presentazione richiesta di connessione al DSO",
+                            "assignee": "Asset Manager",
+                            "duration_days": 7,
+                            "priority": "Alta",
+                            "responsible_entity": "DSO",
+                            "practice_type": "TICA"
                         },
                         {
-                            "nome": "Accettazione preventivo",
-                            "descrizione": "Valutazione e accettazione del preventivo di connessione",
-                            "responsabile": "Asset Manager",
-                            "durata_giorni": 30,
-                            "priorita": "Alta",
-                            "ente_responsabile": "DSO"
+                            "name": "Accettazione preventivo",
+                            "description": "Valutazione e accettazione del preventivo di connessione",
+                            "assignee": "Asset Manager",
+                            "duration_days": 30,
+                            "priority": "Alta",
+                            "responsible_entity": "DSO"
                         }
                     ]
                 },
                 {
-                    "nome": "Registrazione GAUDÌ",
-                    "ordine": 2,
-                    "durata_giorni": 30,
+                    "name": "Registrazione GAUDÌ",
+                    "order": 2,
+                    "duration_days": 30,
                     "tasks": [
                         {
-                            "nome": "Registrazione impianto",
-                            "descrizione": "Registrazione dell'impianto nel sistema GAUDÌ di Terna",
-                            "responsabile": "Tecnico",
-                            "durata_giorni": 7,
-                            "priorita": "Media",
-                            "ente_responsabile": "Terna",
-                            "tipo_pratica": "GAUDÌ"
+                            "name": "Registrazione impianto",
+                            "description": "Registrazione dell'impianto nel sistema GAUDÌ di Terna",
+                            "assignee": "Tecnico",
+                            "duration_days": 7,
+                            "priority": "Media",
+                            "responsible_entity": "Terna",
+                            "practice_type": "GAUDÌ"
                         }
                     ]
                 },
                 {
-                    "nome": "Convenzione GSE",
-                    "ordine": 3,
-                    "durata_giorni": 45,
+                    "name": "Convenzione GSE",
+                    "order": 3,
+                    "duration_days": 45,
                     "tasks": [
                         {
-                            "nome": "Richiesta convenzione RID",
-                            "descrizione": "Richiesta convenzione Ritiro Dedicato con GSE",
-                            "responsabile": "Asset Manager",
-                            "durata_giorni": 15,
-                            "priorita": "Media",
-                            "ente_responsabile": "GSE",
-                            "tipo_pratica": "RID"
+                            "name": "Richiesta convenzione RID",
+                            "description": "Richiesta convenzione Ritiro Dedicato con GSE",
+                            "assignee": "Asset Manager",
+                            "duration_days": 15,
+                            "priority": "Media",
+                            "responsible_entity": "GSE",
+                            "practice_type": "RID"
                         }
                     ]
                 }
@@ -93,51 +93,51 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
             "tasks": []  # Will be populated from stages
         },
         {
-            "nome": "Dichiarazione Consumo Annuale",
-            "descrizione": "Processo per la dichiarazione annuale dei consumi alle Dogane",
-            "categoria": WorkflowCategoryEnum.FISCALE,
+            "name": "Dichiarazione Consumo Annuale",
+            "description": "Processo per la dichiarazione annuale dei consumi alle Dogane",
+            "category": WorkflowCategoryEnum.FISCAL,
             "workflow_purpose": WorkflowPurposeEnum.RECURRING_COMPLIANCE,
             "is_complete_workflow": True,
-            "tipo_impianto": "Tutti",
-            "potenza_minima": 20,
-            "potenza_massima": None,
-            "durata_stimata_giorni": 30,
-            "ricorrenza": "Annuale",
-            "enti_richiesti": ["Dogane"],
-            "documenti_base": [
+            "plant_type": "Tutti",
+            "min_power": 20,
+            "max_power": None,
+            "estimated_duration_days": 30,
+            "recurrence": "Annuale",
+            "required_entities": ["Dogane"],
+            "base_documents": [
                 "Letture contatori",
                 "Registro UTF",
                 "Dichiarazione sostitutiva"
             ],
             "stages": [
                 {
-                    "nome": "Preparazione documenti",
-                    "ordine": 1,
-                    "durata_giorni": 14,
+                    "name": "Preparazione documenti",
+                    "order": 1,
+                    "duration_days": 14,
                     "tasks": [
                         {
-                            "nome": "Raccolta letture contatori",
-                            "descrizione": "Raccolta delle letture dei contatori di produzione e consumo",
-                            "responsabile": "O&M Manager",
-                            "durata_giorni": 7,
-                            "priorita": "Alta",
-                            "ente_responsabile": "Interno"
+                            "name": "Raccolta letture contatori",
+                            "description": "Raccolta delle letture dei contatori di produzione e consumo",
+                            "assignee": "O&M Manager",
+                            "duration_days": 7,
+                            "priority": "Alta",
+                            "responsible_entity": "Interno"
                         }
                     ]
                 },
                 {
-                    "nome": "Invio dichiarazione",
-                    "ordine": 2,
-                    "durata_giorni": 7,
+                    "name": "Invio dichiarazione",
+                    "order": 2,
+                    "duration_days": 7,
                     "tasks": [
                         {
-                            "nome": "Compilazione e invio dichiarazione",
-                            "descrizione": "Compilazione e invio telematico della dichiarazione",
-                            "responsabile": "Amministrazione",
-                            "durata_giorni": 3,
-                            "priorita": "Alta",
-                            "ente_responsabile": "Dogane",
-                            "tipo_pratica": "Dichiarazione consumo"
+                            "name": "Compilazione e invio dichiarazione",
+                            "description": "Compilazione e invio telematico della dichiarazione",
+                            "assignee": "Amministrazione",
+                            "duration_days": 3,
+                            "priority": "Alta",
+                            "responsible_entity": "Dogane",
+                            "practice_type": "Dichiarazione consumo"
                         }
                     ]
                 }
@@ -145,18 +145,18 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
             "tasks": []
         },
         {
-            "nome": "Richiesta Incentivi FER",
-            "descrizione": "Processo per la richiesta di incentivi per fonti rinnovabili",
-            "categoria": WorkflowCategoryEnum.INCENTIVI,
+            "name": "Richiesta Incentivi FER",
+            "description": "Processo per la richiesta di incentivi per fonti rinnovabili",
+            "category": WorkflowCategoryEnum.INCENTIVES,
             "workflow_purpose": WorkflowPurposeEnum.SPECIFIC_PROCESS,
             "is_complete_workflow": True,
-            "tipo_impianto": "Fotovoltaico",
-            "potenza_minima": 20,
-            "potenza_massima": 1000,
-            "durata_stimata_giorni": 90,
-            "ricorrenza": "Una tantum",
-            "enti_richiesti": ["GSE"],
-            "documenti_base": [
+            "plant_type": "Fotovoltaico",
+            "min_power": 20,
+            "max_power": 1000,
+            "estimated_duration_days": 90,
+            "recurrence": "Una tantum",
+            "required_entities": ["GSE"],
+            "base_documents": [
                 "Progetto definitivo",
                 "Certificato antimafia",
                 "Polizza fideiussoria",
@@ -164,33 +164,33 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
             ],
             "stages": [
                 {
-                    "nome": "Preparazione documentazione",
-                    "ordine": 1,
-                    "durata_giorni": 30,
+                    "name": "Preparazione documentazione",
+                    "order": 1,
+                    "duration_days": 30,
                     "tasks": [
                         {
-                            "nome": "Raccolta documentazione tecnica",
-                            "descrizione": "Preparazione di tutta la documentazione tecnica richiesta",
-                            "responsabile": "Progettista",
-                            "durata_giorni": 21,
-                            "priorita": "Alta",
-                            "ente_responsabile": "Interno"
+                            "name": "Raccolta documentazione tecnica",
+                            "description": "Preparazione di tutta la documentazione tecnica richiesta",
+                            "assignee": "Progettista",
+                            "duration_days": 21,
+                            "priority": "Alta",
+                            "responsible_entity": "Interno"
                         }
                     ]
                 },
                 {
-                    "nome": "Presentazione istanza",
-                    "ordine": 2,
-                    "durata_giorni": 60,
+                    "name": "Presentazione istanza",
+                    "order": 2,
+                    "duration_days": 60,
                     "tasks": [
                         {
-                            "nome": "Caricamento documentazione portale GSE",
-                            "descrizione": "Caricamento di tutta la documentazione sul portale GSE",
-                            "responsabile": "Asset Manager",
-                            "durata_giorni": 7,
-                            "priorita": "Alta",
-                            "ente_responsabile": "GSE",
-                            "tipo_pratica": "FER"
+                            "name": "Caricamento documentazione portale GSE",
+                            "description": "Caricamento di tutta la documentazione sul portale GSE",
+                            "assignee": "Asset Manager",
+                            "duration_days": 7,
+                            "priority": "Alta",
+                            "responsible_entity": "GSE",
+                            "practice_type": "FER"
                         }
                     ]
                 }
@@ -203,12 +203,12 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
     for template_data in templates:
         # Check if template already exists
         existing = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == template_data["nome"],
+            WorkflowTemplate.name == template_data["name"],
             WorkflowTemplate.tenant_id == tenant_id
         ).first()
         
         if existing:
-            print(f"Template '{template_data['nome']}' already exists for tenant {tenant_id}")
+            print(f"Template '{template_data['name']}' already exists for tenant {tenant_id}")
             continue
         
         # Extract stages to populate tasks
@@ -218,32 +218,32 @@ def create_demo_templates(db: Session, tenant_id: str = "demo"):
         for stage in stages:
             stage_tasks = stage.get("tasks", [])
             for task in stage_tasks:
-                task["stage_nome"] = stage["nome"]
-                task["stage_ordine"] = stage["ordine"]
+                task["stage_name"] = stage["name"]
+                task["stage_order"] = stage["order"]
                 all_tasks.append(task)
         
         # Create template without audit fields (they will be auto-set)
         template = WorkflowTemplate(
             tenant_id=tenant_id,
-            nome=template_data["nome"],
-            descrizione=template_data["descrizione"],
-            categoria=template_data["categoria"],
+            name=template_data["name"],
+            description=template_data["description"],
+            category=template_data["category"],
             workflow_purpose=template_data["workflow_purpose"],
             is_complete_workflow=template_data["is_complete_workflow"],
-            tipo_impianto=template_data["tipo_impianto"],
-            potenza_minima=template_data["potenza_minima"],
-            potenza_massima=template_data["potenza_massima"],
-            durata_stimata_giorni=template_data["durata_stimata_giorni"],
-            ricorrenza=template_data["ricorrenza"],
-            enti_richiesti=template_data["enti_richiesti"],
-            documenti_base=template_data["documenti_base"],
+            plant_type=template_data["plant_type"],
+            min_power=template_data["min_power"],
+            max_power=template_data["max_power"],
+            estimated_duration_days=template_data["estimated_duration_days"],
+            recurrence=template_data["recurrence"],
+            required_entities=template_data["required_entities"],
+            base_documents=template_data["base_documents"],
             stages=stages,
             tasks=all_tasks,
-            attivo=True
+            active=True
         )
         
         db.add(template)
-        print(f"Created template: {template_data['nome']}")
+        print(f"Created template: {template_data['name']}")
     
     db.commit()
     print(f"Successfully initialized workflow templates for tenant {tenant_id}")

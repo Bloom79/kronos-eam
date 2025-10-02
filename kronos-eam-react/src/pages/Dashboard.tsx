@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement } from 'chart.js';
 import { Doughnut, Line, Bar } from 'react-chartjs-2';
-import { Scadenza } from '../types';
+import { Scadenza } from '../types/scadenza';
 import { useAuth } from '../contexts/AuthContext';
 import clsx from 'clsx';
 import { 
@@ -30,7 +30,7 @@ import {
   PerformanceTrend,
   AlertItem,
   CalendarEvent
-} from '../services/api';
+} from '../services/api/index';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, BarElement);
 
@@ -60,7 +60,7 @@ const Dashboard: React.FC = () => {
   const [recentActivities, setRecentActivities] = useState<Array<{
     timestamp: string;
     type: string;
-    descrizione: string;
+    description: string;
     plant?: string;
     utente?: string;
   }>>([]);
@@ -197,7 +197,7 @@ const Dashboard: React.FC = () => {
   }, { completati: 65, inCorso: 25, inRitardo: 10 }); // Default values
 
   const workflowChartData = {
-    labels: ['Completati', 'In Corso', 'In Ritardo'],
+    labels: ['Completati', 'In Progress', 'Delayed'],
     datasets: [{
       data: [workflowData.completati, workflowData.inCorso, workflowData.inRitardo],
       backgroundColor: ['#10B981', '#3B82F6', '#EF4444'],
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
   };
 
   const complianceChartData = {
-    labels: ['DSO', 'Terna', 'GSE', 'Dogane'],
+    labels: ['DSO', 'Terna', 'GSE', 'Customs'],
     datasets: [{
       label: 'Conformità %',
       data: [98, 95, 92, 89],
@@ -261,27 +261,27 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const getScadenzaColor = (data: string) => {
-    const days = Math.floor((new Date(data).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  const getDeadlineColor = (date: string) => {
+    const days = Math.floor((new Date(date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
     if (days < 0) return 'text-red-800'; // Overdue
     if (days < 7) return 'text-red-600';
     if (days < 30) return 'text-yellow-600';
     return 'text-green-600';
   };
 
-  const mapCalendarEventToScadenza = (event: CalendarEvent): Scadenza => ({
+  const mapCalendarEventToDeadline = (event: CalendarEvent): Scadenza => ({
     id: event.id,
-    titolo: event.title,
+    title: event.title,
     plant: event.plant_name || 'N/A',
-    data: event.due_date || event.date,
+    date: event.due_date || event.date,
     type: event.type === 'payment' ? 'Payment' : 
           event.type === 'inspection' ? 'Verification' : 
           event.type === 'declaration' ? 'Declaration' : 'Renewal',
-    priorita: event.priority === 'high' ? 'High' : 
+    priority: event.priority === 'high' ? 'High' : 
               event.priority === 'medium' ? 'Medium' : 'Low',
     status: event.status === 'pending' ? 'Open' : 
            event.status === 'completed' ? 'Completed' : 'Delayed',
-    ente: undefined
+    entity: undefined
   });
 
   // Refresh all data
@@ -331,10 +331,10 @@ const Dashboard: React.FC = () => {
                     className="block bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm hover:shadow-md transition-shadow"
                   >
                     <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">
-                      {alert.titolo}
+                      {alert.title}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {alert.plant_name || alert.descrizione}
+                      {alert.plant_name || alert.description || alert.description}
                     </p>
                   </Link>
                 ))}
@@ -361,18 +361,18 @@ const Dashboard: React.FC = () => {
             ) : (
               <div className="space-y-2">
                 {scadenze.slice(0, 2).map(event => {
-                  const scadenza = mapCalendarEventToScadenza(event);
-                  const daysRemaining = Math.floor((new Date(scadenza.data).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  const deadline = mapCalendarEventToDeadline(event);
+                  const daysRemaining = Math.floor((new Date(deadline.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
                   return (
-                    <div key={scadenza.id} className="flex items-center text-sm">
+                    <div key={deadline.id} className="flex items-center text-sm">
                       <span className={clsx(
                         'h-2 w-2 rounded-full mr-3',
-                        scadenza.priorita === 'High' ? 'bg-red-500' : 'bg-yellow-500'
+                        deadline.priority === 'High' ? 'bg-red-500' : 'bg-yellow-500'
                       )} />
                       <p className="flex-1">
-                        {scadenza.titolo} ({scadenza.plant})
+                        {deadline.title} ({deadline.plant})
                       </p>
-                      <span className={clsx('font-semibold', getScadenzaColor(scadenza.data))}>
+                      <span className={clsx('font-semibold', getDeadlineColor(deadline.date))}>
                         {daysRemaining < 0 ? `${Math.abs(daysRemaining)} giorni fa` : `${daysRemaining} giorni`}
                       </span>
                     </div>
@@ -632,7 +632,7 @@ const Dashboard: React.FC = () => {
                     <p className="text-gray-700 dark:text-gray-300">
                       {activity.utente && <span className="font-semibold">{activity.utente}</span>}
                       {activity.utente && ' '}
-                      {activity.descrizione}
+                      {activity.description}
                       {activity.plant && (
                         <span className="font-semibold"> - {activity.plant}</span>
                       )}

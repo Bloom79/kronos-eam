@@ -45,7 +45,7 @@ const RenewableWorkflows: React.FC = () => {
       setTemplates(templatesRes.data || []);
       setStats(statsRes.data);
     } catch (error) {
-      console.error('Error loading workflow data:', error);
+      console.error('Error loading workflow date:', error);
     } finally {
       setLoading(false);
     }
@@ -53,13 +53,13 @@ const RenewableWorkflows: React.FC = () => {
 
   // Extract all tasks from workflows
   const allTasks: Task[] = workflows.flatMap(workflow =>
-    workflow.stages.flatMap(stage => stage.tasks || [])
+    workflow.stages?.flatMap(stage => stage.tasks || []) || []
   );
 
   const filteredWorkflows = workflows.filter(workflow => {
     const matchesSearch = workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         workflow.plantname.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterCategory === 'all' || workflow.categoria === filterCategory;
+                         workflow.plant_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterCategory === 'all' || workflow.category === filterCategory;
     return matchesSearch && matchesFilter;
   });
 
@@ -96,12 +96,12 @@ const RenewableWorkflows: React.FC = () => {
 
   const getEntityIcon = (entity: EntityEnum) => {
     switch (entity) {
-      case 'DSO': return Activity;
-      case 'Terna': return Zap;
-      case 'GSE': return Building2;
-      case 'Customs': return FileText;
-      case 'Municipality': return Home;
-      case 'Superintendency': return Trees;
+      case EntityEnum.DSO: return Activity;
+      case EntityEnum.TERNA: return Zap;
+      case EntityEnum.GSE: return Building2;
+      case EntityEnum.CUSTOMS: return FileText;
+      case EntityEnum.MUNICIPALITY: return Home;
+      case EntityEnum.SUPERINTENDENCE: return Trees;
       default: return MapPin;
     }
   };
@@ -298,7 +298,7 @@ const RenewableWorkflows: React.FC = () => {
             <div className="mt-6 flex flex-wrap gap-2">
               {(['DSO', 'Terna', 'GSE', 'Dogane', 'Comune'] as EntityEnum[]).map(entity => {
                 const Icon = getEntityIcon(entity);
-                const entityTasks = allTasks.filter(t => t.ente_responsabile === entity);
+                const entityTasks = allTasks.filter(t => t.responsible_entity === entity);
                 
                 return (
                   <div
@@ -332,13 +332,13 @@ const RenewableWorkflows: React.FC = () => {
                   {selectedWorkflow.name}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {selectedWorkflow.plantname} • Progresso: {selectedWorkflow.progresso}%
+                  {selectedWorkflow.plant_name} • Progresso: {selectedWorkflow.progress}%
                 </p>
               </div>
               <WorkflowTimeline
-                stages={selectedWorkflow.stages}
-                tasks={selectedWorkflow.stages.flatMap(s => s.tasks || [])}
-                startDate={selectedWorkflow.dataCreazione ? new Date(selectedWorkflow.dataCreazione) : new Date()}
+                stages={selectedWorkflow.stages || []}
+                tasks={selectedWorkflow.stages?.flatMap(s => s.tasks || []) || []}
+                startDate={selectedWorkflow.created_at ? new Date(selectedWorkflow.created_at) : new Date()}
                 onTaskClick={handleTaskClick}
               />
             </div>
@@ -352,7 +352,7 @@ const RenewableWorkflows: React.FC = () => {
                 </h3>
                 <div className="space-y-4">
                   {filteredWorkflows.map((workflow) => {
-                    const entiInvolti = workflow.enti_coinvolti || [];
+                    const entiInvolti = workflow.involved_entities || [];
                     return (
                       <div
                         key={workflow.id}
@@ -365,12 +365,12 @@ const RenewableWorkflows: React.FC = () => {
                               {workflow.name}
                             </h4>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {workflow.plantname} • {workflow.categoria}
+                              {workflow.plant_name} • {workflow.category}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                              <span>Creato: {workflow.dataCreazione && format(new Date(workflow.dataCreazione), 'dd/MM/yyyy')}</span>
-                              {workflow.dataScadenza && (
-                                <span>Scadenza: {format(new Date(workflow.dataScadenza), 'dd/MM/yyyy')}</span>
+                              <span>Creato: {workflow.created_at && format(new Date(workflow.created_at), 'dd/MM/yyyy')}</span>
+                              {workflow.due_date && (
+                                <span>Scadenza: {format(new Date(workflow.due_date), 'dd/MM/yyyy')}</span>
                               )}
                             </div>
                             
@@ -394,13 +394,13 @@ const RenewableWorkflows: React.FC = () => {
                           <div className="text-right ml-4">
                             <div className="mb-2">
                               <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                                {workflow.progresso}%
+                                {workflow.progress}%
                               </span>
                             </div>
                             <div className="w-32 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                               <div
-                                className={clsx('h-2 rounded-full transition-all', getProgressColor(workflow.progresso))}
-                                style={{ width: `${workflow.progresso}%` }}
+                                className={clsx('h-2 rounded-full transition-all', getProgressColor(workflow.progress))}
+                                style={{ width: `${workflow.progress}%` }}
                               />
                             </div>
                           </div>
@@ -478,17 +478,17 @@ const RenewableWorkflows: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {workflow.plantname}
+                              {workflow.plant_name}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                              {workflow.categoria}
+                              {workflow.category}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex -space-x-1">
-                              {(workflow.enti_coinvolti || []).slice(0, 3).map(entity => {
+                              {(workflow.involved_entities || []).slice(0, 3).map(entity => {
                                 const Icon = getEntityIcon(entity);
                                 return (
                                   <div
@@ -500,10 +500,10 @@ const RenewableWorkflows: React.FC = () => {
                                   </div>
                                 );
                               })}
-                              {(workflow.enti_coinvolti || []).length > 3 && (
+                              {(workflow.involved_entities || []).length > 3 && (
                                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center border-2 border-white dark:border-gray-800">
                                   <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                    +{(workflow.enti_coinvolti || []).length - 3}
+                                    +{(workflow.involved_entities || []).length - 3}
                                   </span>
                                 </div>
                               )}
@@ -514,18 +514,18 @@ const RenewableWorkflows: React.FC = () => {
                               <div className="flex-1">
                                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                   <div
-                                    className={clsx('h-2 rounded-full', getProgressColor(workflow.progresso))}
-                                    style={{ width: `${workflow.progresso}%` }}
+                                    className={clsx('h-2 rounded-full', getProgressColor(workflow.progress))}
+                                    style={{ width: `${workflow.progress}%` }}
                                   />
                                 </div>
                               </div>
                               <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                                {workflow.progresso}%
+                                {workflow.progress}%
                               </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {workflow.dataScadenza && format(new Date(workflow.dataScadenza), 'dd/MM/yyyy')}
+                            {workflow.due_date && format(new Date(workflow.due_date), 'dd/MM/yyyy')}
                           </td>
                         </tr>
                       ))}

@@ -13,14 +13,8 @@ import {
   Activity,
   Clock
 } from 'lucide-react';
-import {
-  User,
-  UserRole,
-  UserStatus,
-  UserFilters,
-  usersService,
-  BulkOperation
-} from '../services/api';
+import { User, UserRole, UserStatus } from '../services/api/users.service';
+import { usersService } from '../services/api';
 import UserCard from '../components/admin/UserCard';
 import RoleSection from '../components/admin/RoleSection';
 import UserModal from '../components/admin/UserModal';
@@ -30,7 +24,7 @@ const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState<UserFilters>({
+  const [filters, setFilters] = useState<any>({
     status: undefined,
     role: undefined,
     sortBy: 'name',
@@ -142,7 +136,7 @@ const UserManagement: React.FC = () => {
     setShowBulkActions(newSelection.size > 0);
   };
 
-  const handleBulkOperation = async (operation: BulkOperation['operation'], params?: any) => {
+  const handleBulkOperation = async (operation: any, params?: any) => {
     if (!window.confirm(`Eseguire l'operazione su ${selectedUsers.size} utenti?`)) return;
     
     try {
@@ -312,7 +306,7 @@ const UserManagement: React.FC = () => {
           <div className="flex items-center gap-3">
             <select
               value={filters.status || 'all'}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value === 'all' ? undefined : e.target.value as UserStatus })}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value === 'all' ? undefined : e.target.value })}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Tutti gli stati</option>
@@ -323,7 +317,7 @@ const UserManagement: React.FC = () => {
 
             <select
               value={filters.role || 'all'}
-              onChange={(e) => setFilters({ ...filters, role: e.target.value === 'all' ? undefined : e.target.value as UserRole })}
+              onChange={(e) => setFilters({ ...filters, role: e.target.value === 'all' ? undefined : e.target.value })}
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="all">Tutti i ruoli</option>

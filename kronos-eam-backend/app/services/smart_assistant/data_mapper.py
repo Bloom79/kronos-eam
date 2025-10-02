@@ -77,7 +77,7 @@ class DataMapper:
                 "tensione_nominale_kv": "anagrafica.tensione_connessione",
                 "punto_connessione": "anagrafica.punto_connessione",
                 "gestore_rete": "anagrafica.gestore_rete",
-                "codice_pratica": "anagrafica.codice_pratica",
+                "codice_pratica": "anagrafica.practice_code",
                 "tecnologia": "anagrafica.tecnologia"
             },
             validation_rules={
@@ -457,7 +457,7 @@ class DataMapper:
             if not mapped_data.get("latitudine") or not mapped_data.get("longitudine"):
                 warnings.append("GPS coordinates missing - required for GAUDÌ registration")
             
-            if not mapped_data.get("codice_pratica"):
+            if not mapped_data.get("practice_code"):
                 warnings.append("Connection practice code missing - obtain from DSO")
         
         # DSO-specific warnings

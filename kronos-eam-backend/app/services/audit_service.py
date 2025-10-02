@@ -81,7 +81,7 @@ class AuditService:
             user_agent=user_agent,
             session_id=session_id,
             request_id=request_id,
-            note=note,
+            notes=note,
             automatic=1 if automatic else 0
         )
         

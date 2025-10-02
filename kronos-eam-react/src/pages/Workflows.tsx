@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, LayoutGrid, List, Clock, AlertCircle, CheckCircle, Activity, MapPin } from 'lucide-react';
-import { Workflow, Task, Plant } from '../types';
+import {
+  LayoutDashboard, List, Kanban, Plus, Filter, Search, ChevronDown, Activity, AlertCircle, CheckCircle, Clock, MapPin, ArrowRight, LayoutGrid
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Task, Workflow, WorkflowStage, TaskStatusEnum, WorkflowStatusEnum, WorkflowCategoryEnum, EntityEnum, TaskPriorityEnum } from '../types';
+import WorkflowCard from '../components/workflows/WorkflowCard';
+import WorkflowListItem from '../components/workflows/WorkflowListItem';
 import WorkflowKanban from '../components/workflows/WorkflowKanban';
 import WorkflowWizard from '../components/workflows/WorkflowWizard';
 import WorkflowFilter from '../components/workflows/WorkflowFilter';
@@ -8,300 +13,184 @@ import WorkflowLocationView from '../components/workflows/WorkflowLocationView';
 import { workflowService, plantsService } from '../services/api';
 import clsx from 'clsx';
 
+// Mock data for workflows
+const initialWorkflows: Workflow[] = [
+  {
+    id: 1,
+    name: 'Nuova Connessione DSO - FV Solare Verdi',
+    plant_id: 1,
+    plant_name: 'FV Solare Verdi S.p.A.',
+    currentStatus: WorkflowStatusEnum.ACTIVE,
+    progress: 35,
+    type: 'New Connection',
+    category: WorkflowCategoryEnum.ACTIVATION,
+    created_at: '2024-01-15',
+    due_date: '2024-03-15',
+    stages: [
+      {
+        id: 1,
+        name: 'Richiesta Connessione',
+        completed: true,
+        tasks: [
+          { id: 1, title: 'Compilazione domanda connessione', name: 'Compilazione domanda connessione', status: TaskStatusEnum.COMPLETED, assignee: 'Mario Rossi', due_date: '2024-01-20', documents: [], comments: [], priority: TaskPriorityEnum.HIGH, estimated_hours: 4, actual_hours: 3 },
+        ]
+      },
+      {
+        id: 2,
+        name: 'Gestione TICA',
+        completed: false,
+        tasks: [
+          { id: 2, title: 'Ricezione preventivo TICA', name: 'Ricezione preventivo TICA', status: TaskStatusEnum.IN_PROGRESS, assignee: 'Mario Rossi', due_date: '2024-02-10', documents: [], comments: [], priority: TaskPriorityEnum.HIGH, estimated_hours: 2 },
+          { id: 3, title: 'Analisi tecnico-economica TICA', name: 'Analisi tecnico-economica TICA', status: TaskStatusEnum.TO_START, assignee: 'Laura Neri', due_date: '2024-02-20', documents: [], comments: [], priority: TaskPriorityEnum.MEDIUM, estimated_hours: 8 },
+        ]
+      }
+    ],
+    involved_entities: [EntityEnum.DSO]
+  },
+  {
+    id: 2,
+    name: 'Dichiarazione Annuale Consumo - Eolico Vento Forte',
+    plant_id: 2,
+    plant_name: 'Eolico Vento Forte S.R.L.',
+    currentStatus: WorkflowStatusEnum.ACTIVE,
+    progress: 15,
+    type: 'Customs Declaration',
+    category: WorkflowCategoryEnum.FISCAL,
+    created_at: '2024-02-01',
+    due_date: '2024-03-31',
+    stages: [
+      {
+        id: 3,
+        name: 'Raccolta Dati',
+        completed: false,
+        tasks: [
+          { id: 4, title: 'Lettura contatori mensili', name: 'Lettura contatori mensili', status: TaskStatusEnum.IN_PROGRESS, assignee: 'Giuseppe Verdi', due_date: '2024-03-15', documents: [], comments: [], priority: TaskPriorityEnum.HIGH, estimated_hours: 6, actual_hours: 2 },
+        ]
+      }
+    ],
+    involved_entities: [EntityEnum.CUSTOMS]
+  }
+];
+
 const Workflows: React.FC = () => {
-  const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'location'>('location');
-  const [locationGroupBy, setLocationGroupBy] = useState<'region' | 'province' | 'city'>('region');
-  const [showWizard, setShowWizard] = useState(false);
-  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
-  const [filterTemplate, setFilterTemplate] = useState<string>('all');
+  const [workflows, setWorkflows] = useState<Workflow[]>(initialWorkflows);
+  const [viewMode, setViewMode] = useState<'list' | 'kanban' | 'location'>('list');
   const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [plants, setPlants] = useState<Plant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<any>(null);
-
-  // Filter state
+  const [showWizard, setShowWizard] = useState(false);
+  const [apiPlants, setApiPlants] = useState<any[]>([]);
   const [filters, setFilters] = useState({
+    status: 'all',
     region: 'all',
     province: 'all',
     city: 'all',
     plantType: 'all',
     powerRange: 'all',
     workflowCategory: 'all',
-    dateRange: 'all'
+    dateRange: 'all',
   });
-
-  // Extract unique locations from plants data
-  const [locations, setLocations] = useState({
-    regions: [] as string[],
-    provinces: [] as string[],
-    cities: [] as string[]
-  });
+  const [filterTemplate, setFilterTemplate] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [locations, setLocations] = useState<{ regions: string[]; provinces: string[]; cities: string[] }>({ regions: [], provinces: [], cities: [] });
+  const [locationGroupBy, setLocationGroupBy] = useState<'region' | 'province' | 'city'>('region');
+  const [selectedWorkflow, setSelectedWorkflow] = useState<Workflow | null>(null);
 
   useEffect(() => {
     loadWorkflows();
     loadStats();
-    loadPlants();
+    loadLocations();
   }, []);
 
   const loadWorkflows = async () => {
-    try {
-      setLoading(true);
-      const response = await workflowService.getWorkflows();
-      setWorkflows(response.items);
-    } catch (error) {
-      console.error('Error loading workflows:', error);
-      // Fallback to mock data for demonstration
-      setWorkflows([
-    {
-      id: 1,
-      name: 'Nuova Connessione DSO - FV Solare Verdi',
-      plantId: 1,
-      plantname: 'FV Solare Verdi S.p.A.',
-      plantRegion: 'Puglia',
-      plantProvince: 'BR',
-      plantCity: 'Brindisi',
-      statusCorrente: 'Gestione TICA',
-      progresso: 35,
-      type: 'New Connection',
-      categoria: 'Activation',
-      dataCreazione: '2024-01-15',
-      dataScadenza: '2024-03-15',
-      stages: [
-        {
-          name: 'Richiesta Connessione',
-          completato: true,
-          tasks: [
-            {
-              id: 1,
-              title: 'Compilazione domanda connessione',
-              status: 'Completed',
-              assignee: 'Mario Rossi',
-              dueDate: '2024-01-20',
-              documents: [
-                { name: 'Domanda_Connessione.pdf', type: 'inviato', date: '2024-01-18' },
-                { name: 'Schema_Unifilare.pdf', type: 'inviato', date: '2024-01-18' }
-              ],
-              comments: [
-                { user: 'Mario Rossi', text: 'Documentazione completa inviata', date: '2024-01-18' }
-              ],
-              priority: 'High',
-              estimatedHours: 4,
-              actualHours: 3
-            }
-          ]
-        },
-        {
-          name: 'Gestione TICA',
-          completato: false,
-          tasks: [
-            {
-              id: 2,
-              title: 'Ricezione preventivo TICA',
-              status: 'In Progress',
-              assignee: 'Mario Rossi',
-              dueDate: '2024-02-10',
-              documents: [],
-              comments: [
-                { user: 'Sistema', text: 'In attesa ricezione TICA dal DSO', date: '2024-01-25' }
-              ],
-              priority: 'High',
-              estimatedHours: 2
-            },
-            {
-              id: 3,
-              title: 'Analisi tecnico-economica TICA',
-              status: 'To Do',
-              assignee: 'Laura Neri',
-              dueDate: '2024-02-20',
-              documents: [],
-              comments: [],
-              priority: 'Medium',
-              estimatedHours: 8
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: 2,
-      name: 'Dichiarazione Annuale Consumo - Eolico Vento Forte',
-      plantId: 2,
-      plantname: 'Eolico Vento Forte S.R.L.',
-      plantRegion: 'Sicilia',
-      plantProvince: 'PA',
-      plantCity: 'Palermo',
-      statusCorrente: 'Raccolta Dati',
-      progresso: 15,
-      type: 'Customs Declaration',
-      categoria: 'Fiscal',
-      dataCreazione: '2024-02-01',
-      dataScadenza: '2024-03-31',
-      stages: [
-        {
-          name: 'Raccolta Dati',
-          completato: false,
-          tasks: [
-            {
-              id: 4,
-              title: 'Lettura contatori mensili',
-              status: 'In Progress',
-              assignee: 'Giuseppe Verdi',
-              dueDate: '2024-03-15',
-              documents: [],
-              comments: [],
-              priority: 'High',
-              estimatedHours: 6,
-              actualHours: 2
-            }
-          ]
-        }
-      ]
-    }
-  ]);
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    // const data = await workflowService.getWorkflows();
+    // setWorkflows(data.items);
+    setLoading(false);
   };
 
   const loadStats = async () => {
-    try {
-      const data = await workflowService.getWorkflowStats();
-      setStats(data);
-    } catch (error) {
-      console.error('Error loading stats:', error);
-    }
+    // const data = await workflowService.getWorkflowStats();
+    // setStats(data);
   };
 
-  const loadPlants = async () => {
-    try {
-      const response = await plantsService.getPlants();
-      const apiPlants = response.items || [];
-      
-      // Map API plants to our Plant type with proper status and checklist mapping
-      const plantData: Plant[] = apiPlants.map(p => ({
-        ...p,
-        potenza: p.power,
-        potenza_kw: p.power_kw,
-        comune: p.municipality,
-        provincia: p.province,
-        regione: p.region,
-        // Map API status to our PlantStatusEnum
-        status: p.status === 'Under Authorization' ? 'In Authorization' : p.status as any,
-        // Map checklist properties from English to Italian
-        checklist: p.checklist ? {
-          connessione_dso: p.checklist.dso_connection,
-          registrazione_terna: p.checklist.terna_registration,
-          attivazione_gse: p.checklist.gse_activation,
-          licenza_dogane: p.checklist.customs_license,
-          verifica_spi: p.checklist.spi_verification,
-          dichiarazione_consumo: p.checklist.consumption_declaration,
-          compliance_score: p.checklist.compliance_score
-        } : undefined
-      }));
-      
-      setPlants(plantData);
-      
-      // Extract unique locations
-      const regions = [...new Set(apiPlants.map(p => p.region).filter(Boolean))].sort() as string[];
-      const provinces = [...new Set(apiPlants.map(p => p.province).filter(Boolean))].sort() as string[];
-      const cities = [...new Set(apiPlants.map(p => p.municipality).filter(Boolean))].sort() as string[];
-      
-      setLocations({ regions, provinces, cities });
-      
+  const loadLocations = async () => {
+    // In a real app, this would fetch from an API
+    setLocations({
+      regions: ['Lombardia', 'Lazio', 'Campania'],
+      provinces: ['Milano', 'Roma', 'Napoli'],
+      cities: ['Milano', 'Roma', 'Napoli']
+    });
+  };
+
+  useEffect(() => {
+    if (apiPlants.length > 0) {
       // Update workflows with plant location data
       setWorkflows(prev => prev.map(workflow => {
-        const plant = apiPlants.find(p => p.id === workflow.plantId);
+        const plant = apiPlants.find((p: any) => p.id === workflow.plant_id);
         if (plant) {
           return {
-            ...workflow,
-            plantRegion: plant.region || 'Non specificato',
-            plantProvince: plant.province || 'Non specificato',
-            plantCity: plant.municipality || 'Non specificato',
-            plantType: plant.type,
-            plantPower: plant.power_kw
+            ...workflow
           };
         }
         return workflow;
       }));
-    } catch (error) {
-      console.error('Error loading plants:', error);
     }
-  };
+  }, [apiPlants]);
 
   // Extract all tasks from workflows for Kanban view
   const allTasks: Task[] = workflows.flatMap(workflow =>
-    workflow.stages.flatMap(stage => stage.tasks)
+    workflow.stages?.flatMap(stage => stage.tasks) || []
   );
 
   const filteredWorkflows = workflows.filter(workflow => {
-    // Search filter
+    // Basic search
     const matchesSearch = searchTerm === '' || 
       workflow.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      workflow.plantname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      workflow.plantCity?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      workflow.plantProvince?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      workflow.plantRegion?.toLowerCase().includes(searchTerm.toLowerCase());
+      workflow.plant_name?.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Template filter
     const matchesTemplate = filterTemplate === 'all' || workflow.type === filterTemplate;
+
+    // Status filter
+    const matchesStatus = filters.status === 'all' || workflow.currentStatus === filters.status;
     
-    // Location filters
-    const matchesRegion = filters.region === 'all' || workflow.plantRegion === filters.region;
-    const matchesProvince = filters.province === 'all' || workflow.plantProvince === filters.province;
-    const matchesCity = filters.city === 'all' || workflow.plantCity === filters.city;
-    
-    // Plant type filter
-    const matchesPlantType = filters.plantType === 'all' || workflow.plantType === filters.plantType;
-    
-    // Power range filter
-    const matchesPowerRange = filters.powerRange === 'all' || (() => {
-      const power = workflow.plantPower || 0;
-      switch (filters.powerRange) {
-        case '0-20': return power <= 20;
-        case '20-100': return power > 20 && power <= 100;
-        case '100-500': return power > 100 && power <= 500;
-        case '500-1000': return power > 500 && power <= 1000;
-        case '1000+': return power > 1000;
-        default: return true;
-      }
-    })();
-    
-    // Workflow category filter
-    const matchesCategory = filters.workflowCategory === 'all' || workflow.categoria === filters.workflowCategory;
-    
-    // Date range filter
-    const matchesDateRange = filters.dateRange === 'all' || (() => {
-      if (!workflow.dataCreazione) return true;
-      const createdDate = new Date(workflow.dataCreazione);
-      const now = new Date();
-      
-      switch (filters.dateRange) {
-        case 'today':
-          return createdDate.toDateString() === now.toDateString();
-        case 'week':
-          const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          return createdDate >= weekAgo;
-        case 'month':
-          const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          return createdDate >= monthAgo;
-        case 'quarter':
-          const quarterAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
-          return createdDate >= quarterAgo;
-        case 'year':
-          return createdDate.getFullYear() === now.getFullYear();
-        default:
-          return true;
-      }
-    })();
-    
-    return matchesSearch && matchesTemplate && matchesRegion && matchesProvince && 
-           matchesCity && matchesPlantType && matchesPowerRange && matchesCategory && matchesDateRange;
+    return matchesSearch && matchesTemplate && matchesStatus;
   });
 
-  const handleTaskUpdate = (taskId: number, status: Task['status']) => {
+  const workflowGroups = filteredWorkflows.reduce((groups, workflow) => {
+    const status = workflow.currentStatus || 'Unknown';
+    if (!groups[status]) {
+      groups[status] = [];
+    }
+    groups[status].push(workflow);
+    return groups;
+  }, {} as Record<WorkflowStatusEnum, Workflow[]>);
+
+  const handleCreateWorkflow = (data: any) => {
+    console.log('Creating workflow:', data);
+    // Here you would typically call a service to create the workflow
+    // For now, we just add it to the local state
+    const newWorkflow: Workflow = {
+      id: workflows.length + 1,
+      name: data.name,
+      plant_id: data.plant_id,
+      plant_name: 'Nuovo Impianto', // Placeholder
+      currentStatus: WorkflowStatusEnum.ACTIVE,
+      progress: 0,
+      type: data.type_plant,
+      category: data.category,
+      created_at: new Date().toISOString(),
+      due_date: data.due_date,
+      stages: [], // Simplified for this example
+      involved_entities: data.involvedEntities,
+      plant_power: data.power_kw,
+    };
+    setWorkflows(prev => [newWorkflow, ...prev]);
+    setShowWizard(false);
+  };
+
+  const handleTaskUpdate = (taskId: number | string, status: Task['status']) => {
     console.log('Updating task', taskId, 'to status', status);
     // Implementation would update the task status in the backend
   };
@@ -362,6 +251,35 @@ const Workflows: React.FC = () => {
 
   return (
     <div className="p-4 sm:p-6">
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6 mb-6">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+          <div>
+            <h3 className="text-lg font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+              Workflow Gestiti per Impianto
+            </h3>
+            <p className="text-yellow-700 dark:text-yellow-300 mb-3">
+              I workflow sono ora gestiti direttamente dalle pagine degli impianti per una migliore 
+              organizzazione e contesto. Per creare o gestire workflow:
+            </p>
+            <ol className="list-decimal list-inside space-y-2 text-yellow-700 dark:text-yellow-300">
+              <li>Vai alla sezione <strong>Impianti</strong> dal menu laterale</li>
+              <li>Seleziona l'impianto desiderato</li>
+              <li>Clicca sulla scheda <strong>Workflow</strong> per vedere e gestire tutti i workflow dell'impianto</li>
+            </ol>
+            <div className="mt-4">
+              <Link
+                to="/plants"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Vai agli Impianti
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {showWizard ? (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
@@ -382,7 +300,7 @@ const Workflows: React.FC = () => {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Cerca workflow per nome, impianto o località..."
+                    placeholder="Cerca workflow per name, impianto o località..."
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -460,7 +378,7 @@ const Workflows: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Workflow Attivi</p>
                     <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                      {stats?.active_workflows || workflows.filter(w => w.progresso < 100).length}
+                      {stats?.active_workflows || workflows.filter(w => w.progress < 100).length}
                     </p>
                   </div>
                   <Activity className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -472,7 +390,7 @@ const Workflows: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Task in Ritardo</p>
                     <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                      {stats?.overdue_tasks || allTasks.filter(t => t.status === 'Delayed').length}
+                      {stats?.overdue_tasks || allTasks.filter(t => t.status === TaskStatusEnum.DELAYED).length}
                     </p>
                   </div>
                   <AlertCircle className="h-8 w-8 text-red-600 dark:text-red-400" />
@@ -484,7 +402,7 @@ const Workflows: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Task Completati</p>
                     <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                      {stats?.completed_tasks || allTasks.filter(t => t.status === 'Completed').length}
+                      {stats?.completed_tasks || allTasks.filter(t => t.status === TaskStatusEnum.COMPLETED).length}
                     </p>
                   </div>
                   <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -611,11 +529,11 @@ const Workflows: React.FC = () => {
                           <div className="flex items-start gap-4">
                             <div className={clsx(
                               'p-3 rounded-lg',
-                              workflow.progresso === 100 ? 'bg-green-100 dark:bg-green-900' : 'bg-blue-100 dark:bg-blue-900'
+                              workflow.progress === 100 ? 'bg-green-100 dark:bg-green-900' : 'bg-blue-100 dark:bg-blue-900'
                             )}>
                               <Icon className={clsx(
                                 'h-6 w-6',
-                                workflow.progresso === 100 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'
+                                workflow.progress === 100 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'
                               )} />
                             </div>
                             <div>
@@ -623,11 +541,11 @@ const Workflows: React.FC = () => {
                                 {workflow.name}
                               </h4>
                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {workflow.plantname} • {workflow.statusCorrente}
+                                {workflow.plant_name} • {workflow.currentStatus}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                                <span>Creato: {new Date(workflow.dataCreazione!).toLocaleDateString('it-IT')}</span>
-                                <span>Scadenza: {new Date(workflow.dataScadenza!).toLocaleDateString('it-IT')}</span>
+                                <span>Creato: {new Date(workflow.created_at!).toLocaleDateString('it-IT')}</span>
+                                <span>Scadenza: {new Date(workflow.due_date!).toLocaleDateString('it-IT')}</span>
                               </div>
                             </div>
                           </div>
@@ -635,13 +553,13 @@ const Workflows: React.FC = () => {
                           <div className="text-right">
                             <div className="mb-2">
                               <span className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                                {workflow.progresso}%
+                                {workflow.progress}%
                               </span>
                             </div>
                             <div className="w-32 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                               <div
-                                className={clsx('h-2 rounded-full transition-all', getProgressColor(workflow.progresso))}
-                                style={{ width: `${workflow.progresso}%` }}
+                                className={clsx('h-2 rounded-full transition-all', getProgressColor(workflow.progress))}
+                                style={{ width: `${workflow.progress}%` }}
                               />
                             </div>
                           </div>
@@ -652,19 +570,19 @@ const Workflows: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                             <span className="text-gray-600 dark:text-gray-400">
-                              {workflow.stages.flatMap(s => s.tasks).filter(t => t.status === 'Completed').length} Completati
+                              {workflow.stages?.flatMap(s => s.tasks).filter(t => t.status === TaskStatusEnum.COMPLETED).length} Completati
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             <span className="text-gray-600 dark:text-gray-400">
-                              {workflow.stages.flatMap(s => s.tasks).filter(t => t.status === 'In Progress').length} In Corso
+                              {workflow.stages?.flatMap(s => s.tasks).filter(t => t.status === TaskStatusEnum.IN_PROGRESS).length} In Corso
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                             <span className="text-gray-600 dark:text-gray-400">
-                              {workflow.stages.flatMap(s => s.tasks).filter(t => t.status === 'Delayed').length} In Ritardo
+                              {workflow.stages?.flatMap(s => s.tasks).filter(t => t.status === TaskStatusEnum.DELAYED).length} In Ritardo
                             </span>
                           </div>
                         </div>

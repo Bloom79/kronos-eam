@@ -100,7 +100,7 @@ export interface AssistantChatResponse {
   actions?: Array<{
     type: string;
     label: string;
-    data: any;
+    date: any;
   }>;
   context?: Record<string, any>;
 }

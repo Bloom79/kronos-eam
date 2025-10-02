@@ -99,7 +99,7 @@ const WorkflowDataPanel: React.FC<WorkflowDataPanelProps> = ({
       setEditMode(false);
       setEditedValues({});
     } catch (error) {
-      console.error('Error saving data:', error);
+      console.error('Error saving date:', error);
     } finally {
       setSaving(false);
     }

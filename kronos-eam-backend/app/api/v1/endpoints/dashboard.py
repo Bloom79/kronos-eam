@@ -73,7 +73,7 @@ async def get_dashboard_metrics(
     # Documenti da revisionare
     documenti_da_revisionare = db.query(Document).filter(
         Document.tenant_id == current_user.tenant_id,
-        Document.stato == DocumentStatusEnum.IN_ELABORAZIONE
+        Document.status == DocumentStatusEnum.IN_ELABORAZIONE
     ).count()
     
     # Scadenze imminenti (next 30 days)

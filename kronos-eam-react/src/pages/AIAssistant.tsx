@@ -34,7 +34,7 @@ interface Document {
   type: 'PDF' | 'Image' | 'Excel' | 'Word' | 'XML';
   dimensione: string;
   dataCaricamento: string;
-  status: 'In Elaborazione' | 'Completato' | 'Errore';
+  status: 'In Elaborazione' | 'Completed' | 'Errore';
   pagineTotali?: number;
   pagineElaborate?: number;
   campiEstratti?: number;
@@ -45,7 +45,7 @@ interface ExtractedField {
   valore: string;
   confidenza: number;
   pagina?: number;
-  categoria: 'registry' | 'Economico' | 'Tecnico' | 'Temporale' | 'Normativo';
+  category?: 'registry' | 'Economic' | 'Technical' | 'Temporal' | 'Regulatory';
 }
 
 interface ChatMessage {
@@ -66,7 +66,7 @@ const AIAssistant: React.FC = () => {
       type: 'PDF',
       dimensione: '2.4 MB',
       dataCaricamento: '2024-03-15 14:30:00',
-      status: 'Completato',
+      status: 'Completed',
       pagineTotali: 24,
       pagineElaborate: 24,
       campiEstratti: 47
@@ -94,28 +94,28 @@ const AIAssistant: React.FC = () => {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(documents[0]);
   const [extractedFields, setExtractedFields] = useState<ExtractedField[]>([
     // registry
-    { name: 'Codice Pratica', valore: 'T2024/BR/00123', confidenza: 0.98, pagina: 1, categoria: 'registry' },
-    { name: 'Ragione Sociale', valore: 'Solare Verdi S.r.l.', confidenza: 0.99, pagina: 1, categoria: 'registry' },
-    { name: 'Partita IVA', valore: '12345678901', confidenza: 0.97, pagina: 1, categoria: 'registry' },
-    { name: 'Codice POD', valore: 'IT001E12345678', confidenza: 0.96, pagina: 2, categoria: 'registry' },
+    { name: 'Codice Pratica', valore: 'T2024/BR/00123', confidenza: 0.98, pagina: 1, category: 'registry' },
+    { name: 'Ragione Sociale', valore: 'Solare Verdi S.r.l.', confidenza: 0.99, pagina: 1, category: 'registry' },
+    { name: 'Partita IVA', valore: '12345678901', confidenza: 0.97, pagina: 1, category: 'registry' },
+    { name: 'Codice POD', valore: 'IT001E12345678', confidenza: 0.96, pagina: 2, category: 'registry' },
     
     // Tecnico
-    { name: 'Potenza Richiesta', valore: '999.9 kW', confidenza: 0.95, pagina: 3, categoria: 'Tecnico' },
-    { name: 'Tensione Connessione', valore: '20 kV', confidenza: 0.94, pagina: 3, categoria: 'Tecnico' },
-    { name: 'type Connessione', valore: 'Trifase MT', confidenza: 0.93, pagina: 3, categoria: 'Tecnico' },
-    { name: 'Cabina Primaria', valore: 'CP Brindisi Nord', confidenza: 0.92, pagina: 4, categoria: 'Tecnico' },
+    { name: 'Potenza Richiesta', valore: '999.9 kW', confidenza: 0.95, pagina: 3, category: 'Technical' },
+    { name: 'Tensione Connessione', valore: '20 kV', confidenza: 0.94, pagina: 3, category: 'Technical' },
+    { name: 'type Connessione', valore: 'Trifase MT', confidenza: 0.93, pagina: 3, category: 'Technical' },
+    { name: 'Cabina Primaria', valore: 'CP Brindisi Nord', confidenza: 0.92, pagina: 4, category: 'Technical' },
     
     // Economico
-    { name: 'Corrispettivo Connessione', valore: '€ 45.678,90', confidenza: 0.96, pagina: 5, categoria: 'Economico' },
-    { name: 'Oneri di Rete', valore: '€ 12.345,67', confidenza: 0.95, pagina: 5, categoria: 'Economico' },
-    { name: 'IVA', valore: '€ 12.804,43', confidenza: 0.97, pagina: 5, categoria: 'Economico' },
-    { name: 'Totale', valore: '€ 70.829,00', confidenza: 0.98, pagina: 5, categoria: 'Economico' },
+    { name: 'Corrispettivo Connessione', valore: '€ 45.678,90', confidenza: 0.96, pagina: 5, category: 'Economic' },
+    { name: 'Oneri di Rete', valore: '€ 12.345,67', confidenza: 0.95, pagina: 5, category: 'Economic' },
+    { name: 'IVA', valore: '€ 12.804,43', confidenza: 0.97, pagina: 5, category: 'Economic' },
+    { name: 'Totale', valore: '€ 70.829,00', confidenza: 0.98, pagina: 5, category: 'Economic' },
     
     // Temporale
-    { name: 'Data Richiesta', valore: '15/01/2024', confidenza: 0.94, pagina: 1, categoria: 'Temporale' },
-    { name: 'Data Preventivo', valore: '14/02/2024', confidenza: 0.95, pagina: 1, categoria: 'Temporale' },
-    { name: 'Validità Preventivo', valore: '120 giorni', confidenza: 0.93, pagina: 6, categoria: 'Temporale' },
-    { name: 'Tempo Realizzazione', valore: '180 giorni', confidenza: 0.92, pagina: 7, categoria: 'Temporale' }
+    { name: 'Data Richiesta', valore: '15/01/2024', confidenza: 0.94, pagina: 1, category: 'Temporal' },
+    { name: 'Data Preventivo', valore: '14/02/2024', confidenza: 0.95, pagina: 1, category: 'Temporal' },
+    { name: 'Validità Preventivo', valore: '120 giorni', confidenza: 0.93, pagina: 6, category: 'Temporal' },
+    { name: 'Tempo Realizzazione', valore: '180 giorni', confidenza: 0.92, pagina: 7, category: 'Temporal' }
   ]);
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
@@ -155,7 +155,7 @@ const AIAssistant: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completato':
+      case 'Completed':
         return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900';
       case 'In Elaborazione':
         return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900';
@@ -166,17 +166,17 @@ const AIAssistant: React.FC = () => {
     }
   };
 
-  const getCategoriaColor = (categoria: string) => {
-    switch (categoria) {
+  const getCategoriaColor = (category: string) => {
+    switch (category) {
       case 'registry':
         return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
-      case 'Economico':
+      case 'Economic':
         return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
-      case 'Tecnico':
+      case 'Technical':
         return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
-      case 'Temporale':
+      case 'Temporal':
         return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
-      case 'Normativo':
+      case 'Regulatory':
         return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
       default:
         return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
@@ -408,7 +408,7 @@ const AIAssistant: React.FC = () => {
 
           {/* Extracted Data */}
           <div className="lg:col-span-2 space-y-6">
-            {selectedDocument && selectedDocument.status === 'Completato' && (
+            {selectedDocument && selectedDocument.status === 'Completed' && (
               <>
                 {/* Extraction Header */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -476,9 +476,9 @@ const AIAssistant: React.FC = () => {
                           <div className="flex items-center gap-3">
                             <span className={clsx(
                               'px-2 py-1 rounded text-xs font-medium',
-                              getCategoriaColor(field.categoria)
+                              getCategoriaColor(field.category || '')
                             )}>
-                              {field.categoria}
+                              {field.category || field.category}
                             </span>
                             {field.pagina && (
                               <span className="text-xs text-gray-600 dark:text-gray-400">

@@ -23,7 +23,7 @@ export interface RPATask {
   id: string;
   portal: PortalType;
   action: string;
-  data: Record<string, any>;
+  date: Record<string, any>;
   priority: 'high' | 'medium' | 'low';
   retryCount?: number;
   maxRetries?: number;
@@ -33,7 +33,7 @@ export interface RPATask {
 export interface RPAResult {
   taskId: string;
   status: 'success' | 'failure' | 'partial';
-  data?: any;
+  date?: any;
   error?: string;
   executionTime: number;
   screenshots?: string[];
@@ -231,16 +231,16 @@ export class RPAService extends EventEmitter {
         return await this.gseLogin(credentials, logs, screenshots);
       
       case 'submitRID':
-        return await this.gseSubmitRID(task.data, logs, screenshots);
+        return await this.gseSubmitRID(task.date, logs, screenshots);
       
       case 'submitAntimafia':
-        return await this.gseSubmitAntimafia(task.data, logs, screenshots);
+        return await this.gseSubmitAntimafia(task.date, logs, screenshots);
       
       case 'submitFuelMix':
-        return await this.gseSubmitFuelMix(task.data, logs, screenshots);
+        return await this.gseSubmitFuelMix(task.date, logs, screenshots);
       
       case 'checkStatus':
-        return await this.gseCheckStatus(task.data, logs, screenshots);
+        return await this.gseCheckStatus(task.date, logs, screenshots);
       
       default:
         throw new Error(`Unsupported GSE action: ${task.action}`);
@@ -272,16 +272,16 @@ export class RPAService extends EventEmitter {
         return await this.ternaLogin(credentials, logs, screenshots);
       
       case 'registerplant':
-        return await this.ternaRegisterplant(task.data, logs, screenshots);
+        return await this.ternaRegisterplant(task.date, logs, screenshots);
       
       case 'updateplant':
-        return await this.ternaUpdateplant(task.data, logs, screenshots);
+        return await this.ternaUpdateplant(task.date, logs, screenshots);
       
       case 'checkFlows':
-        return await this.ternaCheckFlows(task.data, logs, screenshots);
+        return await this.ternaCheckFlows(task.date, logs, screenshots);
       
       case 'downloadDocuments':
-        return await this.ternaDownloadDocuments(task.data, logs, screenshots);
+        return await this.ternaDownloadDocuments(task.date, logs, screenshots);
       
       default:
         throw new Error(`Unsupported Terna action: ${task.action}`);
@@ -359,7 +359,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async gseSubmitRID(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -372,7 +372,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'gse_rid_submit',
       status: 'success',
-      data: { requestId: 'RID-2024-00123' },
+      date: { requestId: 'RID-2024-00123' },
       executionTime: 5000,
       logs,
       screenshots
@@ -380,7 +380,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async gseSubmitAntimafia(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -392,7 +392,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'gse_antimafia_submit',
       status: 'success',
-      data: { declarationId: 'ANT-2024-00456' },
+      date: { declarationId: 'ANT-2024-00456' },
       executionTime: 4000,
       logs,
       screenshots
@@ -400,7 +400,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async gseSubmitFuelMix(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -418,7 +418,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async gseCheckStatus(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -428,7 +428,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'gse_check_status',
       status: 'success',
-      data: { 
+      date: { 
         status: 'In Lavorazione',
         lastUpdate: new Date().toISOString()
       },
@@ -464,7 +464,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async ternaRegisterplant(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -476,7 +476,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'terna_register',
       status: 'success',
-      data: { 
+      date: { 
         gaudìCode: 'GAUD-2024-789',
         registrationDate: new Date().toISOString()
       },
@@ -505,7 +505,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async ternaCheckFlows(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -515,7 +515,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'terna_flows',
       status: 'success',
-      data: {
+      date: {
         flows: {
           G01: 'Completed',
           G02: 'In Progress',
@@ -529,7 +529,7 @@ export class RPAService extends EventEmitter {
   }
 
   private async ternaDownloadDocuments(
-    data: any, 
+    date: any, 
     logs: string[], 
     screenshots: string[]
   ): Promise<RPAResult> {
@@ -539,7 +539,7 @@ export class RPAService extends EventEmitter {
     return {
       taskId: 'terna_download',
       status: 'success',
-      data: {
+      date: {
         downloadedFiles: ['certificato_gaudi.pdf', 'validazione_tecnica.pdf']
       },
       executionTime: 4000,

@@ -26,7 +26,7 @@ export class BrowserRPAEngine {
   async executeTask(task: {
     portal: string;
     action: string;
-    data: any;
+    date: any;
   }): Promise<any> {
     if (this.useExtension) {
       // Communicate with browser extension

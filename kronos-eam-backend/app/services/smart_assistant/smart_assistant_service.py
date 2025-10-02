@@ -58,7 +58,7 @@ class SmartAssistantService:
         if not plant:
             raise ValueError(f"Plant with ID {plant_id} not found")
         
-        logger.info(f"Plant loaded: {plant.nome if plant else 'None'}")
+        logger.info(f"Plant loaded: {plant.name if plant else 'None'}")
         logger.info(f"Plant anagrafica: {hasattr(plant, 'anagrafica')}")
         if hasattr(plant, 'anagrafica') and plant.anagrafica:
             logger.info(f"Anagrafica tecnologia: {getattr(plant.anagrafica, 'tecnologia', 'None')}")
@@ -84,7 +84,7 @@ class SmartAssistantService:
             portal, form_type, plant, additional_data
         )
         forms.append(form_pdf)
-        form_names.append(f"{portal.value}_{form_type.value}_{plant.nome}.pdf")
+        form_names.append(f"{portal.value}_{form_type.value}_{plant.name}.pdf")
         
         # Calculate values if requested
         calculations = None
@@ -120,7 +120,7 @@ class SmartAssistantService:
             status=SubmissionStatus.READY,
             portal_url=portal_url,
             estimated_completion_time=estimated_time,
-            notes=f"Package prepared for {plant.nome} - {portal.value} {form_type.value}"
+            notes=f"Package prepared for {plant.name} - {portal.value} {form_type.value}"
         )
         
         return package

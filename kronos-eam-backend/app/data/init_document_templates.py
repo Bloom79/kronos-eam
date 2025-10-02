@@ -18,7 +18,7 @@ def init_document_templates():
     try:
         # Find the connection request workflow template
         conn_workflow = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == "Domanda di Connessione E-Distribuzione"
+            WorkflowTemplate.name == "Domanda di Connessione E-Distribuzione"
         ).first()
         
         if not conn_workflow:
@@ -27,7 +27,7 @@ def init_document_templates():
         
         # Check if document template already exists
         existing_template = db.query(DocumentTemplate).filter(
-            DocumentTemplate.nome == "Richiesta Connessione E-Distribuzione"
+            DocumentTemplate.name == "Richiesta Connessione E-Distribuzione"
         ).first()
         
         if existing_template:
@@ -36,14 +36,14 @@ def init_document_templates():
         else:
             # Create document template
             doc_template = DocumentTemplate(
-                nome="Richiesta Connessione E-Distribuzione",
-                descrizione="Modulo per la richiesta di connessione alla rete E-Distribuzione",
+                name="Richiesta Connessione E-Distribuzione",
+                description="Modulo per la richiesta di connessione alla rete E-Distribuzione",
                 template_type="jinja2",
-                categoria=DocumentCategoryEnum.AMMINISTRATIVO,
+                category=DocumentCategoryEnum.AMMINISTRATIVO,
                 template_path="documents/connection_request.jinja2",
                 tenant_id=1,  # Demo tenant
                 variables=json.dumps({
-                    "richiedente.nome": "Nome richiedente",
+                    "richiedente.name": "Nome richiedente",
                     "richiedente.cognome": "Cognome richiedente",
                     "richiedente.data_nascita": "Data di nascita",
                     "richiedente.luogo_nascita": "Luogo di nascita",
@@ -55,7 +55,7 @@ def init_document_templates():
                     "richiedente.telefono": "Telefono",
                     "richiedente.iban": "IBAN",
                     "impianto.potenza_kw": "Potenza impianto (kW)",
-                    "impianto.tipo": "Tipo impianto",
+                    "impianto.type": "Tipo impianto",
                     "impianto.comune": "Comune impianto",
                     "impianto.provincia": "Provincia impianto"
                 }),
@@ -78,9 +78,9 @@ def init_document_templates():
             workflow_doc = WorkflowDocumentTemplate(
                 workflow_template_id=conn_workflow.id,
                 document_template_id=doc_template.id,
-                task_nome="Preparazione documentazione",
+                task_name="Preparazione documentazione",
                 is_required=True,
-                ordine=1,
+                order=1,
                 placeholders=json.dumps({
                     "genera_al_task": "Preparazione documentazione",
                     "formato_default": "pdf"
@@ -100,15 +100,15 @@ def init_document_templates():
         
         # Template for acceptance
         acceptance_template = db.query(DocumentTemplate).filter(
-            DocumentTemplate.nome == "Accettazione Preventivo E-Distribuzione"
+            DocumentTemplate.name == "Accettazione Preventivo E-Distribuzione"
         ).first()
         
         if not acceptance_template:
             acceptance_template = DocumentTemplate(
-                nome="Accettazione Preventivo E-Distribuzione",
-                descrizione="Modulo per l'accettazione del preventivo di connessione",
+                name="Accettazione Preventivo E-Distribuzione",
+                description="Modulo per l'accettazione del preventivo di connessione",
                 template_type="jinja2",
-                categoria=DocumentCategoryEnum.CONTRATTUALE,
+                category=DocumentCategoryEnum.CONTRATTUALE,
                 template_path="documents/accettazione_preventivo.jinja2",
                 tenant_id=1,
                 variables=json.dumps({
@@ -125,7 +125,7 @@ def init_document_templates():
         
         # Find the acceptance phase workflow
         acceptance_workflow = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == "Accettazione Preventivo E-Distribuzione"
+            WorkflowTemplate.name == "Accettazione Preventivo E-Distribuzione"
         ).first()
         
         if acceptance_workflow and not db.query(WorkflowDocumentTemplate).filter(
@@ -135,9 +135,9 @@ def init_document_templates():
             workflow_doc2 = WorkflowDocumentTemplate(
                 workflow_template_id=acceptance_workflow.id,
                 document_template_id=acceptance_template.id,
-                task_nome="Firma accettazione preventivo",
+                task_name="Firma accettazione preventivo",
                 is_required=True,
-                ordine=1,
+                order=1,
                 placeholders=json.dumps({
                     "genera_al_task": "Firma accettazione preventivo"
                 }),

@@ -2,7 +2,7 @@
  * Type mapper utilities for converting between API and local types
  */
 
-import type { Plant as LocalPlant } from '../types';
+import type { Plant as LocalPlant } from '../types/plant-type';
 import type { Plant as Apiplant } from '../services/api/plants.service';
 import type { Plant } from '../types/api';
 
@@ -30,24 +30,24 @@ export function mapApiplantToLocal(apiplant: Apiplant): LocalPlant {
   return {
     id: apiplant.id,
     name: apiplant.name,
-    codice: apiplant.code,
-    potenza: apiplant.power,
-    potenza_kw: apiplant.power_kw,
+    code: apiplant.code,
+    power: apiplant.power,
+    power_kw: apiplant.power_kw,
     status: statusMap[apiplant.status] || apiplant.status,
     type: apiplant.type ? typeMap[apiplant.type] : undefined,
     location: apiplant.location,
-    comune: apiplant.municipality,
-    provincia: apiplant.province,
-    regione: apiplant.region,
-    prossimaScadenza: apiplant.next_deadline,
-    prossima_scadenza: apiplant.next_deadline,
+    municipality: apiplant.municipality,
+    province: apiplant.province,
+    region: apiplant.region,
+    nextDeadline: apiplant.next_deadline,
+    next_deadline: apiplant.next_deadline,
     prossima_scadenza_type: apiplant.next_deadline_type,
-    coloreScadenza: apiplant.deadline_color,
-    colore_scadenza: apiplant.deadline_color,
-    integrazione_gse: apiplant.gse_integration,
-    integrazione_terna: apiplant.terna_integration,
-    integrazione_dogane: apiplant.customs_integration,
-    integrazione_dso: apiplant.dso_integration,
+    deadlineColor: apiplant.deadline_color,
+    deadline_color: apiplant.deadline_color,
+    gse_integration: apiplant.gse_integration,
+    terna_integration: apiplant.terna_integration,
+    customs_integration: apiplant.customs_integration,
+    dso_integration: apiplant.dso_integration,
     registry: apiplant.registry ? {
       id: apiplant.registry.id,
       pod: apiplant.registry.pod,
@@ -56,7 +56,7 @@ export function mapApiplantToLocal(apiplant: Apiplant): LocalPlant {
       dataEsercizio: apiplant.registry.data_esercizio,
       data_esercizio: apiplant.registry.data_esercizio,
       regime: apiplant.registry.regime,
-      responsabile: apiplant.registry.responsabile,
+      assignee: apiplant.registry.assignee,
       assicurazione: apiplant.registry.assicurazione,
       numeroModuli: apiplant.registry.numero_moduli,
       numero_moduli: apiplant.registry.numero_moduli,
@@ -89,27 +89,29 @@ export function mapApiplantToLocal(apiplant: Apiplant): LocalPlant {
 /**
  * Safely get potenza in kW from plant
  */
-export function getplantPotenzaKw(plant: Apiplant | LocalPlant): number {
-  // For API Plant type
-  if ('power_kw' in plant && plant.power_kw) {
-    return plant.power_kw;
+export function getplantPotenzaKw(plant: Apiplant | LocalPlant | any): number {
+  // Check for power_kw field (both API and Local types have this)
+  if (plant.power_kw !== undefined && plant.power_kw !== null) {
+    return typeof plant.power_kw === 'number' ? plant.power_kw : parseFloat(plant.power_kw);
   }
   
-  // For local plant type
-  if ('potenza_kw' in plant && plant.potenza_kw) {
-    return plant.potenza_kw;
+  // Check for powerKw field (alternative naming)
+  if (plant.powerKw !== undefined && plant.powerKw !== null) {
+    return typeof plant.powerKw === 'number' ? plant.powerKw : parseFloat(plant.powerKw);
   }
   
-  // Parse from power string (API)
-  if ('power' in plant && typeof plant.power === 'string') {
-    const parsed = parseFloat(plant.power);
-    return isNaN(parsed) ? 0 : parsed;
-  }
-  
-  // Parse from potenza string (local)
-  if ('potenza' in plant && typeof plant.potenza === 'string') {
-    const parsed = parseFloat(plant.potenza);
-    return isNaN(parsed) ? 0 : parsed;
+  // Parse from power string
+  if (plant.power && typeof plant.power === 'string') {
+    // Extract number from strings like "50 kW" or "1.5 MW"
+    const match = plant.power.match(/[\d.]+/);
+    if (match) {
+      const value = parseFloat(match[0]);
+      // Check if it's MW and convert to kW
+      if (plant.power.toLowerCase().includes('mw')) {
+        return value * 1000;
+      }
+      return value;
+    }
   }
   
   return 0;
@@ -130,24 +132,24 @@ export function mapBackendToPlant(data: any): Plant {
   return {
     id: data.id,
     name: data.name,
-    code: data.codice,
-    power: data.potenza,
-    powerKw: data.potenza_kw,
+    code: data.code,
+    power: data.power,
+    powerKw: data.power_kw,
     status: data.status,
     type: data.type,
     location: data.location,
-    municipality: data.comune,
-    province: data.provincia,
-    region: data.regione,
+    municipality: data.municipality,
+    province: data.province,
+    region: data.region,
     // Map deadline fields
-    nextDeadline: data.prossima_scadenza || data.prossimaScadenza,
+    nextDeadline: data.next_deadline || data.nextDeadline,
     nextDeadlineType: data.prossima_scadenza_type || data.prossimaScadenzatype,
-    deadlineColor: data.colore_scadenza || data.coloreScadenza,
+    deadlineColor: data.deadline_color || data.deadlineColor,
     // Map integration fields
-    gseIntegration: data.integrazione_gse ?? false,
-    ternaIntegration: data.integrazione_terna ?? false,
-    customsIntegration: data.integrazione_dogane ?? false,
-    dsoIntegration: data.integrazione_dso ?? false,
+    gseIntegration: data.gse_integration ?? false,
+    ternaIntegration: data.terna_integration ?? false,
+    customsIntegration: data.customs_integration ?? false,
+    dsoIntegration: data.dso_integration ?? false,
     // Map nested objects
     registry: data.registry ? mapBackendRegistry(data.registry) : undefined,
     checklist: data.checklist ? mapBackendChecklist(data.checklist) : undefined,
@@ -168,21 +170,21 @@ export function mapPlantToBackend(data: Partial<Plant>): any {
   // Map basic fields
   if (data.id !== undefined) mapped.id = data.id;
   if (data.name !== undefined) mapped.name = data.name;
-  if (data.code !== undefined) mapped.codice = data.code;
-  if (data.power !== undefined) mapped.potenza = data.power;
-  if (data.powerKw !== undefined) mapped.potenza_kw = data.powerKw;
+  if (data.code !== undefined) mapped.code = data.code;
+  if (data.power !== undefined) mapped.power = data.power;
+  if (data.powerKw !== undefined) mapped.power_kw = data.powerKw;
   if (data.status !== undefined) mapped.status = data.status;
   if (data.type !== undefined) mapped.type = data.type;
   if (data.location !== undefined) mapped.location = data.location;
-  if (data.municipality !== undefined) mapped.comune = data.municipality;
-  if (data.province !== undefined) mapped.provincia = data.province;
-  if (data.region !== undefined) mapped.regione = data.region;
+  if (data.municipality !== undefined) mapped.municipality = data.municipality;
+  if (data.province !== undefined) mapped.province = data.province;
+  if (data.region !== undefined) mapped.region = data.region;
 
   // Map integration fields
-  if (data.gseIntegration !== undefined) mapped.integrazione_gse = data.gseIntegration;
-  if (data.ternaIntegration !== undefined) mapped.integrazione_terna = data.ternaIntegration;
-  if (data.customsIntegration !== undefined) mapped.integrazione_dogane = data.customsIntegration;
-  if (data.dsoIntegration !== undefined) mapped.integrazione_dso = data.dsoIntegration;
+  if (data.gseIntegration !== undefined) mapped.gse_integration = data.gseIntegration;
+  if (data.ternaIntegration !== undefined) mapped.terna_integration = data.ternaIntegration;
+  if (data.customsIntegration !== undefined) mapped.customs_integration = data.customsIntegration;
+  if (data.dsoIntegration !== undefined) mapped.dso_integration = data.dsoIntegration;
 
   return mapped;
 }
@@ -198,7 +200,7 @@ function mapBackendRegistry(data: any): any {
     censimpCode: data.censimp || data.censimpCode,
     operationDate: data.data_esercizio || data.dataEsercizio,
     regime: data.regime,
-    responsible: data.responsabile,
+    responsible: data.assignee,
     insurance: data.assicurazione,
     moduleCount: data.numero_moduli || data.numeroModuli,
     inverterCount: data.numero_inverter || data.numeroInverter,

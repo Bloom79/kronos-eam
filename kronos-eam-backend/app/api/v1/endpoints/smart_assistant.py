@@ -126,7 +126,7 @@ async def download_form(
             # Create streaming response
             form_stream = io.BytesIO(form_data)
             
-            filename = f"{portal.value}_{form_type.value}_{plant.nome}.pdf"
+            filename = f"{portal.value}_{form_type.value}_{plant.name}.pdf"
             
             return StreamingResponse(
                 io.BytesIO(form_data),

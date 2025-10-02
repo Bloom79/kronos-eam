@@ -50,15 +50,14 @@ USER kronos
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8000
+    PYTHONDONTWRITEBYTECODE=1
 
-# Expose port
-EXPOSE 8000
+# Expose port (Cloud Run will use PORT environment variable)
+EXPOSE 8080
 
-# Health check
+# Health check - use PORT environment variable
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8080}/health || exit 1
 
 # Run the application
 ENTRYPOINT ["/app/entrypoint.sh"]

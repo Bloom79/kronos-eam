@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Clock, User, AlertCircle, CheckCircle, MoreVertical, FileText, MessageSquare } from 'lucide-react';
-import { Task } from '../../types';
+import { Task, TaskStatusEnum } from '../../types';
 import clsx from 'clsx';
 
 interface KanbanColumn {
@@ -21,30 +21,30 @@ interface WorkflowKanbanProps {
 const WorkflowKanban: React.FC<WorkflowKanbanProps> = ({ tasks, onTaskUpdate, onTaskClick }) => {
   const [columns, setColumns] = useState<KanbanColumn[]>([
     {
-      id: 'To Do',
-      title: 'To Do',
-      tasks: tasks.filter(t => t.status === 'To Do'),
+      id: TaskStatusEnum.TO_START,
+      title: 'Da Iniziare',
+      tasks: tasks.filter(t => t.status === TaskStatusEnum.TO_START),
       color: 'bg-gray-100 dark:bg-gray-700',
       icon: Clock
     },
     {
-      id: 'In Progress',
-      title: 'In Progress',
-      tasks: tasks.filter(t => t.status === 'In Progress'),
+      id: TaskStatusEnum.IN_PROGRESS,
+      title: 'In Corso',
+      tasks: tasks.filter(t => t.status === TaskStatusEnum.IN_PROGRESS),
       color: 'bg-blue-100 dark:bg-blue-900',
       icon: User
     },
     {
-      id: 'Delayed',
-      title: 'Delayed',
-      tasks: tasks.filter(t => t.status === 'Delayed'),
+      id: TaskStatusEnum.DELAYED,
+      title: 'In Ritardo',
+      tasks: tasks.filter(t => t.status === TaskStatusEnum.DELAYED),
       color: 'bg-red-100 dark:bg-red-900',
       icon: AlertCircle
     },
     {
-      id: 'Completed',
+      id: TaskStatusEnum.COMPLETED,
       title: 'Completed',
-      tasks: tasks.filter(t => t.status === 'Completed'),
+      tasks: tasks.filter(t => t.status === TaskStatusEnum.COMPLETED),
       color: 'bg-green-100 dark:bg-green-900',
       icon: CheckCircle
     }
@@ -87,9 +87,9 @@ const WorkflowKanban: React.FC<WorkflowKanbanProps> = ({ tasks, onTaskUpdate, on
     }
   };
 
-  const getDaysUntilDue = (dueDate: string) => {
+  const getDaysUntilDue = (due_date: string) => {
     const today = new Date();
-    const due = new Date(dueDate);
+    const due = new Date(due_date);
     const diffTime = due.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
@@ -157,26 +157,26 @@ const WorkflowKanban: React.FC<WorkflowKanbanProps> = ({ tasks, onTaskUpdate, on
                                   <User className="h-3 w-3" />
                                   <span>{task.assignee}</span>
                                 </div>
-                                {task.dueDate && (
+                                {task.due_date && (
                                   <div className="flex items-center gap-1">
                                     <Clock className="h-3 w-3" />
                                     <span className={clsx(
-                                      getDaysUntilDue(task.dueDate) <= 3 ? 'text-red-600 dark:text-red-400' : ''
+                                      getDaysUntilDue(task.due_date) <= 3 ? 'text-red-600 dark:text-red-400' : ''
                                     )}>
-                                      {getDaysUntilDue(task.dueDate)}g
+                                      {getDaysUntilDue(task.due_date)}g
                                     </span>
                                   </div>
                                 )}
                               </div>
 
                               <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                                {task.documents.length > 0 && (
+                                {task.documents && task.documents.length > 0 && (
                                   <div className="flex items-center gap-1">
                                     <FileText className="h-3 w-3" />
                                     <span>{task.documents.length}</span>
                                   </div>
                                 )}
-                                {task.comments.length > 0 && (
+                                {task.comments && task.comments.length > 0 && (
                                   <div className="flex items-center gap-1">
                                     <MessageSquare className="h-3 w-3" />
                                     <span>{task.comments.length}</span>
@@ -184,18 +184,18 @@ const WorkflowKanban: React.FC<WorkflowKanbanProps> = ({ tasks, onTaskUpdate, on
                                 )}
                               </div>
 
-                              {task.estimatedHours && (
+                              {task.estimated_hours && (
                                 <div className="mt-2">
                                   <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
                                     <div
                                       className="bg-blue-600 h-1.5 rounded-full"
                                       style={{
-                                        width: `${Math.min(100, ((task.actualHours || 0) / task.estimatedHours) * 100)}%`
+                                        width: `${Math.min(100, ((task.actual_hours || 0) / task.estimated_hours) * 100)}%`
                                       }}
                                     />
                                   </div>
                                   <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {task.actualHours || 0}/{task.estimatedHours}h
+                                    {task.actual_hours || 0}/{task.estimated_hours}h
                                   </span>
                                 </div>
                               )}

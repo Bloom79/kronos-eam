@@ -4,14 +4,14 @@ import {
   ChevronRight, Clock, CheckCircle, AlertCircle, ExternalLink,
   User, Calendar, Shield, Key, Wifi, WifiOff, RefreshCw
 } from 'lucide-react';
-import { Task, EntityEnum } from '../../types';
+import { Workflow, WorkflowTask, EntityEnum } from '../../types';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 interface EntitySwimlanesProps {
-  tasks: Task[];
-  onTaskClick?: (task: Task) => void;
+  tasks: WorkflowTask[];
+  onTaskClick?: (task: WorkflowTask) => void;
   onEntityFilter?: (entity: EntityEnum) => void;
   showIntegrationStatus?: boolean;
 }
@@ -39,7 +39,7 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
   showIntegrationStatus = true
 }) => {
   const [expandedLanes, setExpandedLanes] = useState<Set<EntityEnum>>(new Set());
-  const [selectedStatus, setSelectedStatus] = useState<Task['status'] | 'all'>('all');
+  const [selectedStatus, setSelectedStatus] = useState<WorkflowTask['status'] | 'all'>('all');
 
   const entityLanes: EntityLane[] = [
     {
@@ -91,8 +91,8 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
       credentials: { type: 'SPID/CNS/CIE', configured: true }
     },
     {
-      entity: 'Comune' as EntityEnum,
-      name: 'Comune',
+      entity: 'Municipality' as EntityEnum,
+      name: 'Municipality',
       description: 'Autorizzazioni edilizie e paesaggistiche',
       icon: Home,
       color: 'text-red-600 dark:text-red-400',
@@ -102,8 +102,8 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
       credentials: { type: 'PEC', configured: true }
     },
     {
-      entity: 'Soprintendenza' as EntityEnum,
-      name: 'Soprintendenza',
+      entity: 'Superintendency' as EntityEnum,
+      name: 'Superintendency',
       description: 'Autorizzazioni vincoli paesaggistici',
       icon: Trees,
       color: 'text-teal-600 dark:text-teal-400',
@@ -116,19 +116,23 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
 
   // Group tasks by entity
   const tasksByEntity = useMemo(() => {
-    const grouped = new Map<EntityEnum, Task[]>();
-    
-    entityLanes.forEach(lane => {
-      grouped.set(lane.entity, []);
-    });
+    const grouped = new Map<EntityEnum, WorkflowTask[]>();
+    Object.values(EntityEnum).forEach(entity => grouped.set(entity, []));
 
     tasks.forEach(task => {
-      if (task.ente_responsabile) {
-        const entityTasks = grouped.get(task.ente_responsabile) || [];
+      if (task.responsible_entity) {
+        const entityTasks = grouped.get(task.responsible_entity) || [];
         entityTasks.push(task);
-        grouped.set(task.ente_responsabile, entityTasks);
+        grouped.set(task.responsible_entity, entityTasks);
       }
     });
+
+    // Remove empty entities
+    for (const [entity, tasks] of grouped.entries()) {
+      if (tasks.length === 0) {
+        grouped.delete(entity);
+      }
+    }
 
     return grouped;
   }, [tasks]);
@@ -143,7 +147,7 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
     setExpandedLanes(newExpanded);
   };
 
-  const getTaskIcon = (status: Task['status']) => {
+  const getTaskIcon = (status: WorkflowTask['status']) => {
     switch (status) {
       case 'Completed': return CheckCircle;
       case 'In Progress': return Clock;
@@ -152,7 +156,7 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
     }
   };
 
-  const getTaskColor = (status: Task['status']) => {
+  const getTaskColor = (status: WorkflowTask['status']) => {
     switch (status) {
       case 'Completed': return 'text-green-600 dark:text-green-400';
       case 'In Progress': return 'text-blue-600 dark:text-blue-400';
@@ -180,7 +184,7 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
   const filteredTasksByEntity = useMemo(() => {
     if (selectedStatus === 'all') return tasksByEntity;
     
-    const filtered = new Map<EntityEnum, Task[]>();
+    const filtered = new Map<EntityEnum, WorkflowTask[]>();
     tasksByEntity.forEach((tasks, entity) => {
       filtered.set(entity, tasks.filter(t => t.status === selectedStatus));
     });
@@ -348,17 +352,17 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
                                 <h4 className="font-medium text-gray-800 dark:text-gray-100">
                                   {task.title}
                                 </h4>
-                                {task.descrizione && (
+                                {task.description && (
                                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    {task.descrizione}
+                                    {task.description}
                                   </p>
                                 )}
                                 
                                 <div className="flex flex-wrap items-center gap-3 mt-2">
-                                  {task.tipo_pratica && (
+                                  {task.practice_type && (
                                     <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300">
                                       <FileText className="h-3 w-3" />
-                                      {task.tipo_pratica}
+                                      {task.practice_type}
                                     </span>
                                   )}
                                   
@@ -369,25 +373,25 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
                                     </span>
                                   )}
                                   
-                                  {task.dueDate && (
+                                  {task.due_date && (
                                     <span className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                                       <Calendar className="h-3 w-3" />
-                                      {format(new Date(task.dueDate), 'dd/MM/yyyy')}
+                                      {format(new Date(task.due_date), 'dd/MM/yyyy')}
                                     </span>
                                   )}
 
-                                  {task.estimatedHours && (
+                                  {task.estimated_hours && (
                                     <span className="inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400">
                                       <Clock className="h-3 w-3" />
-                                      {task.estimatedHours}h
+                                      {task.estimated_hours}h
                                     </span>
                                   )}
                                 </div>
 
                                 {/* Dependencies */}
-                                {task.dipendenze && task.dipendenze.length > 0 && (
+                                {task.dependencies && task.dependencies.length > 0 && (
                                   <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                    Dipende da: {task.dipendenze.join(', ')}
+                                    Dipende da: {task.dependencies.join(', ')}
                                   </div>
                                 )}
                               </div>
@@ -407,17 +411,17 @@ const EntitySwimlanes: React.FC<EntitySwimlanesProps> = ({
                           </div>
 
                           {/* Progress Bar for In Progress tasks */}
-                          {task.status === 'In Progress' && task.estimatedHours && task.actualHours && (
+                          {task.status === 'In Progress' && task.estimated_hours && task.actual_hours && (
                             <div className="mt-3">
                               <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
                                 <span>Progresso</span>
-                                <span>{task.actualHours}/{task.estimatedHours}h</span>
+                                <span>{task.actual_hours}/{task.estimated_hours}h</span>
                               </div>
                               <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
                                 <div
                                   className="bg-blue-600 h-1.5 rounded-full"
                                   style={{
-                                    width: `${Math.min(100, (task.actualHours / task.estimatedHours) * 100)}%`
+                                    width: `${Math.min(100, (task.actual_hours / task.estimated_hours) * 100)}%`
                                   }}
                                 />
                               </div>

@@ -7,10 +7,10 @@ interface PECMessage {
   oggetto: string;
   mittente: string;
   destinatario: string;
-  data: string;
+  date: string;
   type: 'Ricevuta' | 'Inviata';
   status: 'Consegnata' | 'In Invio' | 'Errore' | 'Letta' | 'Non Letta';
-  integrazione: 'DSO' | 'GSE' | 'Terna' | 'Dogane';
+  integration: 'DSO' | 'GSE' | 'Terna' | 'Dogane';
   allegati?: string[];
   certificata: boolean;
   ricevutaConsegna?: string;
@@ -25,10 +25,10 @@ const PECManager: React.FC = () => {
       oggetto: 'Comunicazione Fine Lavori - plant FV Solare Verdi',
       mittente: 'admin@pec.solareverdi.it',
       destinatario: 'produttori@pec.e-distribuzione.it',
-      data: '2024-03-14 18:00:00',
+      date: '2024-03-14 18:00:00',
       type: 'Inviata',
       status: 'Consegnata',
-      integrazione: 'DSO',
+      integration: 'DSO',
       allegati: ['Comunicazione_Fine_Lavori.pdf', 'Dichiarazione_Conformita.pdf', 'Schema_Unifilare.pdf'],
       certificata: true,
       ricevutaConsegna: '2024-03-14 18:05:32',
@@ -39,10 +39,10 @@ const PECManager: React.FC = () => {
       oggetto: 'RE: Richiesta Documentazione Integrativa - Pratica ANT/2024/00123',
       mittente: 'protocollo@pec.gse.it',
       destinatario: 'admin@pec.solareverdi.it',
-      data: '2024-03-15 11:30:00',
+      date: '2024-03-15 11:30:00',
       type: 'Ricevuta',
       status: 'Non Letta',
-      integrazione: 'GSE',
+      integration: 'GSE',
       allegati: ['Richiesta_Integrazioni.pdf'],
       certificata: true
     },
@@ -51,10 +51,10 @@ const PECManager: React.FC = () => {
       oggetto: 'Invio Dichiarazione Antimafia Annuale',
       mittente: 'admin@pec.solareverdi.it',
       destinatario: 'antimafia@pec.gse.it',
-      data: '2024-03-15 14:20:00',
+      date: '2024-03-15 14:20:00',
       type: 'Inviata',
       status: 'In Invio',
-      integrazione: 'GSE',
+      integration: 'GSE',
       allegati: ['Dichiarazione_Antimafia_2024.pdf', 'Visura_Camerale.pdf'],
       certificata: true
     },
@@ -63,10 +63,10 @@ const PECManager: React.FC = () => {
       oggetto: 'Errore Invio: Verifica Contatori Fiscali',
       mittente: 'admin@pec.solareverdi.it',
       destinatario: 'utf.brindisi@pec.adm.gov.it',
-      data: '2024-03-13 16:45:00',
+      date: '2024-03-13 16:45:00',
       type: 'Inviata',
       status: 'Errore',
-      integrazione: 'Dogane',
+      integration: 'Dogane',
       allegati: ['Certificato_Taratura.pdf'],
       certificata: true
     },
@@ -75,10 +75,10 @@ const PECManager: React.FC = () => {
       oggetto: 'Conferma Registrazione GAUDÌ - plant IM_A123B456',
       mittente: 'gaudi@pec.terna.it',
       destinatario: 'admin@pec.solareverdi.it',
-      data: '2024-03-10 10:22:00',
+      date: '2024-03-10 10:22:00',
       type: 'Ricevuta',
       status: 'Letta',
-      integrazione: 'Terna',
+      integration: 'Terna',
       allegati: ['Conferma_Registrazione_GAUDI.pdf'],
       certificata: true,
       ricevutaLettura: '2024-03-10 11:00:00'
@@ -105,8 +105,8 @@ const PECManager: React.FC = () => {
     }
   };
 
-  const getIntegrazioneColor = (integrazione: string) => {
-    switch (integrazione) {
+  const getIntegrazioneColor = (integration: string) => {
+    switch (integration) {
       case 'GSE':
         return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
       case 'Terna':
@@ -305,14 +305,14 @@ const PECManager: React.FC = () => {
                     </p>
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                    {new Date(message.data).toLocaleString('it-IT')}
+                    {new Date(message.date).toLocaleString('it-IT')}
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
                       'px-2 py-1 rounded text-xs font-medium',
-                      getIntegrazioneColor(message.integrazione)
+                      getIntegrazioneColor(message.integration)
                     )}>
-                      {message.integrazione}
+                      {message.integration}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -399,7 +399,7 @@ const PECManager: React.FC = () => {
                     <div>
                       <span className="text-gray-600 dark:text-gray-400">Data:</span>
                       <span className="ml-2 text-gray-800 dark:text-gray-100">
-                        {new Date(selectedMessage.data).toLocaleString('it-IT')}
+                        {new Date(selectedMessage.date).toLocaleString('it-IT')}
                       </span>
                     </div>
                     <div>

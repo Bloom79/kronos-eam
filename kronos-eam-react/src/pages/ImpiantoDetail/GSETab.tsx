@@ -14,7 +14,7 @@ const GSETab: React.FC<GSETabProps> = ({ plant }) => {
     numeroConvenzione: 'RID/2022/00123456',
     typeConvenzione: 'Ritiro Dedicato',
     dataAttivazione: '01/06/2022',
-    dataScadenza: '31/05/2042',
+    due_date: '31/05/2042',
     statusConvenzione: 'Attiva',
     prezzoMinimo: 42.0,
     prezzoRiconosciuto: 'Prezzo Zonale Orario',
@@ -94,7 +94,7 @@ const GSETab: React.FC<GSETabProps> = ({ plant }) => {
 
   const documentiAntimafia = {
     ultimaDichiarazione: '15/03/2024',
-    prossimaScadenza: '15/03/2025',
+    nextDeadline: '15/03/2025',
     status: 'Valida',
     protocollo: 'GSE/ANT/2024/00123',
     importoSoglia: 186420.0,
@@ -163,7 +163,7 @@ const GSETab: React.FC<GSETabProps> = ({ plant }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Data Scadenza</p>
-            <p className="font-medium text-gray-800 dark:text-gray-100">{gseData.dataScadenza}</p>
+            <p className="font-medium text-gray-800 dark:text-gray-100">{gseData.due_date}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Prezzo Riconosciuto</p>
@@ -316,7 +316,7 @@ const GSETab: React.FC<GSETabProps> = ({ plant }) => {
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Prossima Scadenza</p>
                 <p className="font-medium text-red-600 dark:text-red-400">
-                  {documentiAntimafia.prossimaScadenza}
+                  {documentiAntimafia.nextDeadline}
                 </p>
               </div>
               <div>

@@ -5,24 +5,25 @@ Based on Italian regulatory requirements for DSO, Terna, GSE, and Agenzia delle 
 
 from app.models.workflow import WorkflowCategoryEnum, EntityEnum
 from app.data.connection_request_workflow import CONNECTION_REQUEST_WORKFLOW
+from app.data.solar_installation_complete import SOLAR_INSTALLATION_COMPLETE
 
 RENEWABLE_ENERGY_WORKFLOW = {
-    "nome": "Attivazione Plant Rinnovabile Completa",
-    "descrizione": "Processo completo per l'attivazione di un impianto a fonti rinnovabili alla rete elettrica italiana",
-    "categoria": WorkflowCategoryEnum.ACTIVATION,
-    "tipo_impianto": "Tutti",
-    "potenza_minima": 0,
-    "potenza_massima": None,
-    "durata_stimata_giorni": 180,
-    "ricorrenza": "Una tantum",
-    "enti_richiesti": [
+    "name": "Attivazione Plant Rinnovabile Completa",
+    "description": "Processo completo per l'attivazione di un impianto a fonti rinnovabili alla rete elettrica italiana",
+    "category": WorkflowCategoryEnum.ACTIVATION,
+    "plant_type": "Tutti",
+    "min_power": 0,
+    "max_power": None,
+    "estimated_duration_days": 180,
+    "recurrence": "Una tantum",
+    "required_entities": [
         EntityEnum.MUNICIPALITY.value,
         EntityEnum.DSO.value,
         EntityEnum.TERNA.value,
         EntityEnum.GSE.value,
         EntityEnum.CUSTOMS.value
     ],
-    "documenti_base": [
+    "base_documents": [
         "Documento identità titolare",
         "Visura camerale",
         "Titolo disponibilità sito",
@@ -30,414 +31,620 @@ RENEWABLE_ENERGY_WORKFLOW = {
     ],
     "stages": [
         {
-            "nome": "Fase 1: Progettazione e Autorizzazione",
-            "ordine": 1,
-            "durata_giorni": 45,
+            "name": "Fase 1: Progettazione e Autorizzazione",
+            "order": 1,
+            "duration_days": 45,
             "tasks": [
                 {
-                    "nome": "Progettazione Plant",
-                    "descrizione": "Sviluppo del progetto esecutivo da parte di un tecnico abilitato",
-                    "responsabile": "Progettista",
-                    "durata_giorni": 15,
-                    "priorita": "Alta",
-                    "documenti_richiesti": [
-                        "Dimensionamento impianto",
-                        "Scelta componenti",
-                        "Schemi elettrici",
-                        "Calcoli di produzione"
+                    "name": "Progettazione Plant e Autorizzazioni",
+                    "description": "Sviluppo del progetto esecutivo e ottenimento autorizzazioni comunali/regionali",
+                    "assignee": "Progettista",
+                    "duration_days": 15,
+                    "priority": "Alta",
+                    "required_documents": [
+                        "Progetto esecutivo firmato da tecnico abilitato",
+                        "Relazione tecnica impianto",
+                        "Schema unifilare preliminare",
+                        "Studio di fattibilità economica"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Relazione tecnica di progetto",
+                        "Computo metrico estimativo",
+                        "Cronoprogramma lavori"
+                    ],
+                    "official_form_fields": {
+                        "progettista_nome": "Nome e cognome progettista",
+                        "progettista_albo": "Iscrizione albo professionale",
+                        "potenza_impianto": "Potenza nominale (kWp)",
+                        "superficie_occupata": "Superficie totale (mq)"
+                    },
+                    "checklist_items": [
                         "Valutazione fattibilità tecnica",
                         "Valutazione fattibilità economica",
                         "Approvazione progetto"
                     ]
                 },
                 {
-                    "nome": "Richiesta Titolo Autorizzativo",
-                    "descrizione": "Ottenimento permesso di costruire/SCIA dal Comune",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 30,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.MUNICIPALITY.value,
-                    "tipo_pratica": "Permesso Costruire/SCIA",
-                    "documenti_richiesti": [
-                        "Progetto architettonico",
-                        "Relazione tecnica",
-                        "Elaborati grafici"
+                    "name": "Richiesta Titolo Autorizzativo (SCIA/AU)",
+                    "description": "Ottenimento titolo abilitativo per costruzione impianto",
+                    "assignee": "Asset Manager",
+                    "duration_days": 30,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.MUNICIPALITY.value,
+                    "practice_type": "SCIA/Permesso Costruire",
+                    "portal_url": "Portale SUAP comunale",
+                    "portal_login_url": "https://suap.comune.it",
+                    "required_credentials": "SPID/CIE",
+                    "required_documents": [
+                        "Progetto architettonico firmato",
+                        "Relazione tecnica ex L.10/91",
+                        "Elaborati grafici quotati"
                     ],
-                    "checkpoints": [
-                        "Presentazione istanza",
-                        "Integrazione documentale",
-                        "Rilascio autorizzazione"
+                    "documents_to_generate": [
+                        "Ricevuta protocollazione SCIA",
+                        "Numero pratica edilizia"
                     ],
-                    "condizioni": {
-                        "se": "potenza > 1000",
-                        "allora": "tipo_pratica = 'Autorizzazione Unica Regionale'"
-                    }
+                    "regulatory_deadline": "30 giorni per SCIA, 90 per PC",
+                    "deadline_type": "ordinario",
+                    "submission_method": "Portale SUAP",
+                    "checklist_items": [
+                        "Accesso portale SUAP",
+                        "Compilazione moduli online",
+                        "Upload allegati tecnici",
+                        "Protocollazione pratica"
+                    ],
+                    "conditions": {
+                        "if": "potenza > 1000 kW",
+                        "then": "Autorizzazione Unica Regionale obbligatoria"
+                    },
+                    "requires_human_auth": True
                 },
                 {
-                    "nome": "Parere Soprintendenza",
-                    "descrizione": "Ottenimento parere per vincoli paesaggistici/storico-artistici",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 30,
-                    "priorita": "Media",
-                    "ente_responsabile": EntityEnum.SUPERINTENDENCE.value,
-                    "tipo_pratica": "Autorizzazione Paesaggistica",
-                    "documenti_richiesti": [
-                        "Relazione paesaggistica",
-                        "Fotoinserimenti",
-                        "Tavole di progetto"
+                    "name": "Autorizzazione Paesaggistica",
+                    "description": "Ottenimento nulla osta per aree vincolate",
+                    "assignee": "Asset Manager",
+                    "duration_days": 30,
+                    "priority": "Media",
+                    "responsible_entity": EntityEnum.SUPERINTENDENCE.value,
+                    "practice_type": "Autorizzazione Paesaggistica",
+                    "portal_url": "Sistema informativo vincoli",
+                    "required_documents": [
+                        "Relazione paesaggistica DPCM 12/2005",
+                        "Fotoinserimenti e render",
+                        "Tavole stato di fatto e progetto"
                     ],
-                    "condizioni": {
-                        "se": "area_vincolata == true",
-                        "allora": "obbligatorio = true"
-                    }
+                    "documents_to_generate": [
+                        "Parere Soprintendenza",
+                        "Autorizzazione paesaggistica"
+                    ],
+                    "regulatory_deadline": "105 giorni procedimento",
+                    "deadline_consequences": "Diniego per silenzio-rifiuto",
+                    "conditions": {
+                        "if": "area con vincolo paesaggistico",
+                        "then": "autorizzazione obbligatoria"
+                    },
+                    "requires_physical_signature": True
                 }
             ]
         },
         {
-            "nome": "Fase 2: Connessione alla Rete DSO",
-            "ordine": 2,
-            "durata_giorni": 60,
+            "name": "Fase 2: Connessione alla Rete DSO",
+            "order": 2,
+            "duration_days": 60,
             "tasks": [
                 {
-                    "nome": "Richiesta di Connessione",
-                    "descrizione": "Invio richiesta di connessione al Distributore territorialmente competente",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
+                    "name": "Richiesta di Connessione DSO",
+                    "description": "Presentazione domanda connessione a E-Distribuzione o altro DSO",
+                    "assignee": "Asset Manager",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
                     "integrazione": EntityEnum.DSO.value,
-                    "tipo_pratica": "TICA",
-                    "url_portale": "https://www.e-distribuzione.it/",
-                    "documenti_richiesti": [
-                        "Dati impianto",
-                        "Potenza richiesta",
-                        "Schema unifilare preliminare",
-                        "Planimetria catastale"
+                    "practice_type": "Domanda Connessione",
+                    "portal_url": "https://www.e-distribuzione.it/a-chi-ci-rivolgiamo/produttori.html",
+                    "portal_login_url": "https://areaclienti.e-distribuzione.it",
+                    "required_credentials": "Registrazione email",
+                    "required_documents": [
+                        "Schema unifilare firmato",
+                        "Documento identità valido",
+                        "Mappa catastale (max 6 mesi)",
+                        "Ultima bolletta elettrica"
                     ],
-                    "checkpoints": [
-                        "Compilazione portale",
-                        "Upload documentazione",
-                        "Protocollazione pratica"
+                    "documents_to_generate": [
+                        "Codice pratica connessione",
+                        "Ricevuta protocollazione"
                     ],
-                    "condizioni": {
-                        "se": "potenza <= 50 AND tipo == 'Fotovoltaico'",
-                        "allora": "iter = 'Semplificato'"
+                    "cost_amount": 36.60,
+                    "cost_description": "Corrispettivo preventivo fino 6kW (30€+IVA)",
+                    "payment_method": "Bonifico bancario",
+                    "checklist_items": [
+                        "Registrazione portale produttori",
+                        "Inserimento anagrafica",
+                        "Upload documentazione tecnica",
+                        "Pagamento corrispettivo"
+                    ],
+                    "conditions": {
+                        "if": "potenza <= 200 kW",
+                        "then": "Modello Unico disponibile"
                     }
                 },
                 {
-                    "nome": "Gestione TICA/STMC",
-                    "descrizione": "Ricezione e valutazione Soluzione Tecnica Minima di Connessione",
-                    "responsabile": "Tecnico",
-                    "durata_giorni": 45,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
-                    "tipo_pratica": "TICA",
-                    "documenti_richiesti": [],
-                    "checkpoints": [
-                        "Ricezione TICA da DSO",
-                        "Analisi tecnico-economica",
-                        "Decisione accettazione"
+                    "name": "Ricezione e Analisi TICA",
+                    "description": "Attesa e valutazione preventivo TICA dal DSO",
+                    "assignee": "Tecnico",
+                    "duration_days": 45,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "practice_type": "TICA - Testo Integrato Connessioni Attive",
+                    "required_documents": [],
+                    "documents_to_generate": [
+                        "TICA con codice univoco",
+                        "Soluzione tecnica connessione",
+                        "Preventivo economico dettagliato"
+                    ],
+                    "external_protocol_number": "Codice TICA",
+                    "regulatory_deadline": "20-30 giorni lavorativi per emissione",
+                    "checklist_items": [
+                        "Monitor portale per TICA",
+                        "Download preventivo TICA",
+                        "Analisi costi connessione",
+                        "Valutazione soluzione tecnica"
                     ],
                     "scadenza": {
                         "giorni": 45,
                         "tipo": "perentoria",
-                        "azione_default": "rifiuto automatico"
+                        "nota": "Preventivo decade automaticamente"
                     }
                 },
                 {
-                    "nome": "Accettazione e Pagamento TICA",
-                    "descrizione": "Accettazione preventivo e pagamento corrispettivi",
-                    "responsabile": "Amministrazione",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
-                    "documenti_richiesti": [
-                        "Accettazione TICA firmata",
-                        "Bonifico corrispettivi"
+                    "name": "Accettazione TICA e Pagamento",
+                    "description": "Accettazione formale preventivo TICA e pagamento opere",
+                    "assignee": "Amministrazione",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "regulatory_deadline": "45 giorni lavorativi",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Decadenza automatica preventivo - restart procedura",
+                    "required_documents": [
+                        "Modulo accettazione TICA firmato",
+                        "Ricevuta bonifico corrispettivi"
                     ],
-                    "checkpoints": [
-                        "Firma accettazione",
-                        "Pagamento prima rata",
-                        "Conferma DSO"
+                    "documents_to_generate": [
+                        "Accettazione TICA protocollata"
+                    ],
+                    "payment_method": "Bonifico con causale TICA",
+                    "submission_method": "Portale o PEC",
+                    "requires_physical_signature": True,
+                    "checklist_items": [
+                        "Firma modulo accettazione",
+                        "Esecuzione bonifico",
+                        "Upload ricevuta pagamento",
+                        "Conferma ricezione DSO"
                     ]
                 },
                 {
-                    "nome": "Comunicazione Fine Lavori",
-                    "descrizione": "Invio documentazione di fine lavori per attivazione",
-                    "responsabile": "Tecnico",
-                    "durata_giorni": 10,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
-                    "documenti_richiesti": [
-                        "Regolamento di Esercizio",
-                        "Dichiarazione conformità impianto",
-                        "Dichiarazione conformità SPI",
-                        "Certificato collaudo"
+                    "name": "Fine Lavori e Modello Unico Parte II",
+                    "description": "Comunicazione fine lavori con documentazione as-built",
+                    "assignee": "Tecnico",
+                    "duration_days": 10,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "portal_url": "Portale E-Distribuzione",
+                    "required_documents": [
+                        "Regolamento di Esercizio firmato",
+                        "Dichiarazione conformità DM 37/08",
+                        "Test report SPI con cassetta prova",
+                        "Certificazioni inverter CEI 0-21"
                     ],
-                    "checkpoints": [
-                        "Raccolta certificazioni",
-                        "Verifica completezza",
-                        "Invio al DSO"
-                    ]
-                },
-                {
-                    "nome": "Attivazione POD",
-                    "descrizione": "Allaccio fisico e attivazione contatori",
-                    "responsabile": "DSO",
-                    "durata_giorni": 10,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
-                    "guide_config": {
-                        "tipo": "monitoraggio",
-                        "check_status": "daily"
+                    "documents_to_generate": [
+                        "Modello Unico Parte II compilato",
+                        "Comunicazione fine lavori protocollata"
+                    ],
+                    "official_form_fields": {
+                        "dati_as_built": "Dati tecnici reali installati",
+                        "seriali_componenti": "Numeri serie moduli e inverter",
+                        "test_spi": "Risultati verifica protezioni"
                     },
-                    "checkpoints": [
-                        "Sopralluogo DSO",
-                        "Installazione contatori",
-                        "Assegnazione POD"
+                    "checklist_items": [
+                        "Verifica documentazione completa",
+                        "Compilazione Modello Unico II",
+                        "Upload portale DSO",
+                        "Conferma ricezione"
+                    ]
+                },
+                {
+                    "name": "Attivazione Connessione e POD",
+                    "description": "Allaccio fisico impianto e attivazione contatori UTF",
+                    "assignee": "DSO",
+                    "duration_days": 10,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "external_protocol_number": "Codice POD",
+                    "documents_to_generate": [
+                        "Verbale attivazione",
+                        "Comunicazione POD assegnato",
+                        "Configurazione contatori UTF"
+                    ],
+                    "requires_site_inspection": True,
+                    "human_checkpoint_notes": "Presenza obbligatoria responsabile impianto",
+                    "checklist_items": [
+                        "Programmazione sopralluogo DSO",
+                        "Verifica impianto e protezioni",
+                        "Installazione/configurazione contatori",
+                        "Rilascio POD definitivo"
                     ]
                 }
             ]
         },
         {
-            "nome": "Fase 3: Registrazione GAUDÌ (Terna)",
-            "ordine": 3,
-            "durata_giorni": 20,
+            "name": "Fase 3: Registrazione GAUDÌ (Terna)",
+            "order": 3,
+            "duration_days": 20,
             "tasks": [
                 {
-                    "nome": "Registrazione Operatore GAUDÌ",
-                    "descrizione": "Creazione account operatore/mandatario su portale GAUDÌ",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 2,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.TERNA.value,
+                    "name": "Registrazione Portale GAUDÌ",
+                    "description": "Registrazione impianto nel sistema GAUDÌ di Terna",
+                    "assignee": "Asset Manager",
+                    "duration_days": 2,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.TERNA.value,
                     "integrazione": EntityEnum.TERNA.value,
-                    "tipo_pratica": "GAUDÌ",
-                    "url_portale": "https://www.terna.it/gaudi",
-                    "credenziali_richieste": "User ID + Password",
-                    "documenti_richiesti": [
-                        "Documento identità",
-                        "Dati aziendali",
-                        "Mandato (se delegato)"
+                    "practice_type": "Censimento GAUDÌ",
+                    "portal_url": "https://mercato.terna.it/gaudi/",
+                    "portal_login_url": "https://mercato.terna.it/gaudi/login",
+                    "required_credentials": "Email (< 10MW) o Certificato Digitale (> 10MW)",
+                    "required_documents": [
+                        "POD assegnato da DSO",
+                        "Dati tecnici completi impianto",
+                        "Certificato digitale Terna (se > 10MW)"
                     ],
-                    "checkpoints": [
-                        "Registrazione portale",
-                        "Verifica email",
-                        "Attivazione account"
+                    "documents_to_generate": [
+                        "Credenziali accesso GAUDÌ",
+                        "Codice impianto temporaneo"
+                    ],
+                    "requires_human_auth": True,
+                    "checklist_items": [
+                        "Creazione account GAUDÌ",
+                        "Verifica email automatica",
+                        "Ricezione UserId e password",
+                        "Primo accesso portale"
                     ]
                 },
                 {
-                    "nome": "Inserimento Anagrafica Plant",
-                    "descrizione": "Compilazione dati tecnici impianto su GAUDÌ",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 3,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.TERNA.value,
+                    "name": "Inserimento Dati Tecnici GAUDÌ",
+                    "description": "Compilazione completa anagrafica tecnica impianto",
+                    "assignee": "Asset Manager",
+                    "duration_days": 3,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.TERNA.value,
                     "integrazione": EntityEnum.TERNA.value,
-                    "tipo_pratica": "GAUDÌ - Anagrafica",
-                    "documenti_richiesti": [
-                        "Codice POD",
-                        "Codice rintracciabilità DSO",
-                        "Schede tecniche componenti"
+                    "practice_type": "Censimento Impianto",
+                    "required_documents": [
+                        "POD definitivo da DSO",
+                        "Codice pratica connessione",
+                        "Schede tecniche moduli e inverter"
                     ],
-                    "checkpoints": [
-                        "Inserimento dati produttore",
-                        "Inserimento dati tecnici",
-                        "Validazione anagrafica"
+                    "official_form_fields": {
+                        "dati_impianto": {
+                            "pod": "Codice POD",
+                            "potenza_cc_kwp": "Potenza lato DC",
+                            "potenza_ca_kw": "Potenza lato AC",
+                            "marca_moduli": "Produttore moduli FV",
+                            "modello_moduli": "Modello moduli",
+                            "numero_moduli": "Quantità moduli",
+                            "marca_inverter": "Produttore inverter",
+                            "modello_inverter": "Modello inverter"
+                        }
+                    },
+                    "external_protocol_number": "CENSIMP",
+                    "documents_to_generate": [
+                        "Codice CENSIMP univoco",
+                        "Scheda tecnica GAUDÌ"
+                    ],
+                    "checklist_items": [
+                        "Inserimento anagrafica produttore",
+                        "Inserimento dati tecnici dettagliati",
+                        "Validazione e generazione CENSIMP",
+                        "Download scheda impianto"
                     ],
                     "dipendenze": ["Attivazione POD"]
                 },
                 {
-                    "nome": "Monitoraggio Flussi Validazione",
-                    "descrizione": "Verifica stato flussi G01, G02, G04 tra DSO e Terna",
-                    "responsabile": "Sistema",
-                    "durata_giorni": 15,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.TERNA.value,
-                    "guide_config": {
-                        "tipo": "polling",
-                        "frequenza": "daily",
-                        "api_endpoint": "/gaudi/status"
-                    },
-                    "checkpoints": [
-                        "Ricezione flusso G01 da DSO",
-                        "Conferma G02 da Terna",
-                        "Attivazione G04"
+                    "name": "Sincronizzazione GAUDÌ-GSE",
+                    "description": "Trasmissione automatica dati da GAUDÌ a GSE",
+                    "assignee": "Sistema",
+                    "duration_days": 15,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.TERNA.value,
+                    "integrazione": EntityEnum.GSE.value,
+                    "documents_to_generate": [
+                        "Conferma trasmissione dati GSE",
+                        "Report sincronizzazione"
                     ],
-                    "dipendenze": ["Inserimento Anagrafica Plant"]
+                    "checklist_items": [
+                        "Invio automatico dati a GSE",
+                        "Verifica ricezione GSE",
+                        "Conferma CENSIMP su GSE",
+                        "Abilitazione servizi GSE"
+                    ],
+                    "note": "Processo automatico via web service GAUDÌ-GSE",
+                    "dipendenze": ["Inserimento Dati Tecnici GAUDÌ"]
                 }
             ]
         },
         {
-            "nome": "Fase 4: Attivazione Servizi GSE",
-            "ordine": 4,
-            "durata_giorni": 30,
+            "name": "Fase 4: Attivazione Servizi GSE",
+            "order": 4,
+            "duration_days": 30,
             "tasks": [
                 {
-                    "nome": "Accesso Area Clienti GSE",
-                    "descrizione": "Login con SPID o credenziali + MFA",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 1,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.GSE.value,
+                    "name": "Accesso Area Clienti GSE",
+                    "description": "Login con SPID o credenziali + MFA",
+                    "assignee": "Asset Manager",
+                    "duration_days": 1,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.GSE.value,
                     "integrazione": EntityEnum.GSE.value,
-                    "tipo_pratica": "Accesso Portale",
-                    "url_portale": "https://areaclienti.gse.it",
-                    "credenziali_richieste": "SPID/CIE + MFA",
-                    "checkpoints": [
+                    "practice_type": "Accesso Portale",
+                    "portal_url": "https://areaclienti.gse.it",
+                    "portal_login_url": "https://areaclienti.gse.it/login",
+                    "required_credentials": "SPID/CIE + MFA",
+                    "documents_to_generate": [
+                        "Screenshot configurazione MFA",
+                        "Credenziali accesso salvate"
+                    ],
+                    "regulatory_deadline": "Immediato per attivazione",
+                    "deadline_type": "propedeutico",
+                    "deadline_consequences": "Impossibile procedere con RID/SSP",
+                    "requires_human_auth": True,
+                    "human_checkpoint_notes": "MFA richiede telefono personale",
+                    "checklist_items": [
                         "Verifica credenziali SPID",
                         "Configurazione MFA",
                         "Test accesso"
                     ]
                 },
                 {
-                    "nome": "Attivazione Ritiro Dedicato (RID)",
-                    "descrizione": "Richiesta convenzione Ritiro Dedicato per vendita energia",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 10,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.GSE.value,
+                    "name": "Attivazione Ritiro Dedicato (RID)",
+                    "description": "Richiesta convenzione Ritiro Dedicato per vendita energia",
+                    "assignee": "Asset Manager",
+                    "duration_days": 10,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.GSE.value,
                     "integrazione": EntityEnum.GSE.value,
-                    "tipo_pratica": "RID",
-                    "documenti_richiesti": [
+                    "practice_type": "RID",
+                    "portal_url": "https://areaclienti.gse.it/RID",
+                    "portal_login_url": "https://areaclienti.gse.it/login",
+                    "required_credentials": "SPID/CIE + MFA",
+                    "required_documents": [
                         "Dati impianto da GAUDÌ",
                         "Coordinate bancarie",
                         "Documentazione societaria"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Convenzione RID firmata",
+                        "Codice convenzione GSE",
+                        "Calendario pagamenti energia"
+                    ],
+                    "official_form_fields": {
+                        "codice_censimp": "Da GAUDÌ",
+                        "iban": "Coordinate bancarie",
+                        "prezzi_minimi_garantiti": "Sì/No",
+                        "tariffa_omnicomprensiva": "Solo se incentivato"
+                    },
+                    "regulatory_deadline": "30 giorni per attivazione",
+                    "deadline_type": "ordinario",
+                    "submission_method": "Portale GSE online",
+                    "external_protocol_number": "Numero convenzione RID",
+                    "checklist_items": [
                         "Compilazione moduli RID",
                         "Upload documenti",
                         "Invio richiesta"
                     ],
-                    "dipendenze": ["Monitoraggio Flussi Validazione"],
-                    "condizioni": {
-                        "se": "modalita_vendita == 'RID'",
-                        "allora": "obbligatorio = true"
+                    "dipendenze": ["Sincronizzazione GAUDÌ-GSE"],
+                    "conditions": {
+                        "if": "modalita_vendita == 'RID'",
+                        "then": "obbligatorio = True"
                     }
                 },
                 {
-                    "nome": "Attivazione Scambio sul Posto (SSP)",
-                    "descrizione": "Richiesta convenzione Scambio sul Posto",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 10,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.GSE.value,
+                    "name": "Attivazione Scambio sul Posto (SSP)",
+                    "description": "Richiesta convenzione Scambio sul Posto (fino al 2024)",
+                    "assignee": "Asset Manager",
+                    "duration_days": 10,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.GSE.value,
                     "integrazione": EntityEnum.GSE.value,
-                    "tipo_pratica": "SSP",
-                    "documenti_richiesti": [
+                    "practice_type": "SSP",
+                    "portal_url": "https://areaclienti.gse.it/SSP",
+                    "portal_login_url": "https://areaclienti.gse.it/login",
+                    "required_credentials": "SPID/CIE + MFA",
+                    "required_documents": [
                         "Dati impianto da GAUDÌ",
                         "Dati punto di prelievo",
                         "Documentazione tecnica"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Convenzione SSP firmata",
+                        "Codice convenzione SSP",
+                        "Schema conguagli annuali"
+                    ],
+                    "official_form_fields": {
+                        "pod_prelievo": "POD punto consumo",
+                        "pod_immissione": "POD produzione",
+                        "stesso_sito": "Sì/No",
+                        "tipologia_utente": "Domestico/Altri usi"
+                    },
+                    "regulatory_deadline": "60 giorni per attivazione",
+                    "deadline_type": "ordinario",
+                    "submission_method": "Portale GSE online",
+                    "checklist_items": [
                         "Compilazione moduli SSP",
                         "Verifica requisiti",
                         "Invio richiesta"
                     ],
-                    "dipendenze": ["Monitoraggio Flussi Validazione"],
-                    "condizioni": {
-                        "se": "potenza <= 500 AND modalita_vendita == 'SSP'",
-                        "allora": "obbligatorio = true"
-                    }
+                    "dipendenze": ["Sincronizzazione GAUDÌ-GSE"],
+                    "conditions": {
+                        "if": "potenza <= 500 AND modalita_vendita == 'SSP' AND anno < 2025",
+                        "then": "obbligatorio = True"
+                    },
+                    "note": "SSP termina per nuovi impianti dal 2025"
                 },
                 {
-                    "nome": "Dichiarazione Antimafia",
-                    "descrizione": "Presentazione documentazione antimafia per incentivi > 150k€",
-                    "responsabile": "Legale",
-                    "durata_giorni": 15,
-                    "priorita": "Media",
-                    "ente_responsabile": EntityEnum.GSE.value,
-                    "tipo_pratica": "Antimafia",
-                    "documenti_richiesti": [
+                    "name": "Dichiarazione Antimafia",
+                    "description": "Presentazione documentazione antimafia per incentivi > 150k€",
+                    "assignee": "Legale",
+                    "duration_days": 15,
+                    "priority": "Media",
+                    "responsible_entity": EntityEnum.GSE.value,
+                    "practice_type": "Antimafia",
+                    "portal_url": "https://areaclienti.gse.it/antimafia",
+                    "required_credentials": "SPID/CIE + MFA",
+                    "required_documents": [
                         "Visura camerale aggiornata",
                         "Documenti identità soci",
                         "Dichiarazioni sostitutive antimafia"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Modello autocertificazione antimafia",
+                        "Elenco soci e quote",
+                        "Dichiarazione familiari conviventi"
+                    ],
+                    "official_form_fields": {
+                        "societa_dati": "Ragione sociale e P.IVA",
+                        "soci_elenco": "Nome, CF, quota % per ogni socio",
+                        "familiari_conviventi": "Per soci > 25%",
+                        "white_list": "Iscrizione se disponibile"
+                    },
+                    "regulatory_deadline": "30 giorni per verifica",
+                    "deadline_type": "sospensivo",
+                    "deadline_consequences": "Blocco erogazione incentivi",
+                    "requires_physical_signature": True,
+                    "checklist_items": [
                         "Verifica soglia incentivi",
                         "Raccolta documentazione",
                         "Invio dichiarazione"
                     ],
-                    "condizioni": {
-                        "se": "valore_incentivi_annuo > 150000",
-                        "allora": "obbligatorio = true"
+                    "conditions": {
+                        "if": "valore_incentivi_annuo > 150000",
+                        "then": "obbligatorio = True"
                     }
                 }
             ]
         },
         {
-            "nome": "Fase 5: Denuncia Officina Elettrica (Dogane)",
-            "ordine": 5,
-            "durata_giorni": 25,
+            "name": "Fase 5: Denuncia Officina Elettrica (Dogane)",
+            "order": 5,
+            "duration_days": 25,
             "tasks": [
                 {
-                    "nome": "Preparazione Denuncia Officina",
-                    "descrizione": "Compilazione moduli denuncia officina elettrica",
-                    "responsabile": "Fiscalista",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
-                    "tipo_pratica": "Denuncia Officina",
-                    "documenti_richiesti": [
+                    "name": "Preparazione Denuncia Officina",
+                    "description": "Compilazione moduli denuncia officina elettrica",
+                    "assignee": "Fiscalista",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "practice_type": "Denuncia Officina",
+                    "portal_url": "https://www.adm.gov.it/portale/dogane/operatore/accise/energia-elettrica",
+                    "required_documents": [
                         "Dati tecnici impianto",
                         "Planimetria con contatori UTF",
                         "Schema unifilare fiscale"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Modello AD-1 compilato",
+                        "Planimetria UTF quotata",
+                        "Schema contatori fiscali",
+                        "Relazione tecnica officina"
+                    ],
+                    "official_form_fields": {
+                        "dati_officina": {
+                            "denominazione": "Nome impianto",
+                            "ubicazione": "Indirizzo completo",
+                            "potenza_nominale": "kW installati",
+                            "potenza_efficiente": "kW netti"
+                        },
+                        "contatori_utf": {
+                            "matricola_produzione": "Seriale UTF produzione",
+                            "matricola_consumo": "Seriale UTF autoconsumo",
+                            "matricola_immissione": "Seriale UTF immissione"
+                        }
+                    },
+                    "checklist_items": [
                         "Verifica potenza > 20kW",
                         "Compilazione modello AD-1",
                         "Preparazione allegati tecnici"
                     ],
-                    "condizioni": {
-                        "se": "potenza > 20",
-                        "allora": "obbligatorio = true"
+                    "conditions": {
+                        "if": "potenza > 20",
+                        "then": "obbligatorio = True"
                     }
                 },
                 {
-                    "nome": "Invio Telematico PUDM",
-                    "descrizione": "Trasmissione denuncia tramite portale PUDM o EDI",
-                    "responsabile": "Fiscalista",
-                    "durata_giorni": 2,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
+                    "name": "Invio Telematico PUDM",
+                    "description": "Trasmissione denuncia tramite portale PUDM o EDI",
+                    "assignee": "Fiscalista",
+                    "duration_days": 2,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
                     "integrazione": EntityEnum.CUSTOMS.value,
-                    "tipo_pratica": "PUDM",
-                    "url_portale": "https://pudm.adm.gov.it",
-                    "credenziali_richieste": "SPID/CNS/CIE",
-                    "checkpoints": [
+                    "practice_type": "PUDM",
+                    "portal_url": "https://pudm.adm.gov.it",
+                    "portal_login_url": "https://pudm.adm.gov.it/pudm/login",
+                    "required_credentials": "SPID/CNS/CIE",
+                    "documents_to_generate": [
+                        "Ricevuta protocollazione PUDM",
+                        "Numero pratica doganale"
+                    ],
+                    "regulatory_deadline": "30 giorni da attivazione POD",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Sanzione amministrativa €500-€3000",
+                    "submission_method": "PUDM o EDI per grandi operatori",
+                    "requires_human_auth": True,
+                    "checklist_items": [
                         "Accesso PUDM",
                         "Upload documentazione",
                         "Protocollazione pratica"
                     ],
                     "dipendenze": ["Preparazione Denuncia Officina"],
-                    "condizioni": {
-                        "se": "potenza > 20",
-                        "allora": "obbligatorio = true"
+                    "conditions": {
+                        "if": "potenza > 20",
+                        "then": "obbligatorio = True"
                     }
                 },
                 {
-                    "nome": "Ottenimento Licenza Esercizio",
-                    "descrizione": "Ricezione licenza officina elettrica da Agenzia Dogane",
-                    "responsabile": "Sistema",
-                    "durata_giorni": 20,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
+                    "name": "Ottenimento Licenza Esercizio",
+                    "description": "Ricezione licenza officina elettrica da Agenzia Dogane",
+                    "assignee": "Sistema",
+                    "duration_days": 20,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "portal_url": "https://pudm.adm.gov.it",
+                    "documents_to_generate": [
+                        "Licenza officina elettrica UTF",
+                        "Codice ditta assegnato",
+                        "Codice officina"
+                    ],
+                    "external_protocol_number": "Codice Ditta/Officina",
+                    "regulatory_deadline": "60 giorni da denuncia",
+                    "deadline_type": "ordinatorio",
+                    "requires_site_inspection": True,
+                    "human_checkpoint_notes": "Possibile sopralluogo UTF",
                     "guide_config": {
                         "tipo": "monitoraggio",
                         "check_status": "daily",
                         "alert_giorni_ritardo": 5
                     },
-                    "checkpoints": [
+                    "checklist_items": [
                         "Monitoraggio stato pratica",
                         "Eventuale sopralluogo",
                         "Ricezione licenza"
                     ],
                     "dipendenze": ["Invio Telematico PUDM"],
-                    "condizioni": {
-                        "se": "potenza > 20",
-                        "allora": "obbligatorio = true"
+                    "conditions": {
+                        "if": "potenza > 20",
+                        "then": "obbligatorio = True"
                     }
                 }
             ]
@@ -447,7 +654,7 @@ RENEWABLE_ENERGY_WORKFLOW = {
         "tipo_workflow": "nuovo_impianto",
         "stato_impianto": "non_connesso"
     },
-    "scadenza_config": {
+    "deadline_config": {
         "calcolo": "data_inizio + 180 giorni",
         "alert_giorni": [30, 15, 7, 1]
     }
@@ -455,48 +662,74 @@ RENEWABLE_ENERGY_WORKFLOW = {
 
 # Recurring workflows
 DICHIARAZIONE_ANNUALE_CONSUMO = {
-    "nome": "Dichiarazione Annuale Consumo Energia",
-    "descrizione": "Dichiarazione annuale di produzione e consumo energia per Agenzia Dogane",
-    "categoria": WorkflowCategoryEnum.FISCAL,
-    "tipo_impianto": "Tutti",
-    "potenza_minima": 20,
-    "potenza_massima": None,
-    "durata_stimata_giorni": 10,
-    "ricorrenza": "Annuale",
-    "enti_richiesti": [EntityEnum.CUSTOMS.value],
-    "documenti_base": ["Letture mensili contatori"],
+    "name": "Dichiarazione Annuale Consumo Energia",
+    "description": "Dichiarazione annuale di produzione e consumo energia per Agenzia Dogane",
+    "category": WorkflowCategoryEnum.FISCAL,
+    "plant_type": "Tutti",
+    "min_power": 20,
+    "max_power": None,
+    "estimated_duration_days": 10,
+    "recurrence": "Annuale",
+    "required_entities": [EntityEnum.CUSTOMS.value],
+    "base_documents": ["Letture mensili contatori"],
     "stages": [
         {
-            "nome": "Preparazione Dichiarazione",
-            "ordine": 1,
-            "durata_giorni": 10,
+            "name": "Preparazione Dichiarazione",
+            "order": 1,
+            "duration_days": 10,
             "tasks": [
                 {
-                    "nome": "Raccolta Dati Produzione",
-                    "descrizione": "Lettura contatori e calcolo produzioni annuali",
-                    "responsabile": "Tecnico",
-                    "durata_giorni": 3,
-                    "priorita": "Alta",
-                    "documenti_richiesti": ["Letture mensili contatori UTF"],
-                    "checkpoints": [
+                    "name": "Raccolta Dati Produzione",
+                    "description": "Lettura contatori e calcolo produzioni annuali",
+                    "assignee": "Tecnico",
+                    "duration_days": 3,
+                    "priority": "Alta",
+                    "required_documents": ["Letture mensili contatori UTF"],
+                    "documents_to_generate": [
+                        "Registro letture UTF annuale",
+                        "Riepilogo produzione/consumo/cessione",
+                        "Calcolo energia soggetta ad accisa"
+                    ],
+                    "official_form_fields": {
+                        "energia_prodotta_kwh": "Totale annuo produzione",
+                        "energia_autoconsumata_kwh": "Totale autoconsumo",
+                        "energia_ceduta_kwh": "Totale cessione rete",
+                        "energia_accisa_kwh": "Soggetta ad accisa (>200.000 kWh)"
+                    },
+                    "regulatory_deadline": "31 marzo di ogni anno",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Sanzione da €500 a €3.000 + accertamento",
+                    "checklist_items": [
                         "Verifica letture mensili",
                         "Calcolo totali annuali",
                         "Validazione dati"
                     ]
                 },
                 {
-                    "nome": "Generazione File EDI",
-                    "descrizione": "Creazione file formato Idoc per invio telematico",
-                    "responsabile": "Sistema",
-                    "durata_giorni": 1,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
+                    "name": "Generazione File EDI",
+                    "description": "Creazione file formato Idoc per invio telematico",
+                    "assignee": "Sistema",
+                    "duration_days": 1,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "portal_url": "https://www.adm.gov.it/portale/documents/20182/5356938/Tracciati+EDI.pdf",
+                    "documents_to_generate": [
+                        "File IDOC formato XML",
+                        "File firmato digitalmente .p7m",
+                        "Report validazione tracciato"
+                    ],
+                    "official_form_fields": {
+                        "codice_ditta": "Da licenza officina",
+                        "anno_riferimento": "Anno dichiarazione",
+                        "dati_produzione": "Array mensile produzioni",
+                        "firma_digitale": "CNS titolare/delegato"
+                    },
                     "guide_config": {
                         "tipo": "generazione_edi",
                         "formato": "IDOC",
                         "template": "dichiarazione_annuale"
                     },
-                    "checkpoints": [
+                    "checklist_items": [
                         "Formattazione dati Idoc",
                         "Generazione firma digitale",
                         "Validazione tracciato"
@@ -504,20 +737,28 @@ DICHIARAZIONE_ANNUALE_CONSUMO = {
                     "dipendenze": ["Raccolta Dati Produzione"]
                 },
                 {
-                    "nome": "Invio System-to-System",
-                    "descrizione": "Trasmissione file EDI tramite canale S2S",
-                    "responsabile": "Sistema",
-                    "durata_giorni": 1,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
+                    "name": "Invio System-to-System",
+                    "description": "Trasmissione file EDI tramite canale S2S",
+                    "assignee": "Sistema",
+                    "duration_days": 1,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
                     "integrazione": EntityEnum.CUSTOMS.value,
-                    "tipo_pratica": "S2S",
+                    "practice_type": "S2S",
+                    "portal_url": "https://www.adm.gov.it/portale/ee/trader/servizi-online/servizi-doganali/edi",
+                    "required_credentials": "Certificato S2S Dogane",
+                    "documents_to_generate": [
+                        "Ricevuta telematica RT",
+                        "Esito elaborazione",
+                        "Protocollo dichiarazione"
+                    ],
+                    "submission_method": "Web Service SOAP/REST",
                     "guide_config": {
                         "tipo": "invio_s2s",
                         "canale": "EDI",
                         "retry_max": 3
                     },
-                    "checkpoints": [
+                    "checklist_items": [
                         "Connessione canale S2S",
                         "Upload file firmato",
                         "Conferma ricezione"
@@ -525,14 +766,30 @@ DICHIARAZIONE_ANNUALE_CONSUMO = {
                     "dipendenze": ["Generazione File EDI"]
                 },
                 {
-                    "nome": "Pagamento Accise",
-                    "descrizione": "Calcolo e pagamento accise su energia consumata",
-                    "responsabile": "Amministrazione",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
-                    "documenti_richiesti": ["F24 accise"],
-                    "checkpoints": [
+                    "name": "Pagamento Accise",
+                    "description": "Calcolo e pagamento accise su energia consumata",
+                    "assignee": "Amministrazione",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "required_documents": ["F24 accise"],
+                    "documents_to_generate": [
+                        "F24 ACCISE compilato",
+                        "Calcolo dettaglio accise",
+                        "Ricevuta pagamento F24"
+                    ],
+                    "official_form_fields": {
+                        "codice_tributo": "3811 (accisa energia elettrica)",
+                        "periodo_riferimento": "MM/AAAA",
+                        "codice_ufficio": "Da licenza officina",
+                        "aliquota_accisa": "€0,0125/kWh (2025)"
+                    },
+                    "cost_description": "Accisa su autoconsumo > 200.000 kWh/anno",
+                    "payment_method": "F24 telematico",
+                    "regulatory_deadline": "16 del mese successivo",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Sanzione 30% + interessi",
+                    "checklist_items": [
                         "Calcolo accise dovute",
                         "Generazione F24",
                         "Pagamento e ricevuta"
@@ -543,10 +800,10 @@ DICHIARAZIONE_ANNUALE_CONSUMO = {
         }
     ],
     "condizioni_attivazione": {
-        "potenza_minima": 20,
+        "min_power": 20,
         "licenza_officina": "attiva"
     },
-    "scadenza_config": {
+    "deadline_config": {
         "scadenza_fissa": {
             "giorno": 31,
             "mese": 3
@@ -557,42 +814,66 @@ DICHIARAZIONE_ANNUALE_CONSUMO = {
 }
 
 PAGAMENTO_CANONE_LICENZA = {
-    "nome": "Pagamento Canone Annuale Licenza",
-    "descrizione": "Pagamento canone annuale licenza officina elettrica",
-    "categoria": WorkflowCategoryEnum.FISCAL,
-    "tipo_impianto": "Tutti",
-    "potenza_minima": 20,
-    "potenza_massima": None,
-    "durata_stimata_giorni": 5,
-    "ricorrenza": "Annuale",
-    "enti_richiesti": [EntityEnum.CUSTOMS.value],
+    "name": "Pagamento Canone Annuale Licenza",
+    "description": "Pagamento canone annuale licenza officina elettrica",
+    "category": WorkflowCategoryEnum.FISCAL,
+    "plant_type": "Tutti",
+    "min_power": 20,
+    "max_power": None,
+    "estimated_duration_days": 5,
+    "recurrence": "Annuale",
+    "required_entities": [EntityEnum.CUSTOMS.value],
     "stages": [
         {
-            "nome": "Pagamento Canone",
-            "ordine": 1,
-            "durata_giorni": 5,
+            "name": "Pagamento Canone",
+            "order": 1,
+            "duration_days": 5,
             "tasks": [
                 {
-                    "nome": "Calcolo Canone Dovuto",
-                    "descrizione": "Determinazione importo canone annuale",
-                    "responsabile": "Amministrazione",
-                    "durata_giorni": 2,
-                    "priorita": "Alta",
-                    "checkpoints": [
+                    "name": "Calcolo Canone Dovuto",
+                    "description": "Determinazione importo canone annuale",
+                    "assignee": "Amministrazione",
+                    "duration_days": 2,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "documents_to_generate": [
+                        "Calcolo canone annuale",
+                        "F24 precompilato"
+                    ],
+                    "official_form_fields": {
+                        "codice_tributo": "2810 (canone licenza officina)",
+                        "importo_base": "€77,47 (fino a 100kW)",
+                        "importo_maggiorato": "€154,94 (oltre 100kW)",
+                        "anno_riferimento": "Anno solare"
+                    },
+                    "cost_amount": 77.47,
+                    "cost_description": "Canone base fino 100kW (€154,94 oltre)",
+                    "regulatory_deadline": "16 dicembre di ogni anno",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Sospensione licenza + sanzioni",
+                    "checklist_items": [
                         "Verifica potenza impianto",
                         "Calcolo importo",
                         "Generazione F24"
                     ]
                 },
                 {
-                    "nome": "Pagamento F24",
-                    "descrizione": "Esecuzione pagamento tramite F24",
-                    "responsabile": "Amministrazione",
-                    "durata_giorni": 3,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.CUSTOMS.value,
-                    "documenti_richiesti": ["Ricevuta pagamento F24"],
-                    "checkpoints": [
+                    "name": "Pagamento F24",
+                    "description": "Esecuzione pagamento tramite F24",
+                    "assignee": "Amministrazione",
+                    "duration_days": 3,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.CUSTOMS.value,
+                    "portal_url": "https://www.agenziaentrate.gov.it/portale/web/guest/servizi/servizitrasversali/f24",
+                    "required_documents": ["Ricevuta pagamento F24"],
+                    "documents_to_generate": [
+                        "F24 quietanzato",
+                        "Ricevuta telematica RT",
+                        "CRO/TRN bancario"
+                    ],
+                    "payment_method": "F24 web/telematico",
+                    "submission_method": "Home banking o Entratel",
+                    "checklist_items": [
                         "Compilazione F24",
                         "Pagamento bancario",
                         "Archiviazione ricevuta"
@@ -603,10 +884,10 @@ PAGAMENTO_CANONE_LICENZA = {
         }
     ],
     "condizioni_attivazione": {
-        "potenza_minima": 20,
+        "min_power": 20,
         "licenza_officina": "attiva"
     },
-    "scadenza_config": {
+    "deadline_config": {
         "scadenza_fissa": {
             "giorno": 16,
             "mese": 12
@@ -617,44 +898,73 @@ PAGAMENTO_CANONE_LICENZA = {
 }
 
 VERIFICA_PERIODICA_SPI = {
-    "nome": "Verifica Periodica Sistema Protezione Interfaccia",
-    "descrizione": "Verifica quinquennale del Sistema di Protezione di Interfaccia",
-    "categoria": WorkflowCategoryEnum.MAINTENANCE,
-    "tipo_impianto": "Tutti",
-    "potenza_minima": 0,
-    "potenza_massima": None,
-    "durata_stimata_giorni": 30,
-    "ricorrenza": "Quinquennale",
-    "enti_richiesti": [EntityEnum.DSO.value],
+    "name": "Verifica Periodica Sistema Protezione Interfaccia",
+    "description": "Verifica quinquennale del Sistema di Protezione di Interfaccia",
+    "category": WorkflowCategoryEnum.MAINTENANCE,
+    "plant_type": "Tutti",
+    "min_power": 0,
+    "max_power": None,
+    "estimated_duration_days": 30,
+    "recurrence": "Quinquennale",
+    "required_entities": [EntityEnum.DSO.value],
     "stages": [
         {
-            "nome": "Verifica SPI",
-            "ordine": 1,
-            "durata_giorni": 30,
+            "name": "Verifica SPI",
+            "order": 1,
+            "duration_days": 30,
             "tasks": [
                 {
-                    "nome": "Pianificazione Verifica",
-                    "descrizione": "Pianificazione intervento con tecnico qualificato",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 10,
-                    "priorita": "Media",
-                    "checkpoints": [
+                    "name": "Pianificazione Verifica",
+                    "description": "Pianificazione intervento con tecnico qualificato",
+                    "assignee": "Asset Manager",
+                    "duration_days": 10,
+                    "priority": "Media",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "portal_url": "Portale DSO locale",
+                    "documents_to_generate": [
+                        "Comunicazione data verifica",
+                        "Nomina tecnico verificatore"
+                    ],
+                    "official_form_fields": {
+                        "data_prevista": "Data pianificata verifica",
+                        "tecnico_nome": "Nome tecnico abilitato",
+                        "tecnico_qualifica": "N. iscrizione albo",
+                        "pod_impianto": "POD da verificare"
+                    },
+                    "regulatory_deadline": "Entro 5 anni da ultima verifica",
+                    "deadline_type": "peremptory",
+                    "deadline_consequences": "Distacco impianto da rete",
+                    "checklist_items": [
                         "Selezione tecnico qualificato",
                         "Pianificazione data",
                         "Notifica DSO"
                     ]
                 },
                 {
-                    "nome": "Esecuzione Verifica",
-                    "descrizione": "Verifica funzionale del Sistema di Protezione",
-                    "responsabile": "Tecnico",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "documenti_richiesti": [
+                    "name": "Esecuzione Verifica",
+                    "description": "Verifica funzionale del Sistema di Protezione",
+                    "assignee": "Tecnico",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "required_documents": [
                         "Report verifica SPI",
                         "Certificato conformità"
                     ],
-                    "checkpoints": [
+                    "documents_to_generate": [
+                        "Verbale prova SPI con cassetta",
+                        "Report tempi intervento protezioni",
+                        "Certificato conformità CEI 0-21",
+                        "Scheda taratura protezioni"
+                    ],
+                    "official_form_fields": {
+                        "test_27": "Minima tensione (soglia e tempo)",
+                        "test_59": "Massima tensione (soglia e tempo)",
+                        "test_81": "Frequenza min/max (soglie e tempi)",
+                        "test_interfaccia": "Apertura DDI comando esterno"
+                    },
+                    "requires_site_inspection": True,
+                    "human_checkpoint_notes": "Presenza tecnico con cassetta prova relè",
+                    "checklist_items": [
                         "Test funzionali",
                         "Compilazione report",
                         "Rilascio certificato"
@@ -662,14 +972,24 @@ VERIFICA_PERIODICA_SPI = {
                     "dipendenze": ["Pianificazione Verifica"]
                 },
                 {
-                    "nome": "Comunicazione Esito DSO",
-                    "descrizione": "Invio certificazione verifica al DSO",
-                    "responsabile": "Asset Manager",
-                    "durata_giorni": 5,
-                    "priorita": "Alta",
-                    "ente_responsabile": EntityEnum.DSO.value,
-                    "documenti_richiesti": ["Certificato verifica SPI"],
-                    "checkpoints": [
+                    "name": "Comunicazione Esito DSO",
+                    "description": "Invio certificazione verifica al DSO",
+                    "assignee": "Asset Manager",
+                    "duration_days": 5,
+                    "priority": "Alta",
+                    "responsible_entity": EntityEnum.DSO.value,
+                    "portal_url": "Portale produttori DSO",
+                    "required_credentials": "Credenziali produttore",
+                    "required_documents": ["Certificato verifica SPI"],
+                    "documents_to_generate": [
+                        "Comunicazione esito verifica",
+                        "Upload certificato su portale",
+                        "Conferma ricezione DSO"
+                    ],
+                    "submission_method": "Upload portale o PEC",
+                    "regulatory_deadline": "30 giorni da verifica",
+                    "deadline_type": "ordinatorio",
+                    "checklist_items": [
                         "Upload certificato",
                         "Conferma ricezione DSO"
                     ],
@@ -680,9 +1000,9 @@ VERIFICA_PERIODICA_SPI = {
     ],
     "condizioni_attivazione": {
         "anni_da_attivazione": 5,
-        "ricorrenza": "ogni 5 anni"
+        "recurrence": "ogni 5 anni"
     },
-    "scadenza_config": {
+    "deadline_config": {
         "calcolo": "data_ultima_verifica + 5 anni",
         "alert_giorni": [90, 60, 30, 15],
         "blocco_impianto": True
@@ -691,6 +1011,7 @@ VERIFICA_PERIODICA_SPI = {
 
 # List of all renewable energy workflow templates
 RENEWABLE_ENERGY_WORKFLOWS = [
+    SOLAR_INSTALLATION_COMPLETE,  # Comprehensive 9-phase workflow
     RENEWABLE_ENERGY_WORKFLOW,
     DICHIARAZIONE_ANNUALE_CONSUMO,
     PAGAMENTO_CANONE_LICENZA,
@@ -706,17 +1027,17 @@ def get_applicable_workflows(potenza_kw: float, tipo_impianto: str, stato_impian
     
     for workflow in RENEWABLE_ENERGY_WORKFLOWS:
         # Check power requirements
-        if workflow.get("potenza_minima") and potenza_kw < workflow["potenza_minima"]:
+        if workflow.get("min_power") and potenza_kw < workflow["min_power"]:
             continue
-        if workflow.get("potenza_massima") and potenza_kw > workflow["potenza_massima"]:
+        if workflow.get("max_power") and potenza_kw > workflow["max_power"]:
             continue
             
         # Check plant type
-        if workflow.get("tipo_impianto") != "Tutti" and workflow.get("tipo_impianto") != tipo_impianto:
+        if workflow.get("plant_type") != "Tutti" and workflow.get("plant_type") != tipo_impianto:
             continue
             
         # Check activation conditions
-        conditions = workflow.get("condizioni_attivazione", {})
+        conditions = workflow.get("activation_conditions", {})
         if conditions.get("stato_impianto") and conditions["stato_impianto"] != stato_impianto:
             continue
             

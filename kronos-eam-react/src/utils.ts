@@ -19,8 +19,8 @@ export const getplantPotenzaKw = (plant: any): number => {
   if (!plant) return 0;
   
   // Try different property names
-  return plant.potenza_kw || 
-         plant.potenza || 
+  return plant.power_kw || 
+         plant.power || 
          plant.potenza_nominale_kw || 
          plant.potenza_nominale ||
          0;

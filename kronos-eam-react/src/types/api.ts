@@ -144,7 +144,7 @@ export interface Task extends TimestampFields {
   description?: string;
   status: TaskStatus;
   assignee: string;
-  dueDate: string;
+  due_date: string;
   documents: TaskDocument[];
   comments: TaskComment[];
   priority?: 'High' | 'Medium' | 'Low';
@@ -184,7 +184,7 @@ export interface Workflow extends TimestampFields, TenantFields {
   progress: number;
   stages: WorkflowStage[];
   creationDate?: string;
-  dueDate?: string;
+  due_date?: string;
   completionDate?: string;
   type?: string;
   category?: string;

@@ -13,7 +13,7 @@ const DoganeTab: React.FC<DoganeTabProps> = ({ plant }) => {
   const doganeData = {
     numeroLicenza: 'IT12BR000123E',
     dataRilascio: '15/06/2022',
-    dataScadenza: '31/12/2025',
+    due_date: '31/12/2025',
     statusLicenza: 'Attiva',
     ufficioDogane: 'UTF Brindisi',
     typeOfficina: 'Officina Elettrica',
@@ -229,7 +229,7 @@ const DoganeTab: React.FC<DoganeTabProps> = ({ plant }) => {
           </div>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Data Scadenza</p>
-            <p className="font-medium text-gray-800 dark:text-gray-100">{doganeData.dataScadenza}</p>
+            <p className="font-medium text-gray-800 dark:text-gray-100">{doganeData.due_date}</p>
           </div>
           <div>
             <p className="text-sm text-gray-600 dark:text-gray-400">Responsabile Fiscale</p>

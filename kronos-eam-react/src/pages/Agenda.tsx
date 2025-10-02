@@ -22,18 +22,18 @@ import clsx from 'clsx';
 
 interface Scadenza {
   id: string;
-  titolo: string;
-  descrizione: string;
-  data: string;
-  ora?: string;
-  type: 'Dichiarazione' | 'Pagamento' | 'Comunicazione' | 'Verifica' | 'Scadenza' | 'Riunione';
-  ente: 'Dogane' | 'GSE' | 'Terna' | 'DSO' | 'Interno';
-  priorita: 'Alta' | 'Media' | 'Bassa';
-  status: 'Completato' | 'In Corso' | 'Pianificato' | 'In Ritardo';
+  title: string;
+  description: string;
+  date: string;
+  time?: string;
+  type: 'Declaration' | 'Payment' | 'Communication' | 'Verification' | 'Deadline' | 'Meeting';
+  entity: 'Customs' | 'GSE' | 'Terna' | 'DSO' | 'Internal';
+  priority: 'High' | 'Medium' | 'Low';
+  status: 'Completed' | 'In Progress' | 'Planned' | 'Delayed';
   plant?: string;
-  responsabile?: string;
-  documenti?: string[];
-  ricorrente?: 'Mensile' | 'Trimestrale' | 'Annuale';
+  assignee?: string;
+  documents?: string[];
+  recurring?: 'Monthly' | 'Quarterly' | 'Annual';
 }
 
 const Agenda: React.FC = () => {
@@ -41,9 +41,9 @@ const Agenda: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<'month' | 'week' | 'day' | 'list'>('month');
   const [filters, setFilters] = useState({
-    ente: 'all',
+    entity: 'all',
     type: 'all',
-    priorita: 'all',
+    priority: 'all',
     plant: 'all'
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -53,110 +53,110 @@ const Agenda: React.FC = () => {
   const scadenze: Scadenza[] = [
     {
       id: '1',
-      titolo: 'Dichiarazione Annuale Dogane',
-      descrizione: 'Invio dichiarazione annuale consumo energia elettrica',
-      data: '2024-03-31',
-      type: 'Dichiarazione',
-      ente: 'Dogane',
-      priorita: 'Alta',
-      status: 'In Corso',
+      title: 'Dichiarazione Annuale Dogane',
+      description: 'Invio dichiarazione annuale consumo energia elettrica',
+      date: '2024-03-31',
+      type: 'Declaration',
+      entity: 'Customs',
+      priority: 'High',
+      status: 'In Progress',
       plant: 'Solare Verdi 1',
-      responsabile: 'Marco Rossi',
-      documenti: ['Registro_Produzione_2023.xlsx', 'Dichiarazione_2023.xml']
+      assignee: 'Marco Rossi',
+      documents: ['Registro_Produzione_2023.xlsx', 'Dichiarazione_2023.xml']
     },
     {
       id: '2',
-      titolo: 'Pagamento Diritto Annuale',
-      descrizione: 'Versamento diritto annuale licenza officina elettrica',
-      data: '2024-12-16',
-      type: 'Pagamento',
-      ente: 'Dogane',
-      priorita: 'Alta',
-      status: 'Pianificato',
+      title: 'Pagamento Diritto Annuale',
+      description: 'Versamento diritto annuale licenza officina elettrica',
+      date: '2024-12-16',
+      type: 'Payment',
+      entity: 'Customs',
+      priority: 'High',
+      status: 'Planned',
       plant: 'Tutti',
-      responsabile: 'Laura Bianchi'
+      assignee: 'Laura Bianchi'
     },
     {
       id: '3',
-      titolo: 'Comunicazione Fine Lavori',
-      descrizione: 'Invio comunicazione fine lavori a E-Distribuzione',
-      data: '2024-03-20',
-      type: 'Comunicazione',
-      ente: 'DSO',
-      priorita: 'Media',
-      status: 'Completato',
+      title: 'Comunicazione Fine Lavori',
+      description: 'Invio comunicazione fine lavori a E-Distribuzione',
+      date: '2024-03-20',
+      type: 'Communication',
+      entity: 'DSO',
+      priority: 'Medium',
+      status: 'Completed',
       plant: 'Solare Verdi 2',
-      responsabile: 'Giuseppe Verdi',
-      documenti: ['CFL_SolareVerdi2.pdf', 'Dichiarazione_Conformita.pdf']
+      assignee: 'Giuseppe Verdi',
+      documents: ['CFL_SolareVerdi2.pdf', 'Dichiarazione_Conformita.pdf']
     },
     {
       id: '4',
-      titolo: 'Verifica Antimafia GSE',
-      descrizione: 'Scadenza verifica periodica antimafia',
-      data: '2024-04-15',
-      type: 'Verifica',
-      ente: 'GSE',
-      priorita: 'Alta',
-      status: 'Pianificato',
+      title: 'Verifica Antimafia GSE',
+      description: 'Scadenza verifica periodica antimafia',
+      date: '2024-04-15',
+      type: 'Verification',
+      entity: 'GSE',
+      priority: 'High',
+      status: 'Planned',
       plant: 'Biomasse Toscana',
-      responsabile: 'Anna Neri',
-      ricorrente: 'Annuale'
+      assignee: 'Anna Neri',
+      recurring: 'Annual'
     },
     {
       id: '5',
-      titolo: 'Taratura Contatori Fiscali',
-      descrizione: 'Verifica triennale contatori fiscali UTF',
-      data: '2025-05-15',
-      type: 'Verifica',
-      ente: 'Dogane',
-      priorita: 'Media',
-      status: 'Pianificato',
+      title: 'Taratura Contatori Fiscali',
+      description: 'Verifica triennale contatori fiscali UTF',
+      date: '2025-05-15',
+      type: 'Verification',
+      entity: 'Customs',
+      priority: 'Medium',
+      status: 'Planned',
       plant: 'Eolico Puglia',
-      responsabile: 'Francesco Blu'
+      assignee: 'Francesco Blu'
     },
     {
       id: '6',
-      titolo: 'Invio Dati Mensili GAUDÌ',
-      descrizione: 'Caricamento dati produzione mensili su portale GAUDÌ',
-      data: '2024-04-05',
-      type: 'Comunicazione',
-      ente: 'Terna',
-      priorita: 'Media',
-      status: 'Pianificato',
+      title: 'Invio Dati Mensili GAUDÌ',
+      description: 'Caricamento dati produzione mensili su portale GAUDÌ',
+      date: '2024-04-05',
+      type: 'Communication',
+      entity: 'Terna',
+      priority: 'Medium',
+      status: 'Planned',
       plant: 'Tutti',
-      responsabile: 'Marco Rossi',
-      ricorrente: 'Mensile'
+      assignee: 'Marco Rossi',
+      recurring: 'Monthly'
     },
     {
       id: '7',
-      titolo: 'Riunione Team Compliance',
-      descrizione: 'Review mensile status compliance plants',
-      data: '2024-03-25',
-      ora: '10:00',
-      type: 'Riunione',
-      ente: 'Interno',
-      priorita: 'Media',
-      status: 'Pianificato',
-      responsabile: 'Team Compliance'
+      title: 'Riunione Team Compliance',
+      description: 'Review mensile status compliance plants',
+      date: '2024-03-25',
+      time: '10:00',
+      type: 'Meeting',
+      entity: 'Internal',
+      priority: 'Medium',
+      status: 'Planned',
+      assignee: 'Team Compliance'
     },
     {
       id: '8',
-      titolo: 'Pagamento Acconto GSE',
-      descrizione: 'Versamento acconto incentivi RID',
-      data: '2024-03-28',
-      type: 'Pagamento',
-      ente: 'GSE',
-      priorita: 'Alta',
-      status: 'In Corso',
+      title: 'Pagamento Acconto GSE',
+      description: 'Versamento acconto incentivi RID',
+      date: '2024-03-28',
+      type: 'Payment',
+      entity: 'GSE',
+      priority: 'High',
+      status: 'In Progress',
       plant: 'Solare Verdi 1',
-      responsabile: 'Laura Bianchi'
+      assignee: 'Laura Bianchi'
     }
   ];
 
   // Get color based on entity
-  const getEnteColor = (ente: string) => {
-    switch (ente) {
-      case 'Dogane':
+  const getEntityColor = (entity: string) => {
+    switch (entity) {
+      case 'Customs':
         return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700';
       case 'GSE':
         return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700';
@@ -164,7 +164,7 @@ const Agenda: React.FC = () => {
         return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 border-green-300 dark:border-green-700';
       case 'DSO':
         return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 border-purple-300 dark:border-purple-700';
-      case 'Interno':
+      case 'Internal':
         return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600';
       default:
         return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-600';
@@ -172,19 +172,19 @@ const Agenda: React.FC = () => {
   };
 
   // Get icon based on type
-  const gettypeIcon = (type: string) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Dichiarazione':
+      case 'Declaration':
         return FileText;
-      case 'Pagamento':
+      case 'Payment':
         return Euro;
-      case 'Comunicazione':
+      case 'Communication':
         return Link2;
-      case 'Verifica':
+      case 'Verification':
         return Shield;
-      case 'Scadenza':
+      case 'Deadline':
         return Clock;
-      case 'Riunione':
+      case 'Meeting':
         return Activity;
       default:
         return Calendar;
@@ -192,13 +192,13 @@ const Agenda: React.FC = () => {
   };
 
   // Get priority color
-  const getPriorityColor = (priorita: string) => {
-    switch (priorita) {
-      case 'Alta':
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High':
         return 'text-red-600 dark:text-red-400';
-      case 'Media':
+      case 'Medium':
         return 'text-yellow-600 dark:text-yellow-400';
-      case 'Bassa':
+      case 'Low':
         return 'text-green-600 dark:text-green-400';
       default:
         return 'text-gray-600 dark:text-gray-400';
@@ -208,13 +208,13 @@ const Agenda: React.FC = () => {
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Completato':
+      case 'Completed':
         return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900';
-      case 'In Corso':
+      case 'In Progress':
         return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900';
-      case 'Pianificato':
+      case 'Planned':
         return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
-      case 'In Ritardo':
+      case 'Delayed':
         return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900';
       default:
         return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
@@ -222,11 +222,11 @@ const Agenda: React.FC = () => {
   };
 
   // Filter deadlines
-  const filteredScadenze = scadenze.filter(scadenza => {
-    if (filters.ente !== 'all' && scadenza.ente !== filters.ente) return false;
-    if (filters.type !== 'all' && scadenza.type !== filters.type) return false;
-    if (filters.priorita !== 'all' && scadenza.priorita !== filters.priorita) return false;
-    if (filters.plant !== 'all' && scadenza.plant !== filters.plant) return false;
+  const filteredScadenze = scadenze.filter(deadline => {
+    if (filters.entity !== 'all' && deadline.entity !== filters.entity) return false;
+    if (filters.type !== 'all' && deadline.type !== filters.type) return false;
+    if (filters.priority !== 'all' && deadline.priority !== filters.priority) return false;
+    if (filters.plant !== 'all' && deadline.plant !== filters.plant) return false;
     return true;
   });
 
@@ -273,7 +273,7 @@ const Agenda: React.FC = () => {
   // Get deadlines for a specific date
   const getScadenzeForDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
-    return filteredScadenze.filter(s => s.data === dateStr);
+    return filteredScadenze.filter(s => s.date === dateStr);
   };
 
   // Navigate calendar
@@ -291,10 +291,10 @@ const Agenda: React.FC = () => {
   // Count deadlines by status
   const stats = {
     totali: filteredScadenze.length,
-    completati: filteredScadenze.filter(s => s.status === 'Completato').length,
-    inCorso: filteredScadenze.filter(s => s.status === 'In Corso').length,
-    pianificati: filteredScadenze.filter(s => s.status === 'Pianificato').length,
-    inRitardo: filteredScadenze.filter(s => s.status === 'In Ritardo').length
+    completati: filteredScadenze.filter(s => s.status === 'Completed').length,
+    inCorso: filteredScadenze.filter(s => s.status === 'In Progress').length,
+    pianificati: filteredScadenze.filter(s => s.status === 'Planned').length,
+    inRitardo: filteredScadenze.filter(s => s.status === 'Delayed').length
   };
 
   // Get unique values for filters
@@ -406,16 +406,16 @@ const Agenda: React.FC = () => {
                   Ente
                 </label>
                 <select
-                  value={filters.ente}
-                  onChange={(e) => setFilters({ ...filters, ente: e.target.value })}
+                  value={filters.entity}
+                  onChange={(e) => setFilters({ ...filters, entity: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="all">Tutti</option>
-                  <option value="Dogane">Dogane</option>
+                  <option value="Customs">Dogane</option>
                   <option value="GSE">GSE</option>
                   <option value="Terna">Terna</option>
                   <option value="DSO">DSO</option>
-                  <option value="Interno">Interno</option>
+                  <option value="Internal">Interno</option>
                 </select>
               </div>
 
@@ -429,12 +429,12 @@ const Agenda: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="all">Tutti</option>
-                  <option value="Dichiarazione">Dichiarazione</option>
-                  <option value="Pagamento">Pagamento</option>
-                  <option value="Comunicazione">Comunicazione</option>
-                  <option value="Verifica">Verifica</option>
-                  <option value="Scadenza">Scadenza</option>
-                  <option value="Riunione">Riunione</option>
+                  <option value="Declaration">Dichiarazione</option>
+                  <option value="Payment">Pagamento</option>
+                  <option value="Communication">Comunicazione</option>
+                  <option value="Verification">Verifica</option>
+                  <option value="Deadline">Scadenza</option>
+                  <option value="Meeting">Riunione</option>
                 </select>
               </div>
 
@@ -443,14 +443,14 @@ const Agenda: React.FC = () => {
                   Priorità
                 </label>
                 <select
-                  value={filters.priorita}
-                  onChange={(e) => setFilters({ ...filters, priorita: e.target.value })}
+                  value={filters.priority}
+                  onChange={(e) => setFilters({ ...filters, priority: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 >
                   <option value="all">Tutte</option>
-                  <option value="Alta">Alta</option>
-                  <option value="Media">Media</option>
-                  <option value="Bassa">Bassa</option>
+                  <option value="High">Alta</option>
+                  <option value="Medium">Media</option>
+                  <option value="Low">Bassa</option>
                 </select>
               </div>
 
@@ -590,23 +590,23 @@ const Agenda: React.FC = () => {
                   
                   {/* Deadlines for this day */}
                   <div className="space-y-1">
-                    {dayScadenze.slice(0, 3).map((scadenza) => {
-                      const Icon = gettypeIcon(scadenza.type);
+                    {dayScadenze.slice(0, 3).map((deadline) => {
+                      const Icon = getTypeIcon(deadline.type);
                       return (
                         <div
-                          key={scadenza.id}
+                          key={deadline.id}
                           className={clsx(
                             'text-xs p-1 rounded border truncate cursor-pointer hover:opacity-80',
-                            getEnteColor(scadenza.ente)
+                            getEntityColor(deadline.entity)
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
-                            setSelectedScadenza(scadenza);
+                            setSelectedScadenza(deadline);
                           }}
                         >
                           <div className="flex items-center gap-1">
                             <Icon className="h-3 w-3 flex-shrink-0" />
-                            <span className="truncate">{scadenza.titolo}</span>
+                            <span className="truncate">{deadline.title}</span>
                           </div>
                         </div>
                       );
@@ -642,62 +642,62 @@ const Agenda: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredScadenze.map((scadenza) => {
-                  const Icon = gettypeIcon(scadenza.type);
+                {filteredScadenze.map((deadline) => {
+                  const Icon = getTypeIcon(deadline.type);
                   return (
-                    <tr key={scadenza.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <tr key={deadline.id} className="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <Icon className={clsx('h-4 w-4', getPriorityColor(scadenza.priorita))} />
+                          <Icon className={clsx('h-4 w-4', getPriorityColor(deadline.priority))} />
                           <div>
                             <p className="font-medium text-gray-800 dark:text-gray-100">
-                              {scadenza.titolo}
+                              {deadline.title}
                             </p>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {scadenza.descrizione}
+                              {deadline.description}
                             </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-gray-700 dark:text-gray-300">
-                          {new Date(scadenza.data).toLocaleDateString('it-IT')}
+                          {new Date(deadline.date).toLocaleDateString('it-IT')}
                         </p>
-                        {scadenza.ora && (
+                        {deadline.time && (
                           <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {scadenza.ora}
+                            {deadline.time}
                           </p>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <span className={clsx(
                           'px-2 py-1 rounded text-xs font-medium',
-                          getEnteColor(scadenza.ente).split(' ').slice(0, 4).join(' ')
+                          getEntityColor(deadline.entity).split(' ').slice(0, 4).join(' ')
                         )}>
-                          {scadenza.ente}
+                          {deadline.entity}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                        {scadenza.type}
+                        {deadline.type}
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                        {scadenza.plant || '-'}
+                        {deadline.plant || '-'}
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
-                        {scadenza.responsabile || '-'}
+                        {deadline.assignee || '-'}
                       </td>
                       <td className="px-6 py-4">
                         <span className={clsx(
                           'px-2 py-1 rounded text-xs font-medium',
-                          getStatusColor(scadenza.status)
+                          getStatusColor(deadline.status)
                         )}>
-                          {scadenza.status}
+                          {deadline.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => setSelectedScadenza(scadenza)}
+                            onClick={() => setSelectedScadenza(deadline)}
                             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded"
                           >
                             <Eye className="h-4 w-4 text-gray-500" />
@@ -723,23 +723,23 @@ const Agenda: React.FC = () => {
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="flex items-center gap-2">
-            <div className={clsx('w-4 h-4 rounded', getEnteColor('Dogane').split(' ')[0])} />
+            <div className={clsx('w-4 h-4 rounded', getEntityColor('Customs').split(' ')[0])} />
             <span className="text-sm text-gray-700 dark:text-gray-300">Agenzia Dogane</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={clsx('w-4 h-4 rounded', getEnteColor('GSE').split(' ')[0])} />
+            <div className={clsx('w-4 h-4 rounded', getEntityColor('GSE').split(' ')[0])} />
             <span className="text-sm text-gray-700 dark:text-gray-300">GSE</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={clsx('w-4 h-4 rounded', getEnteColor('Terna').split(' ')[0])} />
+            <div className={clsx('w-4 h-4 rounded', getEntityColor('Terna').split(' ')[0])} />
             <span className="text-sm text-gray-700 dark:text-gray-300">Terna</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={clsx('w-4 h-4 rounded', getEnteColor('DSO').split(' ')[0])} />
+            <div className={clsx('w-4 h-4 rounded', getEntityColor('DSO').split(' ')[0])} />
             <span className="text-sm text-gray-700 dark:text-gray-300">DSO/E-Distribuzione</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={clsx('w-4 h-4 rounded', getEnteColor('Interno').split(' ')[0])} />
+            <div className={clsx('w-4 h-4 rounded', getEntityColor('Internal').split(' ')[0])} />
             <span className="text-sm text-gray-700 dark:text-gray-300">Interno</span>
           </div>
         </div>
@@ -766,10 +766,10 @@ const Agenda: React.FC = () => {
                 {/* Main Info */}
                 <div>
                   <h4 className="font-medium text-gray-800 dark:text-gray-100 mb-3">
-                    {selectedScadenza.titolo}
+                    {selectedScadenza.title}
                   </h4>
                   <p className="text-gray-600 dark:text-gray-400">
-                    {selectedScadenza.descrizione}
+                    {selectedScadenza.description}
                   </p>
                 </div>
 
@@ -778,7 +778,7 @@ const Agenda: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Data</p>
                     <p className="font-medium text-gray-800 dark:text-gray-100">
-                      {new Date(selectedScadenza.data).toLocaleDateString('it-IT', { 
+                      {new Date(selectedScadenza.date).toLocaleDateString('it-IT', { 
                         weekday: 'long', 
                         year: 'numeric', 
                         month: 'long', 
@@ -799,9 +799,9 @@ const Agenda: React.FC = () => {
                     <p className="text-sm text-gray-600 dark:text-gray-400">Ente</p>
                     <span className={clsx(
                       'inline-block px-2 py-1 rounded text-sm font-medium',
-                      getEnteColor(selectedScadenza.ente).split(' ').slice(0, 4).join(' ')
+                      getEntityColor(selectedScadenza.entity).split(' ').slice(0, 4).join(' ')
                     )}>
-                      {selectedScadenza.ente}
+                      {selectedScadenza.entity}
                     </span>
                   </div>
                   <div>
@@ -812,8 +812,8 @@ const Agenda: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Priorità</p>
-                    <p className={clsx('font-medium', getPriorityColor(selectedScadenza.priorita))}>
-                      {selectedScadenza.priorita}
+                    <p className={clsx('font-medium', getPriorityColor(selectedScadenza.priority))}>
+                      {selectedScadenza.priority}
                     </p>
                   </div>
                   <div>
@@ -825,27 +825,27 @@ const Agenda: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Responsabile</p>
                     <p className="font-medium text-gray-800 dark:text-gray-100">
-                      {selectedScadenza.responsabile || 'N/A'}
+                      {selectedScadenza.assignee || 'N/A'}
                     </p>
                   </div>
-                  {selectedScadenza.ricorrente && (
+                  {selectedScadenza.recurring && (
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Ricorrenza</p>
                       <p className="font-medium text-gray-800 dark:text-gray-100">
-                        {selectedScadenza.ricorrente}
+                        {selectedScadenza.recurring}
                       </p>
                     </div>
                   )}
                 </div>
 
                 {/* Documents */}
-                {selectedScadenza.documenti && selectedScadenza.documenti.length > 0 && (
+                {selectedScadenza.documents && selectedScadenza.documents.length > 0 && (
                   <div>
                     <h5 className="font-medium text-gray-800 dark:text-gray-100 mb-3">
                       Documenti Correlati
                     </h5>
                     <div className="space-y-2">
-                      {selectedScadenza.documenti.map((doc, idx) => (
+                      {selectedScadenza.documents.map((doc, idx) => (
                         <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-gray-500" />

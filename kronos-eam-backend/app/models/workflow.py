@@ -101,11 +101,11 @@ class Workflow(BaseModel):
     due_date = Column(DateTime)
     completion_date = Column(DateTime)
     
-    template_id = Column(Integer, ForeignKey("workflow_templates.id"))
+    template_id = Column(Integer, ForeignKey("workflow_templates.id"), nullable=True)
     
     # Enhanced workflow support
-    parent_workflow_id = Column(Integer, ForeignKey("workflows.id"))
-    original_workflow_id = Column(Integer, ForeignKey("workflows.id"))
+    parent_workflow_id = Column(Integer, ForeignKey("workflows.id"), nullable=True)
+    original_workflow_id = Column(Integer, ForeignKey("workflows.id"), nullable=True)
     is_standard = Column(Boolean, default=False)
     workflow_type = Column(Enum(WorkflowTypeEnum, values_callable=lambda x: [e.value for e in x]))
     
@@ -152,9 +152,20 @@ class WorkflowStage(BaseModel):
     start_date = Column(DateTime)
     end_date = Column(DateTime)
     
+    # Entity managing this phase (nullable for backward compatibility)
+    entity_responsible = Column(Enum(EntityEnum, values_callable=lambda x: [e.value for e in x]), nullable=True)
+    
+    # Document templates specific to this phase
+    document_templates = Column(JSON, default=list)  # List of template IDs or metadata
+    template_requirements = Column(JSON, default=dict)  # Requirements for each template type
+    
+    # Duration in days
+    duration_days = Column(Integer)
+    
     # Relationships
     workflow = relationship("Workflow", back_populates="stages")
     tasks = relationship("WorkflowTask", back_populates="stage")
+    stage_documents = relationship("StageDocumentTemplate", back_populates="stage", cascade="all, delete-orphan")
 
 
 class WorkflowTask(BaseModel):
@@ -188,7 +199,31 @@ class WorkflowTask(BaseModel):
     practice_type = Column(String(100))  # TICA, GAUDÌ, RID, etc.
     practice_code = Column(String(100))  # External reference number
     portal_url = Column(String(500))  # Portal URL for this task
-    required_credentials = Column(String(50))  # SPID, CIE, CNS, etc.
+    portal_login_url = Column(String(500))  # Direct login URL
+    required_credentials = Column(String(50))  # SPID, CIE, CNS, Digital Certificate
+    
+    # Document management for bureaucratic process
+    required_documents = Column(JSON, default=list)  # Documents needed for this task
+    document_templates = Column(JSON, default=list)  # Templates to use
+    documents_to_generate = Column(JSON, default=list)  # Documents this task creates
+    official_form_fields = Column(JSON, default=dict)  # Fields needed for official forms
+    
+    # Process tracking
+    submission_method = Column(String(100))  # Portal upload, PEC, EDI, Manual
+    external_protocol_number = Column(String(200))  # Protocol/reference from entity
+    submission_date = Column(DateTime)
+    response_date = Column(DateTime)
+    
+    # Cost tracking
+    cost_amount = Column(Float)
+    cost_description = Column(String(500))
+    payment_method = Column(String(100))  # F24, Bank transfer, Portal payment
+    payment_reference = Column(String(200))  # F24 code, transfer reference
+    
+    # Regulatory deadlines
+    regulatory_deadline = Column(DateTime)  # Legal deadline
+    deadline_type = Column(String(50))  # peremptory, ordinary, recurring
+    deadline_consequences = Column(Text)  # What happens if missed
     
     # Enhanced action management fields
     timeline = Column(JSON, default=dict)  # {start, end, deadline}
@@ -202,6 +237,12 @@ class WorkflowTask(BaseModel):
     external_resources = Column(JSON, default=list)  # Links to guides, forms, portals
     allowed_roles = Column(JSON, default=list)  # List of roles that can handle this task
     suggested_assignee_role = Column(String(50))  # Suggested role for this task
+    
+    # Human checkpoint tracking
+    requires_human_auth = Column(Boolean, default=False)  # Needs SPID/CIE/CNS
+    requires_physical_signature = Column(Boolean, default=False)
+    requires_site_inspection = Column(Boolean, default=False)
+    human_checkpoint_notes = Column(Text)
     
     # Data collection configuration
     data_fields = Column(JSON, default=dict)  # Fields this task collects
@@ -218,6 +259,13 @@ class WorkflowTask(BaseModel):
     stage = relationship("WorkflowStage", back_populates="tasks")
     documents = relationship("TaskDocument", back_populates="task", cascade="all, delete-orphan")
     comments = relationship("TaskComment", back_populates="task", cascade="all, delete-orphan")
+    
+    @property
+    def stage_name(self):
+        """Get the name of the stage this task belongs to"""
+        if self.stage:
+            return self.stage.name
+        return None
     
     @property
     def is_overdue(self):
@@ -323,10 +371,42 @@ class TaskTemplate(BaseModel):
     estimated_duration_hours = Column(Float)
     
     required_documents = Column(JSON, default=list)
-    checkpoints = Column(JSON, default=list)
+    checklist_items = Column(JSON, default=list)
     
     integration = Column(String(50))  # Portal/system to use
     has_guide = Column(Boolean, default=False)  # Whether detailed guidance is available
     
     def __repr__(self):
         return f"<TaskTemplate {self.name}>"
+
+
+class StageDocumentTemplate(BaseModel):
+    """Association between workflow stages and document templates"""
+    __tablename__ = "stage_document_templates"
+    
+    stage_id = Column(Integer, ForeignKey("workflow_stages.id"), nullable=False)
+    template_id = Column(Integer, ForeignKey("document_templates.id"))
+    
+    # Template metadata
+    template_name = Column(String(200), nullable=False)
+    template_category = Column(String(100))
+    entity_responsible = Column(Enum(EntityEnum, values_callable=lambda x: [e.value for e in x]))
+    
+    # Template location
+    file_path = Column(String(500))
+    template_url = Column(String(500))  # Official URL if external
+    
+    # Requirements
+    is_required = Column(Boolean, default=True)
+    upload_deadline_days = Column(Integer)  # Days from stage start
+    
+    # Metadata
+    version = Column(String(50))
+    last_updated = Column(DateTime)
+    notes = Column(Text)
+    
+    # Relationships
+    stage = relationship("WorkflowStage", back_populates="stage_documents")
+    
+    def __repr__(self):
+        return f"<StageDocumentTemplate {self.template_name} for Stage {self.stage_id}>"

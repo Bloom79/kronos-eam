@@ -6,7 +6,7 @@ import clsx from 'clsx';
 interface DocumentTemplate {
   id: number;
   name: string;
-  descrizione?: string;
+  description?: string;
   task_name?: string;
   is_required: boolean;
   placeholders: Record<string, any>;
@@ -61,7 +61,7 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({
         const preview = await workflowService.previewDocumentTemplate(workflowId);
         setPreviewData(preview);
       } catch (error) {
-        console.error('Error loading preview data:', error);
+        console.error('Error loading preview date:', error);
       }
     }
   };
@@ -151,9 +151,9 @@ const DocumentTemplateSelector: React.FC<DocumentTemplateSelectorProps> = ({
                         </span>
                       )}
                     </div>
-                    {template.descrizione && (
+                    {template.description && (
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        {template.descrizione}
+                        {template.description}
                       </p>
                     )}
                     {template.task_name && (

@@ -111,7 +111,7 @@ Use the available tools to gather data and create tasks when needed.
                     {
                         "tool": "get_maintenance_schedule",
                         "args": {
-                            "impianto_id": context["impianto_id"],
+                            "impianto_id": context["plant_id"],
                             "tenant_id": state["tenant_id"],
                             "days_ahead": 90
                         }
@@ -119,7 +119,7 @@ Use the available tools to gather data and create tasks when needed.
                     {
                         "tool": "get_performance_metrics",
                         "args": {
-                            "impianto_id": context["impianto_id"],
+                            "impianto_id": context["plant_id"],
                             "tenant_id": state["tenant_id"],
                             "period_days": 30
                         }

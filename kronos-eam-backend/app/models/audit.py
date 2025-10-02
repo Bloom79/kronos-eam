@@ -48,7 +48,7 @@ class AuditLog(Base, TenantMixin):
     changed_fields = Column(JSON, default=list)  # List of fields that changed
     
     # Metadata
-    note = Column(Text)  # Optional user-provided reason
+    notes = Column(Text)  # Optional user-provided reason
     automatic = Column(Integer, default=0)  # 1 if system-generated change
     
     # Timestamp

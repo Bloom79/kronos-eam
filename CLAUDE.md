@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+You run in an environment where ast-grep (sg) is available; whenever a search requires syntax-aware or structural matching, default to sg
+-lang rust -p'<pattern>' (or set --lang appropriately) and avoid falling back to text-only tools like 'g' or 'grep unless I explicitly request a plain-text search.
+
 ## Project Documentation Workflow
 
 ### Primary Development Documents
@@ -50,7 +53,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Kronos EAM (previously referred to as Sentrics) is a cloud-native SaaS platform for managing administrative and compliance workflows for renewable energy assets in Italy. The platform centralizes asset data, provides intelligent assistance for bureaucratic processes, and manages regulatory deadlines for photovoltaic and wind power plants.
 
+**📖 For comprehensive application documentation, see [APPLICATION_GUIDE.md](./APPLICATION_GUIDE.md)**
+
 **Important Update**: Following comprehensive feasibility analysis, full RPA automation is not possible due to SPID/CNS authentication requirements. The platform implements a "Smart Assistant" approach that provides 80% time savings while maintaining full legal compliance.
+
+### Current System Status ✅
+- **Internationalization**: Complete English codebase with Italian/English UI support
+- **Database**: Fully migrated to English column names and schema
+- **Workflow System**: Fully functional template-based workflow creation from plant context
+- **Document Management**: Complete document lifecycle with English field names
+- **User Management**: Multi-tenant RBAC system operational
+- **Integration**: Government portal integration framework established
 
 ## Architecture
 

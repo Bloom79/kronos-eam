@@ -2,4 +2,5 @@
 export { useDebounce } from './useDebounce';
 export { usePagination } from './usePagination';
 export { useAsyncData } from './useAsyncData';
-export { toast } from './useToast';
+export { toast } from './simpleToast';
+export { useToast, ToastProvider } from './useToast';

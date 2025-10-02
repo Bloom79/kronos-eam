@@ -19,7 +19,7 @@ def load_connection_templates():
     try:
         # Check if templates already exist
         existing = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome.in_([
+            WorkflowTemplate.name.in_([
                 "Domanda di Connessione E-Distribuzione",
                 "Accettazione Preventivo E-Distribuzione"
             ])
@@ -28,11 +28,11 @@ def load_connection_templates():
         if existing:
             print(f"ℹ️ Found {len(existing)} existing connection templates")
             for t in existing:
-                print(f"  - {t.nome}")
+                print(f"  - {t.name}")
         
         # Load FASE 1 template
         fase1_exists = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == "Domanda di Connessione E-Distribuzione"
+            WorkflowTemplate.name == "Domanda di Connessione E-Distribuzione"
         ).first()
         
         if not fase1_exists:
@@ -48,29 +48,29 @@ def load_connection_templates():
                     nome, descrizione, categoria, phase, tipo_impianto,
                     potenza_minima, potenza_massima, durata_stimata_giorni,
                     ricorrenza, stages, tasks, enti_richiesti, documenti_base,
-                    condizioni_attivazione, scadenza_config, attivo, tenant_id
+                    condizioni_attivazione, deadline_config, attivo, tenant_id
                 ) VALUES (
                     :nome, :descrizione, :categoria, :phase, :tipo_impianto,
                     :potenza_minima, :potenza_massima, :durata_stimata_giorni,
                     :ricorrenza, :stages, :tasks, :enti_richiesti, :documenti_base,
-                    :condizioni_attivazione, :scadenza_config, :attivo, :tenant_id
+                    :condizioni_attivazione, :deadline_config, :attivo, :tenant_id
                 )
             """), {
-                'nome': CONNESSIONE_EDIST_FASE1["nome"],
-                'descrizione': CONNESSIONE_EDIST_FASE1["descrizione"],
+                'nome': CONNESSIONE_EDIST_FASE1["name"],
+                'descrizione': CONNESSIONE_EDIST_FASE1["description"],
                 'categoria': 'Attivazione',
                 'phase': 'Connessione',
                 'tipo_impianto': 'Tutti',
                 'potenza_minima': 0,
                 'potenza_massima': None,
-                'durata_stimata_giorni': CONNESSIONE_EDIST_FASE1["durata_stimata_giorni"],
+                'durata_stimata_giorni': CONNESSIONE_EDIST_FASE1["estimated_duration_days"],
                 'ricorrenza': 'Una tantum',
                 'stages': json.dumps(CONNESSIONE_EDIST_FASE1["stages"]),
                 'tasks': json.dumps(fase1_tasks),
-                'enti_richiesti': json.dumps(CONNESSIONE_EDIST_FASE1["enti_richiesti"]),
-                'documenti_base': json.dumps(CONNESSIONE_EDIST_FASE1["documenti_base"]),
+                'enti_richiesti': json.dumps(CONNESSIONE_EDIST_FASE1["required_entities"]),
+                'documenti_base': json.dumps(CONNESSIONE_EDIST_FASE1["base_documents"]),
                 'condizioni_attivazione': json.dumps({}),
-                'scadenza_config': json.dumps({}),
+                'deadline_config': json.dumps({}),
                 'attivo': True,
                 'tenant_id': 1
             })
@@ -79,7 +79,7 @@ def load_connection_templates():
         
         # Load FASE 2 template
         fase2_exists = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == "Accettazione Preventivo E-Distribuzione"
+            WorkflowTemplate.name == "Accettazione Preventivo E-Distribuzione"
         ).first()
         
         if not fase2_exists:
@@ -95,29 +95,29 @@ def load_connection_templates():
                     nome, descrizione, categoria, phase, tipo_impianto,
                     potenza_minima, potenza_massima, durata_stimata_giorni,
                     ricorrenza, stages, tasks, enti_richiesti, documenti_base,
-                    condizioni_attivazione, scadenza_config, attivo, tenant_id
+                    condizioni_attivazione, deadline_config, attivo, tenant_id
                 ) VALUES (
                     :nome, :descrizione, :categoria, :phase, :tipo_impianto,
                     :potenza_minima, :potenza_massima, :durata_stimata_giorni,
                     :ricorrenza, :stages, :tasks, :enti_richiesti, :documenti_base,
-                    :condizioni_attivazione, :scadenza_config, :attivo, :tenant_id
+                    :condizioni_attivazione, :deadline_config, :attivo, :tenant_id
                 )
             """), {
-                'nome': CONNESSIONE_EDIST_FASE2["nome"],
-                'descrizione': CONNESSIONE_EDIST_FASE2["descrizione"],
+                'nome': CONNESSIONE_EDIST_FASE2["name"],
+                'descrizione': CONNESSIONE_EDIST_FASE2["description"],
                 'categoria': 'Attivazione',
                 'phase': 'Connessione',
                 'tipo_impianto': 'Tutti',
                 'potenza_minima': 0,
                 'potenza_massima': None,
-                'durata_stimata_giorni': CONNESSIONE_EDIST_FASE2["durata_stimata_giorni"],
+                'durata_stimata_giorni': CONNESSIONE_EDIST_FASE2["estimated_duration_days"],
                 'ricorrenza': 'Una tantum',
                 'stages': json.dumps(CONNESSIONE_EDIST_FASE2["stages"]),
                 'tasks': json.dumps(fase2_tasks),
-                'enti_richiesti': json.dumps(CONNESSIONE_EDIST_FASE2["enti_richiesti"]),
-                'documenti_base': json.dumps(CONNESSIONE_EDIST_FASE2["documenti_base"]),
+                'enti_richiesti': json.dumps(CONNESSIONE_EDIST_FASE2["required_entities"]),
+                'documenti_base': json.dumps(CONNESSIONE_EDIST_FASE2["base_documents"]),
                 'condizioni_attivazione': json.dumps({}),
-                'scadenza_config': json.dumps({}),
+                'deadline_config': json.dumps({}),
                 'attivo': True,
                 'tenant_id': 1
             })
@@ -126,7 +126,7 @@ def load_connection_templates():
         
         # Also load the complete connection workflow
         complete_exists = db.query(WorkflowTemplate).filter(
-            WorkflowTemplate.nome == "Richiesta Connessione E-Distribuzione"
+            WorkflowTemplate.name == "Richiesta Connessione E-Distribuzione"
         ).first()
         
         if not complete_exists:
@@ -142,29 +142,29 @@ def load_connection_templates():
                     nome, descrizione, categoria, phase, tipo_impianto,
                     potenza_minima, potenza_massima, durata_stimata_giorni,
                     ricorrenza, stages, tasks, enti_richiesti, documenti_base,
-                    condizioni_attivazione, scadenza_config, attivo, tenant_id
+                    condizioni_attivazione, deadline_config, attivo, tenant_id
                 ) VALUES (
                     :nome, :descrizione, :categoria, :phase, :tipo_impianto,
                     :potenza_minima, :potenza_massima, :durata_stimata_giorni,
                     :ricorrenza, :stages, :tasks, :enti_richiesti, :documenti_base,
-                    :condizioni_attivazione, :scadenza_config, :attivo, :tenant_id
+                    :condizioni_attivazione, :deadline_config, :attivo, :tenant_id
                 )
             """), {
-                'nome': CONNECTION_REQUEST_WORKFLOW["nome"],
-                'descrizione': CONNECTION_REQUEST_WORKFLOW["descrizione"],
+                'nome': CONNECTION_REQUEST_WORKFLOW["name"],
+                'descrizione': CONNECTION_REQUEST_WORKFLOW["description"],
                 'categoria': 'Attivazione',
                 'phase': None,
                 'tipo_impianto': 'Tutti',
                 'potenza_minima': 0,
                 'potenza_massima': None,
-                'durata_stimata_giorni': CONNECTION_REQUEST_WORKFLOW["durata_stimata_giorni"],
+                'durata_stimata_giorni': CONNECTION_REQUEST_WORKFLOW["estimated_duration_days"],
                 'ricorrenza': 'Una tantum',
                 'stages': json.dumps(CONNECTION_REQUEST_WORKFLOW["stages"]),
                 'tasks': json.dumps(complete_tasks),
-                'enti_richiesti': json.dumps(CONNECTION_REQUEST_WORKFLOW["enti_richiesti"]),
-                'documenti_base': json.dumps(CONNECTION_REQUEST_WORKFLOW["documenti_base"]),
+                'enti_richiesti': json.dumps(CONNECTION_REQUEST_WORKFLOW["required_entities"]),
+                'documenti_base': json.dumps(CONNECTION_REQUEST_WORKFLOW["base_documents"]),
                 'condizioni_attivazione': json.dumps({}),
-                'scadenza_config': json.dumps({}),
+                'deadline_config': json.dumps({}),
                 'attivo': True,
                 'tenant_id': 1
             })

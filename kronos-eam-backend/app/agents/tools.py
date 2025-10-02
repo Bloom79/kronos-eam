@@ -89,18 +89,18 @@ def get_maintenance_schedule(impianto_id: int, tenant_id: str, days_ahead: int =
         end_date = datetime.utcnow() + timedelta(days=days_ahead)
         
         manutenzioni = db.query(Maintenance).filter(
-            Maintenance.impianto_id == impianto_id,
+            Maintenance.plant_id == impianto_id,
             Maintenance.data_pianificata <= end_date,
-            Maintenance.stato.in_([MaintenanceStatusEnum.PLANNED, MaintenanceStatusEnum.IN_PROGRESS])
+            Maintenance.status.in_([MaintenanceStatusEnum.PLANNED, MaintenanceStatusEnum.IN_PROGRESS])
         ).order_by(Maintenance.data_pianificata).all()
         
         return [
             {
                 "id": m.id,
-                "tipo": m.tipo,
-                "descrizione": m.descrizione,
+                "tipo": m.type,
+                "descrizione": m.description,
                 "data_pianificata": m.data_pianificata.isoformat(),
-                "stato": m.stato
+                "stato": m.status
             }
             for m in manutenzioni
         ]
@@ -119,7 +119,7 @@ def get_compliance_status(impianto_id: int, tenant_id: str) -> Dict[str, Any]:
         
         # Get latest checklist
         checklist = db.query(ChecklistConformita).filter(
-            ChecklistConformita.impianto_id == impianto_id
+            ChecklistConformita.plant_id == impianto_id
         ).order_by(ChecklistConformita.created_at.desc()).first()
         
         if not checklist:
@@ -127,9 +127,9 @@ def get_compliance_status(impianto_id: int, tenant_id: str) -> Dict[str, Any]:
         
         # Count expiring documents
         expiring_docs = db.query(func.count(Document.id)).filter(
-            Document.impianto_id == impianto_id,
-            Document.stato == DocumentStatusEnum.VALIDO,
-            Document.data_scadenza <= datetime.utcnow() + timedelta(days=30)
+            Document.plant_id == impianto_id,
+            Document.status == DocumentStatusEnum.VALIDO,
+            Document.due_date <= datetime.utcnow() + timedelta(days=30)
         ).scalar()
         
         issues = []
@@ -172,7 +172,7 @@ def get_performance_metrics(impianto_id: int, tenant_id: str, period_days: int =
             func.avg(PlantPerformance.performance_ratio).label('avg_efficiency'),
             func.count(PlantPerformance.id).label('data_points')
         ).filter(
-            PlantPerformance.impianto_id == impianto_id,
+            PlantPerformance.plant_id == impianto_id,
             or_(
                 PlantPerformance.anno > start_year,
                 and_(
@@ -217,12 +217,12 @@ def search_documents(query: str, tenant_id: str, impianto_id: Optional[int] = No
         )
         
         if impianto_id:
-            q = q.filter(Document.impianto_id == impianto_id)
+            q = q.filter(Document.plant_id == impianto_id)
         
         # Search in nome and descrizione
         search_filter = or_(
-            Document.nome.ilike(f"%{query}%"),
-            Document.descrizione.ilike(f"%{query}%")
+            Document.name.ilike(f"%{query}%"),
+            Document.description.ilike(f"%{query}%")
         )
         q = q.filter(search_filter)
         
@@ -231,12 +231,12 @@ def search_documents(query: str, tenant_id: str, impianto_id: Optional[int] = No
         return [
             {
                 "id": doc.id,
-                "nome": doc.nome,
-                "tipo": doc.tipo,
-                "categoria": doc.categoria,
-                "stato": doc.stato,
-                "data_scadenza": doc.data_scadenza.isoformat() if doc.data_scadenza else None,
-                "impianto_id": doc.impianto_id
+                "nome": doc.name,
+                "tipo": doc.type,
+                "categoria": doc.category,
+                "stato": doc.status,
+                "data_scadenza": doc.due_date.isoformat() if doc.due_date else None,
+                "impianto_id": doc.plant_id
             }
             for doc in documents
         ]
@@ -259,19 +259,19 @@ def get_active_workflows(tenant_id: str, impianto_id: Optional[int] = None) -> L
         )
         
         if impianto_id:
-            q = q.filter(Workflow.impianto_id == impianto_id)
+            q = q.filter(Workflow.plant_id == impianto_id)
         
         workflows = q.all()
         
         return [
             {
                 "id": w.id,
-                "nome": w.nome,
-                "tipo": w.tipo,
+                "nome": w.name,
+                "tipo": w.type,
                 "stato": w.stato_corrente,
-                "progresso": w.progresso,
-                "data_scadenza": w.data_scadenza.isoformat() if w.data_scadenza else None,
-                "impianto_nome": w.impiantoNome
+                "progresso": w.progress,
+                "data_scadenza": w.due_date.isoformat() if w.due_date else None,
+                "impianto_nome": w.plant_name
             }
             for w in workflows
         ]
@@ -305,12 +305,12 @@ def create_maintenance_task(
         
         # Create maintenance
         manutenzione = Maintenance(
-            impianto_id=impianto_id,
+            plant_id=impianto_id,
             tenant_id=tenant_id,
-            tipo=tipo,
-            descrizione=descrizione,
+            type=tipo,
+            description=descrizione,
             data_pianificata=datetime.fromisoformat(data_pianificata),
-            stato=MaintenanceStatusEnum.PLANNED
+            status=MaintenanceStatusEnum.PLANNED
         )
         
         db.add(manutenzione)
@@ -320,7 +320,7 @@ def create_maintenance_task(
         return {
             "success": True,
             "id": manutenzione.id,
-            "message": f"Maintenance task created for {impianto.nome}"
+            "message": f"Maintenance task created for {impianto.name}"
         }
     except Exception as e:
         logger.error(f"Error creating maintenance task: {e}")
@@ -349,7 +349,7 @@ def update_task_status(task_id: int, tenant_id: str, new_status: str, notes: Opt
         task.status = TaskStatusEnum[new_status.upper()]
         
         if task.status == TaskStatusEnum.COMPLETED:
-            task.completato_data = datetime.utcnow()
+            task.completed_date = datetime.utcnow()
         
         # Add comment if notes provided
         if notes:

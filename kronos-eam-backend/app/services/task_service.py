@@ -74,16 +74,16 @@ class TaskService:
             workflow_id=workflow_id,
             stage_id=stage_id,
             title=title,
-            descrizione=descrizione,
+            description=descrizione,
             status=status,
             priority=priority,
             assignee=assignee,
-            dueDate=dueDate,
-            estimatedHours=estimatedHours,
-            dipendenze=dipendenze or [],
-            integrazione=integrazione,
-            ente_responsabile=ente_responsabile,
-            tipo_pratica=tipo_pratica,
+            due_date=dueDate,
+            estimated_hours=estimatedHours,
+            dependencies=dipendenze or [],
+            integration=integrazione,
+            responsible_entity=ente_responsabile,
+            practice_type=tipo_pratica,
             timeline=timeline,
             documenti_associati=documenti_associati or [],
             audit_enabled=audit_enabled,
@@ -169,7 +169,7 @@ class TaskService:
             changes_made.append("title")
         
         if descrizione is not None:
-            task.descrizione = descrizione
+            task.description = descrizione
             changes_made.append("descrizione")
         
         if status is not None and status != task.status:
@@ -184,8 +184,8 @@ class TaskService:
                 if not task.timeline:
                     task.timeline = {}
                 task.timeline["fine"] = datetime.utcnow().isoformat()
-                task.completato_da = self.db.query(User).filter(User.id == user_id).first().email
-                task.completato_data = datetime.utcnow()
+                task.completed_by = self.db.query(User).filter(User.id == user_id).first().email
+                task.completed_date = datetime.utcnow()
                 task.stato_azione = ActionStatusEnum.COMPLETED
                 
             elif status == TaskStatusEnum.BLOCKED:
@@ -215,7 +215,7 @@ class TaskService:
                         "old_assignee": old_assignee,
                         "new_assignee": assignee
                     },
-                    note=note
+                    notes=note
                 )
             
             # TODO: Notify new assignee (requires async handling)
@@ -229,9 +229,9 @@ class TaskService:
             #     )
         
         if dueDate is not None:
-            task.dueDate = dueDate
+            task.due_date = dueDate
             if task.timeline:
-                task.timeline["scadenza"] = dueDate.isoformat()
+                task.timeline["due_date"] = dueDate.isoformat()
             changes_made.append("dueDate")
             
             # Check if overdue
@@ -240,7 +240,7 @@ class TaskService:
                 task.stato_azione = ActionStatusEnum.DELAYED
         
         if estimatedHours is not None:
-            task.estimatedHours = estimatedHours
+            task.estimated_hours = estimatedHours
             changes_made.append("estimatedHours")
         
         if actualHours is not None:
@@ -290,7 +290,7 @@ class TaskService:
                 old_values=old_values,
                 new_values=new_values,
                 changed_fields=changes_made,
-                note=note
+                notes=note
             )
         
         return task
@@ -309,7 +309,7 @@ class TaskService:
             user_id=user_id,
             tenant_id=tenant_id,
             status=status,
-            note=note or f"Status changed to {status.value}"
+            notes=note or f"Status changed to {status.value}"
         )
     
     def assign_task(
@@ -335,7 +335,7 @@ class TaskService:
             user_id=user_id,
             tenant_id=tenant_id,
             assignee=assignee_email,
-            note=note or f"Task assigned to {assignee_email}"
+            notes=note or f"Task assigned to {assignee_email}"
         )
     
     def get_task_timeline(
@@ -461,23 +461,23 @@ class TaskService:
             query = query.filter(WorkflowTask.priority.in_(priority_filter))
         
         if due_date_start:
-            query = query.filter(WorkflowTask.dueDate >= due_date_start)
+            query = query.filter(WorkflowTask.due_date >= due_date_start)
         
         if due_date_end:
-            query = query.filter(WorkflowTask.dueDate <= due_date_end)
+            query = query.filter(WorkflowTask.due_date <= due_date_end)
         
         # Get total count
         total = query.count()
         
         # Get overdue count
         overdue_count = query.filter(
-            WorkflowTask.dueDate < datetime.utcnow(),
+            WorkflowTask.due_date < datetime.utcnow(),
             WorkflowTask.status != TaskStatusEnum.COMPLETED
         ).count()
         
         # Apply ordering and pagination
         tasks = query.order_by(
-            WorkflowTask.dueDate.asc().nulls_last(),
+            WorkflowTask.due_date.asc().nulls_last(),
             WorkflowTask.priority.desc()
         ).offset(offset).limit(limit).all()
         
@@ -487,15 +487,15 @@ class TaskService:
             enhanced_tasks.append({
                 "id": task.id,
                 "title": task.title,
-                "descrizione": task.descrizione,
+                "descrizione": task.description,
                 "status": task.status.value if task.status else None,
                 "priority": task.priority.value if task.priority else None,
-                "dueDate": task.dueDate.isoformat() if task.dueDate else None,
+                "dueDate": task.due_date.isoformat() if task.due_date else None,
                 "is_overdue": task.is_overdue,
                 "workflow": {
                     "id": task.workflow.id,
-                    "nome": task.workflow.nome,
-                    "impianto_nome": task.workflow.impiantoNome
+                    "nome": task.workflow.name,
+                    "impianto_nome": task.workflow.plant_name
                 },
                 "documents_count": len(task.documenti_associati),
                 "completion_percentage": self._calculate_completion_percentage(task)
@@ -534,8 +534,8 @@ class TaskService:
                     status=status,
                     priority=priority,
                     assignee=assignee,
-                    dueDate=dueDate,
-                    note=note or "Bulk update"
+                    due_date=dueDate,
+                    notes=note or "Bulk update"
                 )
                 updated_count += 1
             except Exception as e:
@@ -575,10 +575,10 @@ class TaskService:
             return 0
         elif task.status == TaskStatusEnum.IN_PROGRESS:
             # Estimate based on time if possible
-            if task.timeline and task.estimatedHours:
+            if task.timeline and task.estimated_hours:
                 duration = self._calculate_task_duration(task)
                 if duration:
-                    percentage = min(int((duration / task.estimatedHours) * 100), 90)
+                    percentage = min(int((duration / task.estimated_hours) * 100), 90)
                     return percentage
             return 50  # Default for in-progress
         elif task.status == TaskStatusEnum.BLOCKED:
@@ -602,7 +602,7 @@ class TaskService:
         
         # Average estimated hours
         avg_estimated = self.db.query(
-            func.avg(WorkflowTask.estimatedHours)
+            func.avg(WorkflowTask.estimated_hours)
         ).select_from(base_query.subquery()).scalar() or 0
         
         # Average actual hours (for completed tasks)

@@ -171,6 +171,56 @@ class PlantRegistry(BaseModel):
     inverter_count = Column(Integer)
     tracker_count = Column(Integer)
     
+    # Module details (required for GAUDÌ and official forms)
+    module_manufacturer = Column(String(200))
+    module_model = Column(String(200))
+    module_power_wp = Column(Float)  # Power per module in Wp
+    module_serial_numbers = Column(JSON, default=list)  # List of serial numbers
+    module_total_area = Column(Float)  # Total surface area in m²
+    
+    # Inverter details (required for connection and GAUDÌ)
+    inverter_manufacturer = Column(String(200))
+    inverter_model = Column(String(200))
+    inverter_serial_numbers = Column(JSON, default=list)
+    inverter_firmware_version = Column(String(50))
+    inverter_cei_certification = Column(String(100))  # CEI 0-21 or CEI 0-16 certification number
+    
+    # Protection system details (SPI/SPG)
+    spi_manufacturer = Column(String(200))
+    spi_model = Column(String(200))
+    spi_serial_number = Column(String(100))
+    spi_calibration_date = Column(DateTime)
+    spi_calibration_parameters = Column(JSON, default=dict)  # Voltage, frequency, time settings
+    spi_test_report_number = Column(String(100))
+    spi_next_verification = Column(DateTime)  # Every 5 years per CEI standards
+    
+    # Installer company details (required for DM 37/08)
+    installer_company_name = Column(String(200))
+    installer_company_vat = Column(String(20))
+    installer_chamber_commerce_reg = Column(String(100))
+    installer_dm3708_license = Column(String(100))  # DM 37/08 license number
+    installer_technical_manager = Column(String(200))
+    installer_technical_manager_license = Column(String(100))
+    
+    # Connection process tracking
+    tica_code = Column(String(100))  # TICA preventive code from DSO
+    tica_request_date = Column(DateTime)
+    tica_acceptance_date = Column(DateTime)
+    tica_expiry_date = Column(DateTime)  # 45 working days from issue
+    connection_cost_euro = Column(Float)
+    
+    # Additional regulatory codes
+    gse_contract_number = Column(String(100))  # RID or SSP contract
+    customs_workshop_license = Column(String(100))  # For plants >20kW
+    antimafia_protocol = Column(String(100))
+    antimafia_last_declaration = Column(DateTime)
+    
+    # Fiscal metering (for customs declarations)
+    fiscal_meter_model = Column(String(100))
+    fiscal_meter_serial = Column(String(100))
+    fiscal_meter_last_calibration = Column(DateTime)
+    fiscal_meter_mf_code = Column(String(50))  # MF code for customs
+    
     # Type-specific fields (JSON for flexibility)
     technical_specs = Column(JSON, default=dict)
     

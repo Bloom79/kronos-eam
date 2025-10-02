@@ -76,7 +76,7 @@ async def login_test(
             user={
                 "id": str(user.id),
                 "email": user.email,
-                "nome": user.nome,
+                "nome": user.name,
                 "ruolo": user.ruolo.value,
                 "tenant_id": user.tenant_id,
                 "permissions": []

@@ -8,10 +8,10 @@ interface EDIFile {
   type: 'Dichiarazione Annuale' | 'Registro Mensile' | 'Comunicazione Variazione' | 'Richiesta Licenza';
   formato: 'Idoc' | 'EDIFACT' | 'X12' | 'XML';
   dimensione: string;
-  dataCreazione: string;
+  createdAt: string;
   status: 'Generato' | 'Validato' | 'Inviato' | 'Accettato' | 'Respinto' | 'In Errore';
   protocollo?: string;
-  ente: 'Dogane' | 'GSE' | 'Terna' | 'DSO';
+  entity: 'Dogane' | 'GSE' | 'Terna' | 'DSO';
   contenuto?: {
     plant: string;
     periodo: string;
@@ -29,10 +29,10 @@ const EDIGenerator: React.FC = () => {
       type: 'Dichiarazione Annuale',
       formato: 'Idoc',
       dimensione: '124 KB',
-      dataCreazione: '2024-03-25 10:30:00',
+      createdAt: '2024-03-25 10:30:00',
       status: 'Accettato',
       protocollo: 'ADM/2024/BR/00789',
-      ente: 'Dogane',
+      entity: 'Dogane',
       contenuto: {
         plant: 'Solare Verdi 1',
         periodo: '2023',
@@ -47,9 +47,9 @@ const EDIGenerator: React.FC = () => {
       type: 'Registro Mensile',
       formato: 'XML',
       dimensione: '45 KB',
-      dataCreazione: '2024-04-01 09:15:00',
+      createdAt: '2024-04-01 09:15:00',
       status: 'Validato',
-      ente: 'Dogane',
+      entity: 'Dogane',
       contenuto: {
         plant: 'Solare Verdi 1',
         periodo: 'Marzo 2024',
@@ -64,9 +64,9 @@ const EDIGenerator: React.FC = () => {
       type: 'Comunicazione Variazione',
       formato: 'Idoc',
       dimensione: '89 KB',
-      dataCreazione: '2024-03-15 14:45:00',
+      createdAt: '2024-03-15 14:45:00',
       status: 'In Errore',
-      ente: 'Dogane',
+      entity: 'Dogane',
       contenuto: {
         plant: 'Eolico Puglia',
         periodo: 'Q1 2024'
@@ -78,9 +78,9 @@ const EDIGenerator: React.FC = () => {
       type: 'Dichiarazione Annuale',
       formato: 'XML',
       dimensione: '156 KB',
-      dataCreazione: '2024-03-20 11:20:00',
+      createdAt: '2024-03-20 11:20:00',
       status: 'Inviato',
-      ente: 'GSE',
+      entity: 'GSE',
       contenuto: {
         plant: 'Biomasse Toscana',
         periodo: '2024',
@@ -93,9 +93,9 @@ const EDIGenerator: React.FC = () => {
       type: 'Comunicazione Variazione',
       formato: 'EDIFACT',
       dimensione: '67 KB',
-      dataCreazione: '2024-03-10 16:30:00',
+      createdAt: '2024-03-10 16:30:00',
       status: 'Generato',
-      ente: 'Terna',
+      entity: 'Terna',
       contenuto: {
         plant: 'Solare Verdi 2',
         periodo: 'Marzo 2024'
@@ -138,8 +138,8 @@ const EDIGenerator: React.FC = () => {
     }
   };
 
-  const getEnteColor = (ente: string) => {
-    switch (ente) {
+  const getEnteColor = (entity: string) => {
+    switch (entity) {
       case 'Dogane':
         return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
       case 'GSE':
@@ -155,40 +155,40 @@ const EDIGenerator: React.FC = () => {
 
   const filteredFiles = filter === 'all' 
     ? ediFiles 
-    : ediFiles.filter(file => file.ente === filter);
+    : ediFiles.filter(file => file.entity === filter);
 
   const stats = {
     totali: ediFiles.length,
     accettati: ediFiles.filter(f => f.status === 'Accettato').length,
     inviati: ediFiles.filter(f => f.status === 'Inviato').length,
     errori: ediFiles.filter(f => f.status === 'In Errore' || f.status === 'Respinto').length,
-    dogane: ediFiles.filter(f => f.ente === 'Dogane').length,
-    gse: ediFiles.filter(f => f.ente === 'GSE').length,
-    terna: ediFiles.filter(f => f.ente === 'Terna').length
+    dogane: ediFiles.filter(f => f.entity === 'Dogane').length,
+    gse: ediFiles.filter(f => f.entity === 'GSE').length,
+    terna: ediFiles.filter(f => f.entity === 'Terna').length
   };
 
   const ediFormats = [
     {
       formato: 'Idoc',
-      descrizione: 'SAP Intermediate Document - Standard Dogane',
+      description: 'SAP Intermediate Document - Standard Dogane',
       icon: FileCode,
       color: 'purple'
     },
     {
       formato: 'EDIFACT',
-      descrizione: 'Electronic Data Interchange for Administration',
+      description: 'Electronic Data Interchange for Administration',
       icon: Code,
       color: 'green'
     },
     {
       formato: 'XML',
-      descrizione: 'Extensible Markup Language - GSE/Terna',
+      description: 'Extensible Markup Language - GSE/Terna',
       icon: FileText,
       color: 'blue'
     },
     {
       formato: 'X12',
-      descrizione: 'ANSI ASC X12 - Standard Americano',
+      description: 'ANSI ASC X12 - Standard Americano',
       icon: Package,
       color: 'yellow'
     }
@@ -368,13 +368,13 @@ const EDIGenerator: React.FC = () => {
                   <td className="px-4 py-3">
                     <span className={clsx(
                       'px-2 py-1 rounded text-xs font-medium',
-                      getEnteColor(file.ente)
+                      getEnteColor(file.entity)
                     )}>
-                      {file.ente}
+                      {file.entity}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                    {new Date(file.dataCreazione).toLocaleString('it-IT')}
+                    {new Date(file.createdAt).toLocaleString('it-IT')}
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
@@ -443,7 +443,7 @@ const EDIGenerator: React.FC = () => {
                   {format.formato}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {format.descrizione}
+                  {format.description}
                 </p>
               </div>
             );

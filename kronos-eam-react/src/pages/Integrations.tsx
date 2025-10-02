@@ -21,7 +21,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { Integrazione } from '../types';
+import { Integrazione } from '../types/integrazione';
 import CredentialManager from '../components/integrations/CredentialManager';
 import RPAMonitorV2 from '../components/integrations/RPAMonitorV2';
 import PECManager from '../components/integrations/PECManager';
@@ -83,9 +83,9 @@ const Integrations: React.FC = () => {
       ],
       autenticazione: 'SPID / User+Password+MFA',
       ultimiTask: [
-        { id: 1, name: 'Download pagamenti Gennaio', status: 'Completato', data: '2024-03-15 14:30:00' },
-        { id: 2, name: 'Invio dichiarazione Fuel Mix', status: 'In Corso', data: '2024-03-15 14:25:00' },
-        { id: 3, name: 'Verifica status antimafia', status: 'Pianificato', data: '2024-03-16 09:00:00' }
+        { id: 1, name: 'Download pagamenti Gennaio', status: 'Completato', date: '2024-03-15 14:30:00' },
+        { id: 2, name: 'Invio dichiarazione Fuel Mix', status: 'In Corso', date: '2024-03-15 14:25:00' },
+        { id: 3, name: 'Verifica status antimafia', status: 'Pianificato', date: '2024-03-16 09:00:00' }
       ]
     },
     terna: {
@@ -99,9 +99,9 @@ const Integrations: React.FC = () => {
       ],
       autenticazione: 'Certificato Digitale / API Key',
       ultimiTask: [
-        { id: 1, name: 'Sync dati mercato MGP', status: 'Completato', data: '2024-03-15 13:45:00' },
-        { id: 2, name: 'Aggiornamento registry GAUDÌ', status: 'Completato', data: '2024-03-15 12:00:00' },
-        { id: 3, name: 'Download prezzi zonali', status: 'Pianificato', data: '2024-03-15 18:00:00' }
+        { id: 1, name: 'Sync dati mercato MGP', status: 'Completato', date: '2024-03-15 13:45:00' },
+        { id: 2, name: 'Aggiornamento registry GAUDÌ', status: 'Completato', date: '2024-03-15 12:00:00' },
+        { id: 3, name: 'Download prezzi zonali', status: 'Pianificato', date: '2024-03-15 18:00:00' }
       ]
     },
     dogane: {
@@ -115,9 +115,9 @@ const Integrations: React.FC = () => {
       ],
       autenticazione: 'SPID / CNS / CIE',
       ultimiTask: [
-        { id: 1, name: 'Invio dichiarazione annuale', status: 'Errore', data: '2024-03-15 10:15:00' },
-        { id: 2, name: 'Generazione file EDI', status: 'Errore', data: '2024-03-15 10:10:00' },
-        { id: 3, name: 'Verifica formato Idoc', status: 'Errore', data: '2024-03-15 10:05:00' }
+        { id: 1, name: 'Invio dichiarazione annuale', status: 'Errore', date: '2024-03-15 10:15:00' },
+        { id: 2, name: 'Generazione file EDI', status: 'Errore', date: '2024-03-15 10:10:00' },
+        { id: 3, name: 'Verifica formato Idoc', status: 'Errore', date: '2024-03-15 10:05:00' }
       ]
     },
     'e-distribuzione': {
@@ -131,9 +131,9 @@ const Integrations: React.FC = () => {
       ],
       autenticazione: 'User+Password',
       ultimiTask: [
-        { id: 1, name: 'Invio comunicazione fine lavori', status: 'Completato', data: '2024-03-14 18:00:00' },
-        { id: 2, name: 'Download TICA', status: 'Sospeso', data: '2024-03-14 17:00:00' },
-        { id: 3, name: 'Verifica status connessione', status: 'Sospeso', data: '2024-03-14 16:00:00' }
+        { id: 1, name: 'Invio comunicazione fine lavori', status: 'Completato', date: '2024-03-14 18:00:00' },
+        { id: 2, name: 'Download TICA', status: 'Sospeso', date: '2024-03-14 17:00:00' },
+        { id: 3, name: 'Verifica status connessione', status: 'Sospeso', date: '2024-03-14 16:00:00' }
       ]
     }
   };
@@ -407,7 +407,7 @@ const Integrations: React.FC = () => {
                               {task.name}
                             </p>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {new Date(task.data).toLocaleString('it-IT')}
+                              {new Date(task.date).toLocaleString('it-IT')}
                             </p>
                           </div>
                           <span className={clsx(

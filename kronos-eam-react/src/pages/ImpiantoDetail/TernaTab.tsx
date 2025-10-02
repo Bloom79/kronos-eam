@@ -26,41 +26,41 @@ const TernaTab: React.FC<TernaTabProps> = ({ plant }) => {
   const flussiGaudi = [
     {
       id: 1,
-      codice: 'G01',
-      descrizione: 'Richiesta registrazione plant',
+      code: 'G01',
+      description: 'Richiesta registrazione plant',
       mittente: 'DSO',
       destinatario: 'Terna',
-      data: '25/02/2022',
+      date: '25/02/2022',
       status: 'Completato',
       esito: 'Positivo'
     },
     {
       id: 2,
-      codice: 'G02',
-      descrizione: 'Conferma ricezione dati',
+      code: 'G02',
+      description: 'Conferma ricezione dati',
       mittente: 'Terna',
       destinatario: 'DSO',
-      data: '26/02/2022',
+      date: '26/02/2022',
       status: 'Completato',
       esito: 'Positivo'
     },
     {
       id: 3,
-      codice: 'G04',
-      descrizione: 'Validazione registry',
+      code: 'G04',
+      description: 'Validazione registry',
       mittente: 'Terna',
       destinatario: 'DSO/Produttore',
-      data: '10/03/2022',
+      date: '10/03/2022',
       status: 'Completato',
       esito: 'Positivo'
     },
     {
       id: 4,
-      codice: 'G05',
-      descrizione: 'Attivazione commerciale',
+      code: 'G05',
+      description: 'Attivazione commerciale',
       mittente: 'DSO',
       destinatario: 'Terna',
-      data: '22/05/2022',
+      date: '22/05/2022',
       status: 'Completato',
       esito: 'Positivo'
     }
@@ -186,10 +186,10 @@ const TernaTab: React.FC<TernaTabProps> = ({ plant }) => {
                 <Activity className="h-5 w-5 text-gray-500 dark:text-gray-400" />
                 <div>
                   <p className="font-medium text-gray-800 dark:text-gray-100">
-                    {flusso.codice} - {flusso.descrizione}
+                    {flusso.code} - {flusso.description}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {flusso.mittente} → {flusso.destinatario} • {flusso.data}
+                    {flusso.mittente} → {flusso.destinatario} • {flusso.date}
                   </p>
                 </div>
               </div>

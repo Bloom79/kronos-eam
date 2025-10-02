@@ -13,15 +13,15 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../services/api';
-import { Task } from '../types';
+import { Task, TaskStatusEnum } from '../types';
 import clsx from 'clsx';
 
 interface TaskWithWorkflow extends Task {
   workflow?: {
     id: number;
-    nome: string;
-    impianto_nome: string;
-    impianto_id: number;
+    name: string;
+    plant_name: string;
+    plant_id: number;
   };
 }
 
@@ -60,21 +60,21 @@ const MyTasks: React.FC = () => {
   };
 
   const getTaskIcon = (task: TaskWithWorkflow) => {
-    if (task.status === 'Completed') {
+    if (task.status === TaskStatusEnum.COMPLETED) {
       return <CheckCircle className="h-5 w-5 text-green-600" />;
     }
     if (isOverdue(task)) {
       return <AlertCircle className="h-5 w-5 text-red-600" />;
     }
-    if (task.status === 'In Progress') {
+    if (task.status === TaskStatusEnum.IN_PROGRESS) {
       return <Clock className="h-5 w-5 text-blue-600" />;
     }
     return <Play className="h-5 w-5 text-gray-400" />;
   };
 
   const isOverdue = (task: TaskWithWorkflow) => {
-    if (!task.dueDate || task.status === 'Completed') return false;
-    return new Date(task.dueDate) < new Date();
+    if (!task.due_date || task.status === TaskStatusEnum.COMPLETED) return false;
+    return new Date(task.due_date) < new Date();
   };
 
   const formatDate = (dateString?: string) => {
@@ -105,10 +105,10 @@ const MyTasks: React.FC = () => {
 
   const stats = {
     total: tasks.length,
-    todo: tasks.filter(t => t.status === 'To Do').length,
-    inProgress: tasks.filter(t => t.status === 'In Progress').length,
+    todo: tasks.filter(t => t.status === TaskStatusEnum.TO_START).length,
+    inProgress: tasks.filter(t => t.status === TaskStatusEnum.IN_PROGRESS).length,
     overdue: tasks.filter(t => isOverdue(t)).length,
-    completed: tasks.filter(t => t.status === 'Completed').length
+    completed: tasks.filter(t => t.status === TaskStatusEnum.COMPLETED).length
   };
 
   if (loading) {
@@ -259,29 +259,29 @@ const MyTasks: React.FC = () => {
                           {task.title}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                          {task.descrizione}
+                          {task.description || ''}
                         </p>
                         
                         <div className="flex items-center gap-4 mt-2 text-sm">
                           {task.workflow && (
                             <div className="flex items-center gap-1 text-gray-500">
                               <FileText className="h-4 w-4" />
-                              <span>{task.workflow.nome}</span>
+                              <span>{task.workflow.name}</span>
                             </div>
                           )}
-                          {task.workflow?.impianto_nome && (
+                          {task.workflow?.plant_name && (
                             <div className="flex items-center gap-1 text-gray-500">
                               <Building2 className="h-4 w-4" />
-                              <span>{task.workflow.impianto_nome}</span>
+                              <span>{task.workflow.plant_name}</span>
                             </div>
                           )}
-                          {task.dueDate && (
+                          {task.due_date && (
                             <div className={clsx(
                               'flex items-center gap-1',
                               isOverdue(task) ? 'text-red-600' : 'text-gray-500'
                             )}>
                               <Calendar className="h-4 w-4" />
-                              <span>{formatDate(task.dueDate)}</span>
+                              <span>{formatDate(task.due_date)}</span>
                             </div>
                           )}
                         </div>
@@ -307,29 +307,29 @@ const MyTasks: React.FC = () => {
                     {selectedTask?.id === task.id && (
                       <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          {task.ente_responsabile && (
+                          {task.responsible_entity && (
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Ente Responsabile
                               </p>
-                              <p className="font-medium">{task.ente_responsabile}</p>
+                              <p className="font-medium">{task.responsible_entity}</p>
                             </div>
                           )}
-                          {task.tipo_pratica && (
+                          {task.practice_type && (
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Tipo Pratica
                               </p>
-                              <p className="font-medium">{task.tipo_pratica}</p>
+                              <p className="font-medium">{task.practice_type}</p>
                             </div>
                           )}
-                          {task.url_portale && (
+                          {task.portal_url && (
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Portale
                               </p>
                               <a 
-                                href={task.url_portale}
+                                href={task.portal_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline"
@@ -338,12 +338,12 @@ const MyTasks: React.FC = () => {
                               </a>
                             </div>
                           )}
-                          {task.credenziali_richieste && (
+                          {task.required_credentials && (
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 Credenziali Richieste
                               </p>
-                              <p className="font-medium">{task.credenziali_richieste}</p>
+                              <p className="font-medium">{task.required_credentials}</p>
                             </div>
                           )}
                         </div>
@@ -360,7 +360,7 @@ const MyTasks: React.FC = () => {
                         )}
 
                         <div className="flex gap-2">
-                          {task.status !== 'Completed' && (
+                          {task.status !== TaskStatusEnum.COMPLETED && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();

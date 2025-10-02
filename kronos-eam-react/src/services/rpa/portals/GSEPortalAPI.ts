@@ -21,7 +21,7 @@ export class GSEPortalAPI {
     return this.rpaEngine.executeTask({
       portal: 'gse',
       action,
-      data
+      date: data
     });
   }
 
@@ -97,7 +97,7 @@ export class GSEPortalAPI {
     const errors: string[] = [];
 
     if (!data.typeplant) errors.push('type plant richiesto');
-    if (!data.potenzaNominale) errors.push('Potenza nominale richiesta');
+    if (!data.nominalPower) errors.push('Potenza nominale richiesta');
     if (!data.podCode) errors.push('Codice POD richiesto');
     if (!data.documents || data.documents.length === 0) {
       errors.push('Almeno un documento richiesto');
@@ -112,7 +112,7 @@ export class GSEPortalAPI {
   formatRIDData(rawData: any): any {
     return {
       typeplant: rawData.typeplant,
-      potenzaNominale: parseFloat(rawData.potenzaNominale),
+      nominalPower: parseFloat(rawData.nominalPower),
       podCode: rawData.podCode.toUpperCase(),
       dataAttivazione: new Date().toISOString(),
       documents: rawData.documents.map((doc: any) => ({

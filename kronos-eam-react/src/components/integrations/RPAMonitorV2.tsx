@@ -28,7 +28,7 @@ import { credentialVault } from '../../services/rpa/CredentialVault';
 
 interface RPATaskUI extends RPATask {
   name: string;
-  integrazione: string;
+  integration: string;
   type: 'Login' | 'Download' | 'Upload' | 'Scraping' | 'Form Fill';
   status: 'In Esecuzione' | 'Completato' | 'Errore' | 'In Coda' | 'Pianificato';
   iniziato: string;
@@ -46,14 +46,14 @@ const RPAMonitorV2: React.FC = () => {
       portal: 'gse',
       action: 'downloadDocuments',
       name: 'Download Pagamenti GSE',
-      integrazione: 'GSE',
+      integration: 'GSE',
       type: 'Download',
       status: 'In Esecuzione',
       iniziato: '2024-03-15 14:30:00',
       durata: '2m 15s',
       frequenza: 'Mensile',
       prossimaPianificazione: '2024-04-15 14:30:00',
-      data: {},
+      date: {},
       priority: 'high',
       log: [
         '[14:30:00] Avvio task automatico',
@@ -69,14 +69,14 @@ const RPAMonitorV2: React.FC = () => {
       portal: 'terna',
       action: 'updateplant',
       name: 'Aggiornamento registry GAUDÌ',
-      integrazione: 'Terna',
+      integration: 'Terna',
       type: 'Form Fill',
       status: 'Completato',
       iniziato: '2024-03-15 12:00:00',
       durata: '5m 32s',
       frequenza: 'Settimanale',
       prossimaPianificazione: '2024-03-22 12:00:00',
-      data: {},
+      date: {},
       priority: 'medium'
     },
     {
@@ -84,7 +84,7 @@ const RPAMonitorV2: React.FC = () => {
       portal: 'dogane',
       action: 'submitDeclaration',
       name: 'Invio Dichiarazione Dogane',
-      integrazione: 'Dogane',
+      integration: 'Dogane',
       type: 'Upload',
       status: 'Errore',
       iniziato: '2024-03-15 10:15:00',
@@ -92,7 +92,7 @@ const RPAMonitorV2: React.FC = () => {
       errore: 'Timeout durante caricamento file EDI. Il portale non risponde.',
       frequenza: 'Mensile',
       prossimaPianificazione: '2024-03-16 10:15:00',
-      data: {},
+      date: {},
       priority: 'high'
     }
   ]);
@@ -252,7 +252,7 @@ const RPAMonitorV2: React.FC = () => {
       id: `task_${Date.now()}_1`,
       portal: 'gse',
       action: 'checkStatus',
-      data: { practiceId: 'RID-2024-00123' },
+      date: { practiceId: 'RID-2024-00123' },
       priority: 'high'
     });
 
@@ -260,7 +260,7 @@ const RPAMonitorV2: React.FC = () => {
       id: `task_${Date.now()}_2`,
       portal: 'terna',
       action: 'checkFlows',
-      data: { gaudiCode: 'GAUD-2024-789' },
+      date: { gaudiCode: 'GAUD-2024-789' },
       priority: 'medium'
     });
 
@@ -270,11 +270,11 @@ const RPAMonitorV2: React.FC = () => {
       portal: 'gse',
       action: 'checkStatus',
       name: 'Verifica Status Pratica RID',
-      integrazione: 'GSE',
+      integration: 'GSE',
       type: 'Scraping',
       status: 'In Coda',
       iniziato: new Date().toISOString(),
-      data: { practiceId: 'RID-2024-00123' },
+      date: { practiceId: 'RID-2024-00123' },
       priority: 'high'
     };
 
@@ -283,11 +283,11 @@ const RPAMonitorV2: React.FC = () => {
       portal: 'terna',
       action: 'checkFlows',
       name: 'Controllo Flussi GAUDÌ',
-      integrazione: 'Terna',
+      integration: 'Terna',
       type: 'Scraping',
       status: 'In Coda',
       iniziato: new Date().toISOString(),
-      data: { gaudiCode: 'GAUD-2024-789' },
+      date: { gaudiCode: 'GAUD-2024-789' },
       priority: 'medium'
     };
 
@@ -488,7 +488,7 @@ const RPAMonitorV2: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-gray-700 dark:text-gray-300">
-                      {task.integrazione}
+                      {task.integration}
                     </span>
                   </td>
                   <td className="px-4 py-3">
@@ -668,7 +668,7 @@ const RPAMonitorV2: React.FC = () => {
                     <div>
                       <dt className="text-sm text-gray-600 dark:text-gray-400">Integrazione</dt>
                       <dd className="font-medium text-gray-800 dark:text-gray-100">
-                        {selectedTask.integrazione}
+                        {selectedTask.integration}
                       </dd>
                     </div>
                     <div>

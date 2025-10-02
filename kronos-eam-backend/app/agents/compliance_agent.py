@@ -107,7 +107,7 @@ Always provide specific regulatory references and deadlines.
                 tool_calls.append({
                     "tool": "get_compliance_status",
                     "args": {
-                        "impianto_id": context["impianto_id"],
+                        "impianto_id": context["plant_id"],
                         "tenant_id": state["tenant_id"]
                     }
                 })
@@ -227,7 +227,7 @@ Provide:
         
         # Check document expiration
         documents = tool_results.get("search_documents", [])
-        expiring_soon = [doc for doc in documents if self._is_expiring_soon(doc.get("data_scadenza"))]
+        expiring_soon = [doc for doc in documents if self._is_expiring_soon(doc.get("due_date"))]
         if expiring_soon:
             risks["medium"].append({
                 "area": "Document Management",

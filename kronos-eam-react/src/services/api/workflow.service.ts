@@ -18,14 +18,14 @@ export interface WorkflowCreateRequest {
   template_id?: number | string;
   plant_id: number;
   name: string;
-  descrizione?: string;
-  potenza_plant?: number;
-  type_plant?: string;
-  responsabile?: string;
-  data_scadenza?: string;
+  description?: string;
+  power_kw?: number;
+  plant_type?: string;
+  assignee?: string;
+  due_date?: string;
   task_assignments?: Record<string, string>;
   task_due_dates?: Record<string, string>;
-  enti_coinvolti?: string[];
+  involvedEntities?: string[];
   use_phase_templates?: boolean;
   phase_templates?: Record<string, number>;
 }
@@ -42,10 +42,10 @@ export interface WorkflowStats {
 
 export interface TaskUpdateRequest {
   status?: string;
-  assegnato_a?: string;
-  data_scadenza?: string;
-  note?: string;
-  progresso?: number;
+  assigned_to?: string;
+  due_date?: string;
+  notes?: string;
+  progress?: number;
 }
 
 class WorkflowService {
@@ -53,13 +53,21 @@ class WorkflowService {
    * Get all workflow templates
    */
   async getTemplates(params?: {
-    categoria?: string;
+    category?: string;
     phase?: string;
-    type_plant?: string;
-    potenza_kw?: number;
-    area_vincolata?: boolean;
+    plant_type?: string;
+    power_kw?: number;
+    heritage_constraints?: boolean;
   }): Promise<WorkflowTemplate[]> {
     const response = await apiClient.get('/workflow/templates', { params });
+    return response.data;
+  }
+
+  /**
+   * Get workflow templates applicable to a specific plant
+   */
+  async getApplicableTemplatesForPlant(plantId: number): Promise<WorkflowTemplate[]> {
+    const response = await apiClient.get(`/workflow/templates/applicable/${plantId}`);
     return response.data;
   }
 
@@ -75,7 +83,7 @@ class WorkflowService {
    * Get all workflows with optional filters
    */
   async getWorkflows(params?: {
-    categoria?: string;
+    category?: string;
     plant_id?: number;
     status?: string;
     skip?: number;
@@ -102,11 +110,11 @@ class WorkflowService {
       const response = await apiClient.post('/workflow/compose', {
         plant_id: data.plant_id,
         name: data.name,
-        description: data.descrizione,
+        description: data.description,
         phase_templates: data.phase_templates,
-        data_scadenza: data.data_scadenza,
+        due_date: data.due_date,
         task_assignments: data.task_assignments,
-        enti_coinvolti: data.enti_coinvolti
+        involvedEntities: data.involvedEntities
       });
       return response.data;
     } else {
@@ -256,11 +264,11 @@ class WorkflowService {
    */
   async createRenewableEnergyWorkflow(data: {
     plant_id: number;
-    potenza_kw: number;
-    type_plant: string;
+    power_kw: number;
+    plant_type: string;
     has_heritage_constraints?: boolean;
     simplified_process?: boolean;
-    responsabile: string;
+    assignee: string;
   }): Promise<Workflow> {
     // Find the renewable energy activation template
     const templates = await this.getTemplates();
@@ -271,26 +279,26 @@ class WorkflowService {
     }
 
     // Determine which entities are involved based on plant characteristics
-    const entiCoinvolti = ['DSO', 'Terna', 'GSE'];
-    if (data.potenza_kw > 20) {
-      entiCoinvolti.push('Customs');
+    const involvedEntities = ['DSO', 'Terna', 'GSE'];
+    if (data.power_kw > 20) {
+      involvedEntities.push('Customs');
     }
     if (data.has_heritage_constraints) {
-      entiCoinvolti.push('Superintendency');
+      involvedEntities.push('Superintendency');
     }
-    entiCoinvolti.push('Municipality'); // Always required
+    involvedEntities.push('Municipality'); // Always required
 
     const workflowData: WorkflowCreateRequest = {
       template_id: normalizeTemplateId(template.id),
       plant_id: data.plant_id,
-      name: `Attivazione ${data.type_plant} ${data.potenza_kw}kW`,
-      descrizione: `Processo completo di attivazione plant ${data.type_plant} da ${data.potenza_kw} kW`,
-      potenza_plant: data.potenza_kw,
-      type_plant: data.type_plant,
-      responsabile: data.responsabile,
-      enti_coinvolti: entiCoinvolti,
+      name: `Attivazione ${data.plant_type} ${data.power_kw}kW`,
+      description: `Processo completo di attivazione plant ${data.plant_type} da ${data.power_kw} kW`,
+      power_kw: data.power_kw,
+      plant_type: data.plant_type,
+      assignee: data.assignee,
+      involvedEntities: involvedEntities,
       // Set deadline based on template duration
-      data_scadenza: new Date(Date.now() + (template.durata_stimata_giorni || 180) * 24 * 60 * 60 * 1000).toISOString(),
+      due_date: new Date(Date.now() + (template.estimated_duration_days || 180) * 24 * 60 * 60 * 1000).toISOString(),
     };
 
     return this.createWorkflow(workflowData);

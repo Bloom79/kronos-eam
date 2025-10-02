@@ -9,12 +9,12 @@ interface Task {
   id?: string;
   name?: string;
   title?: string;
-  descrizione?: string;
-  responsabile?: string;
-  durata_giorni?: number;
-  priorita?: string;
-  ente_responsabile?: string;
-  type_pratica?: string;
+  description?: string;
+  assignee?: string;
+  duration_days?: number;
+  priority?: string;
+  responsible_entity?: string;
+  practice_type?: string;
   documenti_richiesti?: string[];
   checkpoints?: string[];
   condizioni?: any;
@@ -38,8 +38,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
       const newTask: Task = {
         ...taskForm,
         id: `task-${Date.now()}`,
-        priorita: taskForm.priorita || 'Media',
-        durata_giorni: taskForm.durata_giorni || 7
+        priority: taskForm.priority || 'Media',
+        duration_days: taskForm.duration_days || 7
       };
       onChange([...tasks, newTask]);
       setTaskForm({});
@@ -114,8 +114,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
             Ente Responsabile
           </label>
           <select
-            value={task.ente_responsabile || ''}
-            onChange={(e) => setTaskForm({ ...taskForm, ente_responsabile: e.target.value })}
+            value={task.responsible_entity || ''}
+            onChange={(e) => setTaskForm({ ...taskForm, responsible_entity: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           >
             <option value="">Nessuno</option>
@@ -131,8 +131,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
           Descrizione
         </label>
         <textarea
-          value={task.descrizione || ''}
-          onChange={(e) => setTaskForm({ ...taskForm, descrizione: e.target.value })}
+          value={task.description || ''}
+          onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })}
           rows={2}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           placeholder="Descrizione dell'attività..."
@@ -146,8 +146,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
           </label>
           <input
             type="text"
-            value={task.responsabile || ''}
-            onChange={(e) => setTaskForm({ ...taskForm, responsabile: e.target.value })}
+            value={task.assignee || ''}
+            onChange={(e) => setTaskForm({ ...taskForm, assignee: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
             placeholder="es. Asset Manager"
           />
@@ -159,8 +159,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
           </label>
           <input
             type="number"
-            value={task.durata_giorni || ''}
-            onChange={(e) => setTaskForm({ ...taskForm, durata_giorni: Number(e.target.value) })}
+            value={task.duration_days || ''}
+            onChange={(e) => setTaskForm({ ...taskForm, duration_days: Number(e.target.value) })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
             placeholder="7"
             min="1"
@@ -172,8 +172,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
             Priorità
           </label>
           <select
-            value={task.priorita || 'Media'}
-            onChange={(e) => setTaskForm({ ...taskForm, priorita: e.target.value })}
+            value={task.priority || 'Media'}
+            onChange={(e) => setTaskForm({ ...taskForm, priority: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           >
             {priorities.map(priority => (
@@ -189,8 +189,8 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
         </label>
         <input
           type="text"
-          value={task.type_pratica || ''}
-          onChange={(e) => setTaskForm({ ...taskForm, type_pratica: e.target.value })}
+          value={task.practice_type || ''}
+          onChange={(e) => setTaskForm({ ...taskForm, practice_type: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-800 dark:text-gray-100"
           placeholder="es. TICA, GAUDÌ, RID"
         />
@@ -242,46 +242,46 @@ const TaskEditor: React.FC<TaskEditorProps> = ({ tasks, onChange }) => {
                     <h5 className="font-medium text-gray-800 dark:text-gray-100">
                       {task.name || task.title}
                     </h5>
-                    {task.priorita && (
+                    {task.priority && (
                       <span className={clsx(
                         'px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1',
-                        getPriorityColor(task.priorita)
+                        getPriorityColor(task.priority)
                       )}>
-                        {React.createElement(getPriorityIcon(task.priorita), { className: 'h-3 w-3' })}
-                        {task.priorita}
+                        {React.createElement(getPriorityIcon(task.priority), { className: 'h-3 w-3' })}
+                        {task.priority}
                       </span>
                     )}
                   </div>
 
-                  {task.descrizione && (
+                  {task.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                      {task.descrizione}
+                      {task.description}
                     </p>
                   )}
 
                   <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                    {task.ente_responsabile && (
+                    {task.responsible_entity && (
                       <span className="flex items-center gap-1">
                         <Building2 className="h-3 w-3" />
-                        {task.ente_responsabile}
+                        {task.responsible_entity}
                       </span>
                     )}
-                    {task.responsabile && (
+                    {task.assignee && (
                       <span className="flex items-center gap-1">
                         <Users className="h-3 w-3" />
-                        {task.responsabile}
+                        {task.assignee}
                       </span>
                     )}
-                    {task.durata_giorni && (
+                    {task.duration_days && (
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {task.durata_giorni} giorni
+                        {task.duration_days} giorni
                       </span>
                     )}
-                    {task.type_pratica && (
+                    {task.practice_type && (
                       <span className="flex items-center gap-1">
                         <FileText className="h-3 w-3" />
-                        {task.type_pratica}
+                        {task.practice_type}
                       </span>
                     )}
                   </div>

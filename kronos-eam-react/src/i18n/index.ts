@@ -1,7 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import Backend from 'i18next-http-backend';
 
 // Import translations
 import enCommon from './locales/en/common.json';
@@ -40,7 +39,7 @@ i18n
     resources,
     fallbackLng: 'en',
     defaultNS: 'common',
-        ns: ['common', 'plants', 'workflows', 'dashboard', 'auth'],
+    ns: ['common', 'plants', 'workflows', 'dashboard', 'auth'],
     keySeparator: '.', // Enable nested key access
     
     // Detection options

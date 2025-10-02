@@ -32,7 +32,7 @@ export class GSEWorkflows {
       id: `rid_login_${Date.now()}`,
       portal: 'gse',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -41,7 +41,7 @@ export class GSEWorkflows {
       id: `rid_submit_${Date.now()}`,
       portal: 'gse',
       action: 'submitRID',
-      data: {
+      date: {
         plantId,
         typeplant: 'Fotovoltaico',
         potenzaNominale: '100',
@@ -60,7 +60,7 @@ export class GSEWorkflows {
       id: `rid_check_${Date.now()}`,
       portal: 'gse',
       action: 'checkStatus',
-      data: { 
+      date: { 
         practiceType: 'RID',
         plantId 
       },
@@ -95,7 +95,7 @@ export class GSEWorkflows {
       id: taskIds.login,
       portal: 'gse',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -104,7 +104,7 @@ export class GSEWorkflows {
       id: taskIds.submit,
       portal: 'gse',
       action: 'submitAntimafia',
-      data: {
+      date: {
         plantId,
         ragioneSociale: 'Solare Verdi S.r.l.',
         partitaIva: '12345678901',
@@ -124,7 +124,7 @@ export class GSEWorkflows {
       id: taskIds.download,
       portal: 'gse',
       action: 'downloadDocuments',
-      data: {
+      date: {
         documentType: 'antimafia_confirmation',
         plantId,
         savePath: `/downloads/${tenant}/antimafia_${new Date().getFullYear()}_${plantId}.pdf`
@@ -151,7 +151,7 @@ export class GSEWorkflows {
       id: `fuelmix_login_${Date.now()}`,
       portal: 'gse',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -160,7 +160,7 @@ export class GSEWorkflows {
       id: `fuelmix_submit_${Date.now()}`,
       portal: 'gse',
       action: 'submitFuelMix',
-      data: {
+      date: {
         plantId,
         year: new Date().getFullYear().toString(),
         productionSources: [
@@ -193,7 +193,7 @@ export class GSEWorkflows {
       id: `payments_login_${Date.now()}`,
       portal: 'gse',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -202,7 +202,7 @@ export class GSEWorkflows {
       id: `payments_navigate_${Date.now()}`,
       portal: 'gse',
       action: 'navigateToSection',
-      data: { section: 'pagamenti' },
+      date: { section: 'pagamenti' },
       priority: 'high'
     });
 
@@ -213,7 +213,7 @@ export class GSEWorkflows {
         id: `payments_download_${currentYear}_${month}_${Date.now()}`,
         portal: 'gse',
         action: 'downloadDocuments',
-        data: {
+        date: {
           documentType: 'fattura',
           year: currentYear,
           month,
@@ -244,7 +244,7 @@ export class GSEWorkflows {
         id: `compliance_check_${Date.now()}`,
         portal: 'gse',
         action: 'checkPendingCommunications',
-        data: { plantId },
+        date: { plantId },
         priority: 'medium'
       });
     }
@@ -278,7 +278,7 @@ export class GSEWorkflows {
           id: `monitor_${practiceId}_${Date.now()}`,
           portal: 'gse',
           action: 'checkStatus',
-          data: { 
+          date: { 
             practiceId,
             plantId,
             notifyOnChange: true

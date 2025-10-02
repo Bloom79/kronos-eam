@@ -5,7 +5,7 @@ import clsx from 'clsx';
 interface RPATask {
   id: string;
   name: string;
-  integrazione: string;
+  integration: string;
   type: 'Login' | 'Download' | 'Upload' | 'Scraping' | 'Form Fill';
   status: 'In Esecuzione' | 'Completato' | 'Errore' | 'In Coda' | 'Pianificato';
   iniziato: string;
@@ -21,7 +21,7 @@ const RPAMonitor: React.FC = () => {
     {
       id: '1',
       name: 'Download Pagamenti GSE',
-      integrazione: 'GSE',
+      integration: 'GSE',
       type: 'Download',
       status: 'In Esecuzione',
       iniziato: '2024-03-15 14:30:00',
@@ -40,7 +40,7 @@ const RPAMonitor: React.FC = () => {
     {
       id: '2',
       name: 'Aggiornamento registry GAUDÌ',
-      integrazione: 'Terna',
+      integration: 'Terna',
       type: 'Form Fill',
       status: 'Completato',
       iniziato: '2024-03-15 12:00:00',
@@ -51,7 +51,7 @@ const RPAMonitor: React.FC = () => {
     {
       id: '3',
       name: 'Invio Dichiarazione Dogane',
-      integrazione: 'Dogane',
+      integration: 'Dogane',
       type: 'Upload',
       status: 'Errore',
       iniziato: '2024-03-15 10:15:00',
@@ -63,7 +63,7 @@ const RPAMonitor: React.FC = () => {
     {
       id: '4',
       name: 'Check Status Pratiche DSO',
-      integrazione: 'E-Distribuzione',
+      integration: 'E-Distribuzione',
       type: 'Scraping',
       status: 'Pianificato',
       iniziato: '-',
@@ -73,7 +73,7 @@ const RPAMonitor: React.FC = () => {
     {
       id: '5',
       name: 'Download Fatture GSE',
-      integrazione: 'GSE',
+      integration: 'GSE',
       type: 'Download',
       status: 'In Coda',
       iniziato: '-',
@@ -321,7 +321,7 @@ const RPAMonitor: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                    {task.integrazione}
+                    {task.integration}
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
@@ -437,7 +437,7 @@ const RPAMonitor: React.FC = () => {
                     <div>
                       <dt className="text-sm text-gray-600 dark:text-gray-400">Integrazione</dt>
                       <dd className="font-medium text-gray-800 dark:text-gray-100">
-                        {selectedTask.integrazione}
+                        {selectedTask.integration}
                       </dd>
                     </div>
                     <div>

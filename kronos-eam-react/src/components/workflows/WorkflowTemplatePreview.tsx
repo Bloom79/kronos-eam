@@ -4,7 +4,7 @@ import {
   CheckCircle, Calendar, Zap, Activity, DollarSign,
   Settings, TrendingUp, Package, Wrench, Puzzle, Layers
 } from 'lucide-react';
-import { WorkflowTemplate, EntityEnum } from '../../types';
+import { WorkflowTemplate, EntityEnum, WorkflowStage, TaskStatusEnum, WorkflowTask } from '../../types';
 import WorkflowDiagram from './WorkflowDiagram';
 import clsx from 'clsx';
 
@@ -21,8 +21,8 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const getCategoryIcon = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
       case 'Attivazione': return Activity;
       case 'Fiscale': return DollarSign;
       case 'Incentivi': return TrendingUp;
@@ -33,8 +33,8 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
     }
   };
 
-  const getCategoryColor = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryColor = (category: string) => {
+    switch (category) {
       case 'Attivazione': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'Fiscale': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'Incentivi': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
@@ -80,8 +80,42 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
     }
   };
 
-  const CategoryIcon = getCategoryIcon(template.categoria);
+  const CategoryIcon = getCategoryIcon(template.category || 'Activation');
   const PurposeIcon = getPurposeIcon(template.workflow_purpose);
+
+  const mappedStages: WorkflowStage[] = template.stages
+    ? template.stages.map(stage => ({
+        id: stage.order,
+        name: stage.name,
+        tasks: (stage.tasks || []).map(task => ({
+          ...task,
+          id: task.id,
+          title: task.name,
+          status: TaskStatusEnum.TO_START,
+          stage_name: stage.name,
+        }) as unknown as WorkflowTask),
+        order: stage.order,
+        completed: false,
+        duration_days: stage.duration_days,
+      }))
+    : [];
+
+  const mappedStagesForDiagram = template.stages
+    ? template.stages.map(stage => ({
+        id: stage.order,
+        name: stage.name,
+        tasks: (stage.tasks || []).map(task => ({
+          ...task,
+          id: task.id,
+          title: task.name,
+          status: TaskStatusEnum.TO_START,
+          stage_name: stage.name,
+        }) as unknown as WorkflowTask),
+        order: stage.order || 0, // Fallback for order
+        completed: false,
+        duration_days: stage.duration_days,
+      }))
+    : [];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -91,7 +125,7 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
           <div className="flex items-center gap-4">
             <div className={clsx(
               'p-3 rounded-lg',
-              getCategoryColor(template.categoria).replace('text-', 'bg-').split(' ')[0]
+              getCategoryColor(template.category || 'Activation').replace('text-', 'bg-').split(' ')[0]
             )}>
               <CategoryIcon className="h-6 w-6" />
             </div>
@@ -102,9 +136,9 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
               <div className="flex items-center gap-2 mt-1">
                 <span className={clsx(
                   'text-xs px-2 py-1 rounded-full font-medium',
-                  getCategoryColor(template.categoria)
+                  getCategoryColor(template.category || 'Activation')
                 )}>
-                  {template.categoria}
+                  {template.category || 'Activation'}
                 </span>
                 {template.workflow_purpose && (
                   <span className="text-xs px-2 py-1 rounded-full font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 flex items-center gap-1">
@@ -137,7 +171,7 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                 Descrizione
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {template.descrizione}
+                {template.description}
               </p>
             </div>
 
@@ -149,18 +183,18 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                   <span className="font-medium">Durata Stimata</span>
                 </div>
                 <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                  {template.durata_stimata_giorni || template.durataStimataDays} giorni
+                  {template.estimated_duration_days} giorni
                 </p>
               </div>
 
-              {template.ricorrenza && (
+              {template.recurrence && (
                 <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-1">
                     <Calendar className="h-4 w-4" />
                     <span className="font-medium">Ricorrenza</span>
                   </div>
                   <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                    {template.ricorrenza}
+                    {template.recurrence}
                   </p>
                 </div>
               )}
@@ -177,13 +211,13 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
             </div>
 
             {/* Entities Involved */}
-            {template.enti_richiesti && template.enti_richiesti.length > 0 && (
+            {template.required_entities && template.required_entities.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   Enti Coinvolti
                 </h3>
                 <div className="flex flex-wrap gap-2">
-                  {template.enti_richiesti.map(entity => {
+                  {template.required_entities.map(entity => {
                     const EntityIcon = getEntityIcon(entity);
                     return (
                       <div
@@ -203,14 +237,14 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
             )}
 
             {/* Base Documents */}
-            {template.documenti_base && template.documenti_base.length > 0 && (
+            {template.base_documents && template.base_documents.length > 0 && (
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
                   Documenti Richiesti
                 </h3>
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                   <ul className="space-y-2">
-                    {template.documenti_base.map((doc, index) => (
+                    {template.base_documents.map((doc, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                         <span className="text-gray-700 dark:text-gray-300">{doc}</span>
@@ -228,7 +262,7 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                   Diagramma del Workflow
                 </h3>
                 <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 mb-6">
-                  <WorkflowDiagram stages={template.stages} />
+                  <WorkflowDiagram stages={mappedStagesForDiagram} />
                 </div>
               </div>
             )}
@@ -246,9 +280,9 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                         <h4 className="font-medium text-gray-800 dark:text-gray-100">
                           {stage.name}
                         </h4>
-                        {stage.durata_giorni && (
+                        {stage.duration_days && (
                           <span className="text-sm text-gray-600 dark:text-gray-400">
-                            ~{stage.durata_giorni} giorni
+                            ~{stage.duration_days} giorni
                           </span>
                         )}
                       </div>
@@ -265,30 +299,30 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                                 <h5 className="font-medium text-gray-800 dark:text-gray-100">
                                   {task.name || task.title}
                                 </h5>
-                                {task.descrizione && (
+                                {task.description && (
                                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                    {task.descrizione}
+                                    {task.description}
                                   </p>
                                 )}
                                 <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                  {task.responsabile && (
+                                  {task.assignee && (
                                     <span className="flex items-center gap-1">
                                       <Users className="h-3 w-3" />
-                                      {task.responsabile}
+                                      {task.assignee}
                                     </span>
                                   )}
-                                  {task.durata_giorni && (
+                                  {task.duration_days && (
                                     <span className="flex items-center gap-1">
                                       <Clock className="h-3 w-3" />
-                                      {task.durata_giorni} giorni
+                                      {task.duration_days} giorni
                                     </span>
                                   )}
-                                  {task.ente_responsabile && (
+                                  {task.responsible_entity && (
                                     <span className={clsx(
                                       'px-2 py-1 rounded-full',
-                                      getEntityColor(task.ente_responsabile)
+                                      getEntityColor(task.responsible_entity)
                                     )}>
-                                      {task.ente_responsabile}
+                                      {task.responsible_entity}
                                     </span>
                                   )}
                                 </div>
@@ -322,30 +356,30 @@ const WorkflowTemplatePreview: React.FC<WorkflowTemplatePreviewProps> = ({
                           <h5 className="font-medium text-gray-800 dark:text-gray-100">
                             {task.name || task.title}
                           </h5>
-                          {task.descrizione && (
+                          {task.description && (
                             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                              {task.descrizione}
+                              {task.description}
                             </p>
                           )}
                           <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                            {task.responsabile && (
+                            {task.assignee && (
                               <span className="flex items-center gap-1">
                                 <Users className="h-3 w-3" />
-                                {task.responsabile}
+                                {task.assignee}
                               </span>
                             )}
-                            {task.durata_giorni && (
+                            {task.duration_days && (
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {task.durata_giorni} giorni
+                                {task.duration_days} giorni
                               </span>
                             )}
-                            {task.ente_responsabile && (
+                            {task.responsible_entity && (
                               <span className={clsx(
                                 'px-2 py-1 rounded-full',
-                                getEntityColor(task.ente_responsabile)
+                                getEntityColor(task.responsible_entity)
                               )}>
-                                {task.ente_responsabile}
+                                {task.responsible_entity}
                               </span>
                             )}
                           </div>

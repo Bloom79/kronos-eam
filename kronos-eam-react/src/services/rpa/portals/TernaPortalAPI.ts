@@ -7,12 +7,12 @@ import { RPACredentials } from '../RPAService';
 import { BrowserRPAEngine } from '../BrowserRPAEngine';
 
 export interface plantData {
-  typelogia: string;
-  potenzaNominale: number;
+  typology: string;
+  nominalPower: number;
   pod: string;
   indirizzo: string;
-  comune: string;
-  provincia: string;
+  municipality: string;
+  province: string;
   pannelli?: {
     marca: string;
     modello: string;
@@ -49,7 +49,7 @@ export class TernaPortalAPI {
     return this.rpaEngine.executeTask({
       portal: 'terna',
       action,
-      data
+      date: data
     });
   }
 
@@ -114,7 +114,7 @@ export class TernaPortalAPI {
 
       return await response.json();
     } catch (error) {
-      console.error('Failed to fetch market data:', error);
+      console.error('Failed to fetch market date:', error);
       // Return mock data for demo
       return {
         date,
@@ -162,16 +162,16 @@ export class TernaPortalAPI {
   validateplantData(data: plantData): string[] {
     const errors: string[] = [];
 
-    if (!data.typelogia) errors.push('typelogia plant richiesta');
-    if (!data.potenzaNominale || data.potenzaNominale <= 0) {
+    if (!data.typology) errors.push('typology plant richiesta');
+    if (!data.nominalPower || data.nominalPower <= 0) {
       errors.push('Potenza nominale deve essere maggiore di 0');
     }
     if (!data.pod || !data.pod.match(/^IT\d{3}E\d{8}$/)) {
       errors.push('Codice POD non valido (formato: IT001E12345678)');
     }
     if (!data.indirizzo) errors.push('Indirizzo richiesto');
-    if (!data.comune) errors.push('Comune richiesto');
-    if (!data.provincia || data.provincia.length !== 2) {
+    if (!data.municipality) errors.push('Comune richiesto');
+    if (!data.province || data.province.length !== 2) {
       errors.push('Provincia richiesta (sigla 2 caratteri)');
     }
 

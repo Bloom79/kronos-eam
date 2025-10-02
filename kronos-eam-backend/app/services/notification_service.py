@@ -82,11 +82,11 @@ class NotificationService:
         notification = Notification(
             user_id=user_id,
             tenant_id=tenant_id,
-            tipo=tipo,
-            titolo=titolo,
+            type=tipo,
+            title=titolo,
             messaggio=messaggio,
-            priorita=priorita,
-            impianto_id=impianto_id,
+            priority=priorita,
+            plant_id=impianto_id,
             workflow_id=workflow_id,
             documento_id=documento_id,
             link=link,
@@ -144,7 +144,7 @@ class NotificationService:
         
         # Merge template defaults with provided kwargs
         notification_params = {
-            "tipo": template.tipo,
+            "tipo": template.type,
             "priorita": template.priorita_default,
             "force_channels": template.canali_default
         }
@@ -152,7 +152,7 @@ class NotificationService:
         
         return await self.send_notification(
             user_id=user_id,
-            titolo=titolo,
+            title=titolo,
             messaggio=messaggio,
             tenant_id=tenant_id,
             **notification_params
@@ -255,8 +255,8 @@ class NotificationService:
             Workflow
         ).filter(
             Workflow.tenant_id == tenant_id,
-            WorkflowTask.dueDate >= datetime.utcnow(),
-            WorkflowTask.dueDate <= tomorrow,
+            WorkflowTask.due_date >= datetime.utcnow(),
+            WorkflowTask.due_date <= tomorrow,
             WorkflowTask.status != "Completato"
         ).all()
         
@@ -274,12 +274,12 @@ class NotificationService:
                         tenant_id=tenant_id,
                         variables={
                             "task_title": task.title,
-                            "workflow_name": task.workflow.nome,
-                            "due_date": task.dueDate.strftime("%d/%m/%Y %H:%M"),
-                            "impianto_name": task.workflow.impianto.nome if task.workflow.impianto else ""
+                            "workflow_name": task.workflow.name,
+                            "due_date": task.due_date.strftime("%d/%m/%Y %H:%M"),
+                            "impianto_name": task.workflow.impianto.name if task.workflow.impianto else ""
                         },
                         workflow_id=task.workflow_id,
-                        priorita=NotificationPriorityEnum.ALTA,
+                        priority=NotificationPriorityEnum.ALTA,
                         link=f"/workflows/{task.workflow_id}/tasks/{task.id}"
                     )
         
@@ -288,8 +288,8 @@ class NotificationService:
             Workflow
         ).filter(
             Workflow.tenant_id == tenant_id,
-            WorkflowTask.dueDate > tomorrow,
-            WorkflowTask.dueDate <= week_ahead,
+            WorkflowTask.due_date > tomorrow,
+            WorkflowTask.due_date <= week_ahead,
             WorkflowTask.status != "Completato"
         ).all()
         
@@ -307,9 +307,9 @@ class NotificationService:
                         tenant_id=tenant_id,
                         variables={
                             "task_title": task.title,
-                            "workflow_name": task.workflow.nome,
-                            "due_date": task.dueDate.strftime("%d/%m/%Y"),
-                            "days_remaining": (task.dueDate - datetime.utcnow()).days
+                            "workflow_name": task.workflow.name,
+                            "due_date": task.due_date.strftime("%d/%m/%Y"),
+                            "days_remaining": (task.due_date - datetime.utcnow()).days
                         },
                         workflow_id=task.workflow_id,
                         link=f"/workflows/{task.workflow_id}/tasks/{task.id}"
@@ -318,7 +318,7 @@ class NotificationService:
     async def process_notification_queue(self):
         """Process queued notifications for delivery"""
         pending_notifications = self.db.query(NotificationQueue).filter(
-            NotificationQueue.stato == "pending",
+            NotificationQueue.status == "pending",
             NotificationQueue.programmata_per <= datetime.utcnow(),
             NotificationQueue.tentativi < NotificationQueue.max_tentativi
         ).all()
@@ -332,7 +332,7 @@ class NotificationService:
                 queue_item.ultimo_errore = str(e)
                 
                 if queue_item.tentativi >= queue_item.max_tentativi:
-                    queue_item.stato = "failed"
+                    queue_item.status = "failed"
                 else:
                     # Retry with exponential backoff
                     queue_item.programmata_per = datetime.utcnow() + timedelta(
@@ -422,10 +422,10 @@ class NotificationService:
                     "type": "notification",
                     "data": {
                         "id": notification.id,
-                        "tipo": notification.tipo.value,
-                        "titolo": notification.titolo,
+                        "tipo": notification.type.value,
+                        "titolo": notification.title,
                         "messaggio": notification.messaggio,
-                        "priorita": notification.priorita.value,
+                        "priorita": notification.priority.value,
                         "link": notification.link,
                         "created_at": notification.created_at.isoformat()
                     }
@@ -437,7 +437,7 @@ class NotificationService:
     
     async def _deliver_notification(self, queue_item: NotificationQueue):
         """Deliver a queued notification"""
-        queue_item.stato = "sending"
+        queue_item.status = "sending"
         self.db.commit()
         
         try:
@@ -448,7 +448,7 @@ class NotificationService:
             elif queue_item.canale == NotificationChannelEnum.PUSH:
                 await self._send_push_notification(queue_item)
             
-            queue_item.stato = "sent"
+            queue_item.status = "sent"
             queue_item.inviata_il = datetime.utcnow()
             
         except Exception as e:
@@ -464,13 +464,13 @@ class NotificationService:
         msg = MIMEMultipart()
         msg['From'] = settings.SMTP_FROM
         msg['To'] = queue_item.destinatario
-        msg['Subject'] = notification.titolo
+        msg['Subject'] = notification.title
         
         # Create HTML body
         html_body = f"""
         <html>
             <body>
-                <h2>{notification.titolo}</h2>
+                <h2>{notification.title}</h2>
                 <p>{notification.messaggio}</p>
                 {f'<p><a href="{settings.APP_URL}{notification.link}">Visualizza dettagli</a></p>' if notification.link else ''}
                 <hr>
@@ -498,7 +498,7 @@ class NotificationService:
     async def _send_push_notification(self, queue_item: NotificationQueue):
         """Send push notification (placeholder for actual implementation)"""
         # This would integrate with FCM or APNs
-        logger.info(f"Push notification to {queue_item.destinatario}: {queue_item.notification.titolo}")
+        logger.info(f"Push notification to {queue_item.destinatario}: {queue_item.notification.title}")
     
     def _process_template(self, template: str, variables: Dict[str, Any]) -> str:
         """Process template with variables"""
@@ -532,13 +532,13 @@ class NotificationService:
         # By type
         by_type = {}
         for tipo in NotificationTypeEnum:
-            count = query.filter(Notification.tipo == tipo).count()
+            count = query.filter(Notification.type == tipo).count()
             by_type[tipo.value] = count
         
         # By priority
         by_priority = {}
         for priorita in NotificationPriorityEnum:
-            count = query.filter(Notification.priorita == priorita).count()
+            count = query.filter(Notification.priority == priorita).count()
             by_priority[priorita.value] = count
         
         # Delivery stats
@@ -552,9 +552,9 @@ class NotificationService:
             queue_query = queue_query.filter(Notification.user_id == user_id)
         
         delivery_stats = {
-            "pending": queue_query.filter(NotificationQueue.stato == "pending").count(),
-            "sent": queue_query.filter(NotificationQueue.stato == "sent").count(),
-            "failed": queue_query.filter(NotificationQueue.stato == "failed").count()
+            "pending": queue_query.filter(NotificationQueue.status == "pending").count(),
+            "sent": queue_query.filter(NotificationQueue.status == "sent").count(),
+            "failed": queue_query.filter(NotificationQueue.status == "failed").count()
         }
         
         return {
@@ -591,9 +591,9 @@ class NotificationBuilder:
                 tenant_id=tenant_id,
                 variables={
                     "task_title": task.title,
-                    "workflow_name": task.workflow.nome,
+                    "workflow_name": task.workflow.name,
                     "assigned_by": assigned_by.nome_completo,
-                    "due_date": task.dueDate.strftime("%d/%m/%Y") if task.dueDate else "Non specificata"
+                    "due_date": task.due_date.strftime("%d/%m/%Y") if task.due_date else "Non specificata"
                 },
                 workflow_id=task.workflow_id,
                 link=f"/workflows/{task.workflow_id}/tasks/{task.id}",
@@ -618,13 +618,13 @@ class NotificationBuilder:
                 user_id=creator.id,
                 tenant_id=tenant_id,
                 variables={
-                    "workflow_name": workflow.nome,
-                    "impianto_name": workflow.impianto.nome if workflow.impianto else "",
-                    "completion_date": workflow.data_completamento.strftime("%d/%m/%Y")
+                    "workflow_name": workflow.name,
+                    "impianto_name": workflow.impianto.name if workflow.impianto else "",
+                    "completion_date": workflow.completion_date.strftime("%d/%m/%Y")
                 },
                 workflow_id=workflow.id,
                 link=f"/workflows/{workflow.id}",
-                priorita=NotificationPriorityEnum.ALTA
+                priority=NotificationPriorityEnum.ALTA
             )
     
     @staticmethod
@@ -636,7 +636,7 @@ class NotificationBuilder:
     ):
         """Notify about document expiration"""
         # Find document owner or plant manager
-        if document.impianto_id:
+        if document.plant_id:
             # Notify plant managers
             managers = service.db.query(User).filter(
                 User.tenant_id == tenant_id,
@@ -649,13 +649,13 @@ class NotificationBuilder:
                     user_id=manager.id,
                     tenant_id=tenant_id,
                     variables={
-                        "document_name": document.nome,
-                        "impianto_name": document.impianto.nome if document.impianto else "",
-                        "expiry_date": document.data_scadenza.strftime("%d/%m/%Y"),
+                        "document_name": document.name,
+                        "impianto_name": document.impianto.name if document.impianto else "",
+                        "expiry_date": document.due_date.strftime("%d/%m/%Y"),
                         "days_remaining": days_until_expiry
                     },
                     documento_id=document.id,
-                    impianto_id=document.impianto_id,
+                    plant_id=document.plant_id,
                     link=f"/documents/{document.id}",
-                    priorita=NotificationPriorityEnum.ALTA if days_until_expiry <= 7 else NotificationPriorityEnum.MEDIA
+                    priority=NotificationPriorityEnum.ALTA if days_until_expiry <= 7 else NotificationPriorityEnum.MEDIA
                 )

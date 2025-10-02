@@ -114,7 +114,7 @@ def init_templates():
                     tenant_id, nome, descrizione, categoria, workflow_purpose,
                     is_complete_workflow, tipo_impianto, potenza_minima, potenza_massima,
                     durata_stimata_giorni, ricorrenza, enti_richiesti, documenti_base,
-                    stages, tasks, attivo, condizioni_attivazione, scadenza_config
+                    stages, tasks, attivo, condizioni_attivazione, deadline_config
                 ) VALUES (
                     :tenant_id, :nome, :descrizione, :categoria, :workflow_purpose,
                     :is_complete_workflow, :tipo_impianto, :potenza_minima, :potenza_massima,
@@ -124,7 +124,7 @@ def init_templates():
             """)
             
             db.execute(query, template)
-            print(f"Created template: {template['nome']}")
+            print(f"Created template: {template['name']}")
         
         db.commit()
         print("Successfully created demo templates")

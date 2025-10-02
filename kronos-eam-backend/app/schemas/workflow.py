@@ -13,8 +13,8 @@ from app.models.workflow import (
 
 
 class WorkflowStageBase(BaseModel):
-    nome: str
-    ordine: int
+    name: str
+    order: int
 
 
 class WorkflowStageCreate(WorkflowStageBase):
@@ -22,17 +22,17 @@ class WorkflowStageCreate(WorkflowStageBase):
 
 
 class WorkflowStageUpdate(BaseModel):
-    nome: Optional[str] = None
-    ordine: Optional[int] = None
-    completato: Optional[bool] = None
+    name: Optional[str] = None
+    order: Optional[int] = None
+    completed: Optional[bool] = None
 
 
 class WorkflowStageInDB(WorkflowStageBase):
     id: int
     workflow_id: int
-    completato: bool = False
-    data_inizio: Optional[datetime] = None
-    data_fine: Optional[datetime] = None
+    completed: bool = False
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     
@@ -41,37 +41,37 @@ class WorkflowStageInDB(WorkflowStageBase):
 
 class WorkflowTaskBase(BaseModel):
     title: str
-    descrizione: Optional[str] = None
+    description: Optional[str] = None
     assignee: Optional[str] = None
-    dueDate: Optional[datetime] = None
+    due_date: Optional[datetime] = None
     priority: TaskPriorityEnum = TaskPriorityEnum.MEDIUM
-    estimatedHours: Optional[float] = None
+    estimated_hours: Optional[float] = None
 
 
 class WorkflowTaskCreate(WorkflowTaskBase):
     stage_id: Optional[int] = None
-    ente_responsabile: Optional[EntityEnum] = None
-    tipo_pratica: Optional[str] = None
-    url_portale: Optional[str] = None
+    responsible_entity: Optional[EntityEnum] = None
+    practice_type: Optional[str] = None
+    portal_url: Optional[str] = None
 
 
 class WorkflowTaskUpdate(BaseModel):
     title: Optional[str] = None
-    descrizione: Optional[str] = None
+    description: Optional[str] = None
     status: Optional[TaskStatusEnum] = None
     assignee: Optional[str] = None
-    dueDate: Optional[datetime] = None
+    due_date: Optional[datetime] = None
     priority: Optional[TaskPriorityEnum] = None
-    actualHours: Optional[float] = None
+    actual_hours: Optional[float] = None
 
 
 class TaskDocumentResponse(BaseModel):
     id: int
-    nome: str
-    tipo: Optional[str] = None
-    dimensione: Optional[int] = None
+    name: str
+    type: Optional[str] = None
+    size: Optional[int] = None
     url: Optional[str] = None
-    tipo_documento: Optional[str] = None
+    document_type: Optional[str] = None
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
@@ -79,7 +79,7 @@ class TaskDocumentResponse(BaseModel):
 
 class TaskCommentResponse(BaseModel):
     id: int
-    testo: str
+    text: str
     user_id: int
     created_at: datetime
     
@@ -90,81 +90,131 @@ class WorkflowTaskInDB(WorkflowTaskBase):
     id: int
     workflow_id: int
     stage_id: Optional[int] = None
+    stage_name: Optional[str] = None
     status: TaskStatusEnum = TaskStatusEnum.TO_START
-    actualHours: Optional[float] = None
-    dipendenze: List[Any] = []
-    integrazione: Optional[EntityEnum] = None
+    actual_hours: Optional[float] = None
+    dependencies: List[Any] = []
+    
+    # Integration and guide fields
+    integration: Optional[EntityEnum] = None
     guide_config: Dict[str, Any] = {}
-    ente_responsabile: Optional[EntityEnum] = None
-    tipo_pratica: Optional[str] = None
-    codice_pratica: Optional[str] = None
-    url_portale: Optional[str] = None
-    credenziali_richieste: Optional[str] = None
-    completato_da: Optional[str] = None
-    completato_data: Optional[datetime] = None
-    documents: List[TaskDocumentResponse] = []
-    comments: List[TaskCommentResponse] = []
-    created_at: datetime
-    updated_at: datetime
-    # Guide and instruction fields
     instructions: Optional[str] = None
     checklist_items: List[str] = []
     external_resources: List[Dict[str, str]] = []
+    
+    # Entity and practice fields
+    responsible_entity: Optional[EntityEnum] = None
+    practice_type: Optional[str] = None
+    practice_code: Optional[str] = None
+    portal_url: Optional[str] = None
+    portal_login_url: Optional[str] = None
+    required_credentials: Optional[str] = None
+    
+    # Document management
+    required_documents: List[str] = []
+    document_templates: List[str] = []
+    documents_to_generate: List[str] = []
+    official_form_fields: Dict[str, Any] = {}
+    
+    # Process tracking
+    submission_method: Optional[str] = None
+    external_protocol_number: Optional[str] = None
+    submission_date: Optional[datetime] = None
+    response_date: Optional[datetime] = None
+    
+    # Cost tracking
+    cost_amount: Optional[float] = None
+    cost_description: Optional[str] = None
+    payment_method: Optional[str] = None
+    payment_reference: Optional[str] = None
+    
+    # Regulatory deadlines
+    regulatory_deadline: Optional[datetime] = None
+    deadline_type: Optional[str] = None
+    deadline_consequences: Optional[str] = None
+    
+    # Role management
     allowed_roles: List[str] = []
     suggested_assignee_role: Optional[str] = None
+    
+    # Human checkpoint tracking
+    requires_human_auth: bool = False
+    requires_physical_signature: bool = False
+    requires_site_inspection: bool = False
+    human_checkpoint_notes: Optional[str] = None
+    
+    # Data collection configuration
+    data_fields: Dict[str, Any] = {}
+    target_table: Optional[str] = None
+    target_fields: Dict[str, Any] = {}
+    completed_data: Dict[str, Any] = {}
+    
+    # Completion tracking
+    completed_by: Optional[str] = None
+    completed_date: Optional[datetime] = None
+    
+    # Stage reference
+    stage_name: Optional[str] = None
+    
+    # Relationships
+    documents: List[TaskDocumentResponse] = []
+    comments: List[TaskCommentResponse] = []
+    
+    created_at: datetime
+    updated_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
 
 
 class WorkflowBase(BaseModel):
-    nome: str
-    impianto_id: int
-    tipo: Optional[str] = None
-    categoria: Optional[WorkflowCategoryEnum] = None
-    descrizione: Optional[str] = None
+    name: str
+    plant_id: int
+    type: Optional[str] = None
+    category: Optional[WorkflowCategoryEnum] = None
+    description: Optional[str] = None
 
 
 class WorkflowCreate(WorkflowBase):
     template_id: Optional[int] = None
     stages: Optional[List[WorkflowStageCreate]] = None
-    enti_coinvolti: Optional[List[str]] = None
-    requisiti_documenti: Optional[Dict[str, Any]] = None
+    involved_entities: Optional[List[str]] = None
+    document_requirements: Optional[Dict[str, Any]] = None
     config: Optional[Dict[str, Any]] = None
     created_by_role: Optional[str] = None  # Role of user creating workflow
 
 
 class WorkflowUpdate(BaseModel):
-    nome: Optional[str] = None
-    descrizione: Optional[str] = None
-    stato_corrente: Optional[WorkflowStatusEnum] = None
-    data_scadenza: Optional[datetime] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    current_status: Optional[WorkflowStatusEnum] = None
+    due_date: Optional[datetime] = None
 
 
 class WorkflowCompositionRequest(BaseModel):
-    nome: str
-    impianto_id: int
+    name: str
+    plant_id: int
     description: Optional[str] = None
     phase_templates: Dict[str, int]  # phase -> template_id mapping
-    responsabile: Optional[str] = None
-    data_scadenza: Optional[datetime] = None
+    assignee: Optional[str] = None
+    due_date: Optional[datetime] = None
     task_assignments: Optional[Dict[str, str]] = None
     task_due_dates: Optional[Dict[str, str]] = None
-    enti_coinvolti: Optional[List[str]] = None
+    involved_entities: Optional[List[str]] = None
 
 
 class WorkflowResponse(WorkflowBase):
     id: int
-    impiantoNome: Optional[str] = None
-    stato_corrente: Optional[str] = None
-    progresso: float = 0
-    data_creazione: datetime
-    data_scadenza: Optional[datetime] = None
-    data_completamento: Optional[datetime] = None
-    enti_coinvolti: List[str] = []
-    potenza_impianto: Optional[float] = None
-    tipo_impianto: Optional[str] = None
-    requisiti_documenti: Dict[str, Any] = {}
-    stato_integrazioni: Dict[str, Any] = {}
+    plant_name: Optional[str] = None
+    current_status: Optional[str] = None
+    progress: float = 0
+    created_date: datetime
+    due_date: Optional[datetime] = None
+    completion_date: Optional[datetime] = None
+    involved_entities: List[str] = []
+    plant_power: Optional[float] = None
+    plant_type: Optional[str] = None
+    document_requirements: Dict[str, Any] = {}
+    integration_status: Dict[str, Any] = {}
     stages: List[WorkflowStageInDB] = []
     tasks: List[WorkflowTaskInDB] = []
     created_at: datetime
@@ -183,24 +233,24 @@ class WorkflowListResponse(BaseModel):
 
 class WorkflowTemplateResponse(BaseModel):
     id: int
-    nome: str
-    descrizione: Optional[str] = None
-    categoria: Optional[WorkflowCategoryEnum] = None
+    name: str
+    description: Optional[str] = None
+    category: Optional[WorkflowCategoryEnum] = None
     phase: Optional[WorkflowPhaseEnum] = None
     workflow_purpose: Optional[str] = None
     is_complete_workflow: bool = True
-    tipo_impianto: Optional[str] = None
-    potenza_minima: Optional[float] = None
-    potenza_massima: Optional[float] = None
-    durata_stimata_giorni: Optional[int] = None
-    ricorrenza: Optional[str] = None
+    plant_type: Optional[str] = None
+    min_power: Optional[float] = None
+    max_power: Optional[float] = None
+    estimated_duration_days: Optional[int] = None
+    recurrence: Optional[str] = None
     stages: List[Dict[str, Any]] = []
     tasks: List[Dict[str, Any]] = []
-    enti_richiesti: List[str] = []
-    documenti_base: List[str] = []
-    condizioni_attivazione: Dict[str, Any] = {}
-    scadenza_config: Dict[str, Any] = {}
-    attivo: bool = True
+    required_entities: List[str] = []
+    base_documents: List[str] = []
+    activation_conditions: Dict[str, Any] = {}
+    deadline_config: Dict[str, Any] = {}
+    active: bool = True
     created_at: datetime
     updated_at: datetime
     
@@ -208,42 +258,63 @@ class WorkflowTemplateResponse(BaseModel):
 
 
 class WorkflowTemplateCreate(BaseModel):
-    nome: str
-    descrizione: Optional[str] = None
-    categoria: Optional[WorkflowCategoryEnum] = None
+    name: str
+    description: Optional[str] = None
+    category: Optional[WorkflowCategoryEnum] = None
     phase: Optional[WorkflowPhaseEnum] = None
     workflow_purpose: Optional[str] = None
     is_complete_workflow: bool = True
-    tipo_impianto: Optional[str] = None
-    potenza_minima: Optional[float] = None
-    potenza_massima: Optional[float] = None
-    durata_stimata_giorni: Optional[int] = None
-    ricorrenza: Optional[str] = None
+    plant_type: Optional[str] = None
+    min_power: Optional[float] = None
+    max_power: Optional[float] = None
+    estimated_duration_days: Optional[int] = None
+    recurrence: Optional[str] = None
     stages: List[Dict[str, Any]] = []
     tasks: List[Dict[str, Any]] = []
-    enti_richiesti: List[str] = []
-    documenti_base: List[str] = []
-    condizioni_attivazione: Dict[str, Any] = {}
-    scadenza_config: Dict[str, Any] = {}
-    attivo: bool = True
+    required_entities: List[str] = []
+    base_documents: List[str] = []
+    activation_conditions: Dict[str, Any] = {}
+    deadline_config: Dict[str, Any] = {}
+    active: bool = True
 
 
 class WorkflowTemplateUpdate(BaseModel):
-    nome: Optional[str] = None
-    descrizione: Optional[str] = None
-    categoria: Optional[WorkflowCategoryEnum] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    category: Optional[WorkflowCategoryEnum] = None
     phase: Optional[WorkflowPhaseEnum] = None
     workflow_purpose: Optional[str] = None
     is_complete_workflow: Optional[bool] = None
-    tipo_impianto: Optional[str] = None
-    potenza_minima: Optional[float] = None
-    potenza_massima: Optional[float] = None
-    durata_stimata_giorni: Optional[int] = None
-    ricorrenza: Optional[str] = None
+    plant_type: Optional[str] = None
+    min_power: Optional[float] = None
+    max_power: Optional[float] = None
+    estimated_duration_days: Optional[int] = None
+    recurrence: Optional[str] = None
     stages: Optional[List[Dict[str, Any]]] = None
     tasks: Optional[List[Dict[str, Any]]] = None
-    enti_richiesti: Optional[List[str]] = None
-    documenti_base: Optional[List[str]] = None
-    condizioni_attivazione: Optional[Dict[str, Any]] = None
-    scadenza_config: Optional[Dict[str, Any]] = None
-    attivo: Optional[bool] = None
+    required_entities: Optional[List[str]] = None
+    base_documents: Optional[List[str]] = None
+    activation_conditions: Optional[Dict[str, Any]] = None
+    deadline_config: Optional[Dict[str, Any]] = None
+    active: Optional[bool] = None
+
+
+# Add new classes for comprehensive workflow management
+class WorkflowStageResponse(WorkflowStageInDB):
+    """Stage response with relationships"""
+    tasks: List[WorkflowTaskInDB] = []
+    document_templates: List[Dict[str, Any]] = []
+
+
+class WorkflowTaskResponse(WorkflowTaskInDB):
+    """Task response with relationships"""
+    stage_name: Optional[str] = None
+    documents: List[TaskDocumentResponse] = []
+    comments: List[TaskCommentResponse] = []
+
+
+class WorkflowDetailResponse(WorkflowResponse):
+    """Detailed workflow response with all relationships"""
+    stages_with_tasks: List[WorkflowStageResponse] = []
+    template_info: Optional[WorkflowTemplateResponse] = None
+    plant_details: Optional[Dict[str, Any]] = None

@@ -37,8 +37,8 @@ const PlantDetail: React.FC = () => {
 
   // Mock maintenance data
   const maintenanceData = [
-    { id: 1, data: '15/01/2024', tipo: 'Ordinaria', desc: 'Pulizia moduli', status: 'Completato', costo: '€2,500' },
-    { id: 2, data: '20/03/2024', tipo: 'Straordinaria', desc: 'Sostituzione inverter #3', status: 'Pianificato', costo: '€8,000' }
+    { id: 1, date: '15/01/2024', type: 'Ordinaria', desc: 'Pulizia moduli', status: 'Completato', costo: '€2,500' },
+    { id: 2, date: '20/03/2024', type: 'Straordinaria', desc: 'Sostituzione inverter #3', status: 'Pianificato', costo: '€8,000' }
   ];
 
   const plant: Plant = {
@@ -64,7 +64,7 @@ const PlantDetail: React.FC = () => {
       gaudi: 'IM_A123B456',
       data_esercizio: '22/05/2022',
       regime: 'Ritiro Dedicato',
-      responsabile: 'Mario Rossi',
+      assignee: 'Mario Rossi',
       assicurazione: 'Polizza #123-ALL-RISK',
       numero_moduli: 3000,
       numero_inverter: 10,

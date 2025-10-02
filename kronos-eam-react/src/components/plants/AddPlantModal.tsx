@@ -8,7 +8,7 @@ import { ErrorMessage } from '../ui';
 interface AddPlantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: PlantCreate) => Promise<void>;
+  onSave: (date: PlantCreate) => Promise<void>;
   loading?: boolean;
   error?: string | null;
 }

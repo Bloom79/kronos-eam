@@ -194,7 +194,7 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ plantId }) => {
     return acc;
   }, {} as Record<string, Document[]>);
 
-  const canUpload = user?.ruolo === 'Admin' || user?.ruolo === 'Asset Manager' || user?.ruolo === 'Plant Owner';
+  const canUpload = user?.role === 'Admin' || user?.role === 'Asset Manager' || user?.role === 'Plant Owner';
 
   return (
     <div className="space-y-6">
@@ -312,7 +312,7 @@ const DocumentsSection: React.FC<DocumentsSectionProps> = ({ plantId }) => {
       </div>
 
       {/* Document Templates */}
-      {(user?.ruolo === 'Admin' || user?.ruolo === 'Asset Manager') && (
+      {(user?.role === 'Admin' || user?.role === 'Asset Manager') && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">
             Template Documenti 2025

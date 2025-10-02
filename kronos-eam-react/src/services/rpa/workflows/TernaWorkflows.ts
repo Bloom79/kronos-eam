@@ -18,8 +18,8 @@ export interface plantRegistrationData {
   potenzaNominale: number;
   pod: string;
   indirizzo: string;
-  comune: string;
-  provincia: string;
+  municipality: string;
+  province: string;
   cap: string;
   coordinateGPS?: {
     lat: number;
@@ -44,7 +44,7 @@ export class TernaWorkflows {
    * Register new plant on GAUDÌ
    */
   static async registerNewplant(
-    data: plantRegistrationData,
+    date: plantRegistrationData,
     options: TernaWorkflowOptions
   ): Promise<void> {
     const { plantId, tenant } = options;
@@ -62,7 +62,7 @@ export class TernaWorkflows {
       id: `gaudi_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -71,8 +71,8 @@ export class TernaWorkflows {
       id: `gaudi_register_${Date.now()}`,
       portal: 'terna',
       action: 'registerplant',
-      data: {
-        ...data,
+      date: {
+        ...date,
         plantId,
         tenant
       },
@@ -85,7 +85,7 @@ export class TernaWorkflows {
       id: `gaudi_upload_docs_${Date.now()}`,
       portal: 'terna',
       action: 'uploadDocuments',
-      data: {
+      date: {
         plantId,
         documents: [
           { type: 'schema_unifilare', path: `/docs/${tenant}/schema_${plantId}.pdf` },
@@ -101,7 +101,7 @@ export class TernaWorkflows {
       id: `gaudi_check_status_${Date.now()}`,
       portal: 'terna',
       action: 'checkRegistrationStatus',
-      data: { plantId },
+      date: { plantId },
       priority: 'medium'
     });
   }
@@ -128,7 +128,7 @@ export class TernaWorkflows {
       id: `gaudi_update_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -137,7 +137,7 @@ export class TernaWorkflows {
       id: `gaudi_update_${Date.now()}`,
       portal: 'terna',
       action: 'updateplant',
-      data: {
+      date: {
         gaudiCode,
         updates,
         plantId
@@ -150,7 +150,7 @@ export class TernaWorkflows {
       id: `gaudi_download_cert_${Date.now()}`,
       portal: 'terna',
       action: 'downloadDocuments',
-      data: {
+      date: {
         gaudiCode,
         documentType: 'certificato_gaudi',
         savePath: `/downloads/${tenant}/gaudi/certificato_${gaudiCode}_${Date.now()}.pdf`
@@ -178,7 +178,7 @@ export class TernaWorkflows {
       id: `flows_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -187,7 +187,7 @@ export class TernaWorkflows {
       id: `flows_check_${Date.now()}`,
       portal: 'terna',
       action: 'checkFlows',
-      data: {
+      date: {
         gaudiCode,
         expectedFlows: ['G01', 'G02', 'G04', 'G05', 'G12']
       },
@@ -199,7 +199,7 @@ export class TernaWorkflows {
       id: `flows_download_${Date.now()}`,
       portal: 'terna',
       action: 'downloadFlowReports',
-      data: {
+      date: {
         gaudiCode,
         savePath: `/downloads/${options.tenant}/flows/`
       },
@@ -234,7 +234,7 @@ export class TernaWorkflows {
           id: `pod_login_${Date.now()}`,
           portal: 'terna',
           action: 'login',
-          data: { credentialId: credentials.id },
+          date: { credentialId: credentials.id },
           priority: 'low'
         });
 
@@ -243,7 +243,7 @@ export class TernaWorkflows {
           id: `pod_check_${Date.now()}`,
           portal: 'terna',
           action: 'checkPODActivation',
-          data: {
+          date: {
             podCode,
             notifyOnActivation: true
           },
@@ -274,7 +274,7 @@ export class TernaWorkflows {
       id: `validation_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -283,7 +283,7 @@ export class TernaWorkflows {
       id: `validation_submit_${Date.now()}`,
       portal: 'terna',
       action: 'submitValidationDocuments',
-      data: {
+      date: {
         gaudiCode,
         documents: [
           { type: 'test_spi', path: `/docs/${tenant}/test_spi_${plantId}.pdf` },
@@ -299,7 +299,7 @@ export class TernaWorkflows {
       id: `validation_check_${Date.now()}`,
       portal: 'terna',
       action: 'checkValidationStatus',
-      data: { gaudiCode },
+      date: { gaudiCode },
       priority: 'medium'
     });
   }
@@ -325,7 +325,7 @@ export class TernaWorkflows {
       id: `docs_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -343,7 +343,7 @@ export class TernaWorkflows {
         id: `docs_download_${docType}_${Date.now()}`,
         portal: 'terna',
         action: 'downloadDocuments',
-        data: {
+        date: {
           gaudiCode,
           documentType: docType,
           savePath: `/downloads/${tenant}/gaudi/${gaudiCode}/${docType}.pdf`
@@ -357,13 +357,13 @@ export class TernaWorkflows {
    * Bulk registration for multiple plants
    */
   static async bulkRegistration(
-    plants: Array<{ data: plantRegistrationData; plantId: string }>,
+    plants: Array<{ date: plantRegistrationData; plantId: string }>,
     tenant: string
   ): Promise<void> {
     console.log(`Starting bulk registration for ${plants.length} plants`);
 
     for (const plant of plants) {
-      await this.registerNewplant(plant.data, {
+      await this.registerNewplant(plant.date, {
         plantId: plant.plantId,
         tenant
       });
@@ -392,7 +392,7 @@ export class TernaWorkflows {
       id: `compliance_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -402,7 +402,7 @@ export class TernaWorkflows {
         id: `compliance_check_${gaudiCode}_${Date.now()}`,
         portal: 'terna',
         action: 'complianceCheck',
-        data: {
+        date: {
           gaudiCode,
           checks: [
             'technical_data_validity',
@@ -420,7 +420,7 @@ export class TernaWorkflows {
       id: `compliance_report_${Date.now()}`,
       portal: 'terna',
       action: 'generateComplianceReport',
-      data: {
+      date: {
         gaudiCodes,
         savePath: `/reports/${tenant}/terna_compliance_${new Date().getFullYear()}.pdf`
       },
@@ -448,7 +448,7 @@ export class TernaWorkflows {
       id: `hv_login_${Date.now()}`,
       portal: 'terna',
       action: 'login',
-      data: { credentialId: credentials.id },
+      date: { credentialId: credentials.id },
       priority: 'high'
     });
 
@@ -457,7 +457,7 @@ export class TernaWorkflows {
       id: `hv_stmg_${Date.now()}`,
       portal: 'terna',
       action: 'submitSTMGAcceptance',
-      data: {
+      date: {
         gaudiCode,
         stmgData,
         acceptanceType: 'definitiva'
@@ -470,7 +470,7 @@ export class TernaWorkflows {
       id: `hv_docs_${Date.now()}`,
       portal: 'terna',
       action: 'uploadHVDocuments',
-      data: {
+      date: {
         gaudiCode,
         documents: [
           { type: 'progetto_definitivo', path: `/docs/${options.tenant}/hv/progetto_${gaudiCode}.pdf` },
@@ -486,13 +486,13 @@ export class TernaWorkflows {
 // Export workflow runner
 export const runTernaWorkflow = async (
   workflowType: string,
-  options: TernaWorkflowOptions & { data?: any }
+  options: TernaWorkflowOptions & { date?: any }
 ): Promise<void> => {
   switch (workflowType) {
     case 'register':
-      return TernaWorkflows.registerNewplant(options.data, options);
+      return TernaWorkflows.registerNewplant(options.date, options);
     case 'update':
-      return TernaWorkflows.updateplant(options.gaudiCode!, options.data, options);
+      return TernaWorkflows.updateplant(options.gaudiCode!, options.date, options);
     case 'monitor_flows':
       return TernaWorkflows.monitorCommunicationFlows(options.gaudiCode!, options);
     case 'monitor_pod':

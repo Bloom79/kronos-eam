@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import WorkflowTemplateEditor from '../components/workflows/WorkflowTemplateEditor';
 import { workflowService } from '../services/api';
 import { WorkflowTemplate } from '../types';
-import { toast } from '../hooks/useToast';
+import { useToast } from '../hooks/useToast';
 
 const WorkflowTemplateEdit: React.FC = () => {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ const WorkflowTemplateEdit: React.FC = () => {
   const [template, setTemplate] = useState<WorkflowTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTemplate = async () => {
@@ -20,7 +21,7 @@ const WorkflowTemplateEdit: React.FC = () => {
       try {
         setLoading(true);
         const data = await workflowService.getTemplate(Number(id));
-        setTemplate(data);
+        setTemplate(data as WorkflowTemplate);
       } catch (error) {
         console.error('Error fetching template:', error);
         toast.error('Errore durante il caricamento del template');

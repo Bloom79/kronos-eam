@@ -15,7 +15,7 @@ import clsx from 'clsx';
 interface UserModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: UserCreate | UserUpdate) => Promise<void>;
+  onSave: (date: UserCreate | UserUpdate) => Promise<void>;
   user?: User | null;
   mode: 'create' | 'edit';
 }
@@ -114,7 +114,7 @@ const UserModal: React.FC<UserModalProps> = ({
       await onSave(formData);
       onClose();
     } catch (error: any) {
-      if (error.response?.data?.detail) {
+      if (error.response?.date?.detail) {
         setErrors({ submit: error.response.data.detail });
       } else {
         setErrors({ submit: 'Errore durante il salvataggio' });

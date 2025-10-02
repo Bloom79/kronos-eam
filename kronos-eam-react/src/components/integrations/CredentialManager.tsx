@@ -5,13 +5,13 @@ import clsx from 'clsx';
 interface Credential {
   id: string;
   name: string;
-  integrazione: 'GSE' | 'Terna' | 'Dogane' | 'E-Distribuzione';
+  integration: 'GSE' | 'Terna' | 'Customs' | 'E-Distribuzione';
   type: 'SPID' | 'CNS' | 'User/Password' | 'API Key' | 'Certificato';
   username?: string;
-  ultimoUtilizzo: string;
-  status: 'Attiva' | 'Scaduta' | 'Bloccata';
-  scadenza?: string;
-  note?: string;
+  lastUsed: string;
+  status: 'Active' | 'Expired' | 'Blocked';
+  expiry?: string;
+  notes?: string;
 }
 
 const CredentialManager: React.FC = () => {
@@ -19,44 +19,44 @@ const CredentialManager: React.FC = () => {
     {
       id: '1',
       name: 'SPID Aziendale GSE',
-      integrazione: 'GSE',
+      integration: 'GSE',
       type: 'SPID',
       username: 'admin@solareverdi.it',
-      ultimoUtilizzo: '2024-03-15 14:30:00',
-      status: 'Attiva',
-      note: 'SPID professionale per accesso area clienti GSE'
+      lastUsed: '2024-03-15 14:30:00',
+      status: 'Active' as const,
+      notes: 'SPID professionale per accesso area clienti GSE'
     },
     {
       id: '2',
       name: 'API Key Terna Market',
-      integrazione: 'Terna',
+      integration: 'Terna',
       type: 'API Key',
       username: 'terna-api-prod',
-      ultimoUtilizzo: '2024-03-15 13:45:00',
-      status: 'Attiva',
-      scadenza: '2024-12-31',
-      note: 'Chiave per accesso dati mercato elettrico'
+      lastUsed: '2024-03-15 13:45:00',
+      status: 'Active' as const,
+      expiry: '2024-12-31',
+      notes: 'Chiave per accesso dati mercato elettrico'
     },
     {
       id: '3',
       name: 'CNS Responsabile Fiscale',
-      integrazione: 'Dogane',
+      integration: 'Customs',
       type: 'CNS',
       username: 'VRDMRC80A01H501Z',
-      ultimoUtilizzo: '2024-03-10 10:15:00',
-      status: 'Scaduta',
-      scadenza: '2024-03-01',
-      note: 'Carta Nazionale Servizi - Da rinnovare'
+      lastUsed: '2024-03-10 10:15:00',
+      status: 'Expired' as const,
+      expiry: '2024-03-01',
+      notes: 'Carta Nazionale Servizi - Da rinnovare'
     },
     {
       id: '4',
       name: 'Portale Produttori E-Dist',
-      integrazione: 'E-Distribuzione',
+      integration: 'E-Distribuzione',
       type: 'User/Password',
       username: 'prod_solareverdi',
-      ultimoUtilizzo: '2024-03-14 18:00:00',
-      status: 'Attiva',
-      note: 'Accesso portale produttori'
+      lastUsed: '2024-03-14 18:00:00',
+      status: 'Active' as const,
+      notes: 'Accesso portale produttori'
     }
   ]);
 
@@ -66,24 +66,24 @@ const CredentialManager: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Attiva':
+      case 'Active':
         return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900';
-      case 'Scaduta':
+      case 'Expired':
         return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900';
-      case 'Bloccata':
+      case 'Blocked':
         return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900';
       default:
         return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700';
     }
   };
 
-  const getIntegrazioneColor = (integrazione: string) => {
-    switch (integrazione) {
+  const getIntegrazioneColor = (integration: string) => {
+    switch (integration) {
       case 'GSE':
         return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
       case 'Terna':
         return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
-      case 'Dogane':
+      case 'Customs':
         return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
       case 'E-Distribuzione':
         return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
@@ -92,7 +92,7 @@ const CredentialManager: React.FC = () => {
     }
   };
 
-  const gettypeIcon = (type: string) => {
+  const getTypeIcon = (type: string) => {
     switch (type) {
       case 'SPID':
       case 'CNS':
@@ -173,23 +173,23 @@ const CredentialManager: React.FC = () => {
                     <div className="font-medium text-gray-800 dark:text-gray-100">
                       {credential.name}
                     </div>
-                    {credential.note && (
+                    {credential.notes && (
                       <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                        {credential.note}
+                        {credential.notes}
                       </p>
                     )}
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
                       'px-2 py-1 rounded text-xs font-medium',
-                      getIntegrazioneColor(credential.integrazione)
+                      getIntegrazioneColor(credential.integration)
                     )}>
-                      {credential.integrazione}
+                      {credential.integration}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {gettypeIcon(credential.type)}
+                      {getTypeIcon(credential.type)}
                       <span className="text-gray-700 dark:text-gray-300">{credential.type}</span>
                     </div>
                   </td>
@@ -214,7 +214,7 @@ const CredentialManager: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
-                    {new Date(credential.ultimoUtilizzo).toLocaleString('it-IT')}
+                    {new Date(credential.lastUsed).toLocaleString('it-IT')}
                   </td>
                   <td className="px-4 py-3">
                     <span className={clsx(
@@ -225,12 +225,12 @@ const CredentialManager: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    {credential.scadenza ? (
+                    {credential.expiry ? (
                       <span className={clsx(
                         'text-sm',
-                        new Date(credential.scadenza) < new Date() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-600 dark:text-gray-300'
+                        new Date(credential.expiry) < new Date() ? 'text-red-600 dark:text-red-400 font-medium' : 'text-gray-600 dark:text-gray-300'
                       )}>
-                        {new Date(credential.scadenza).toLocaleDateString('it-IT')}
+                        {new Date(credential.expiry).toLocaleDateString('it-IT')}
                       </span>
                     ) : (
                       <span className="text-gray-400">-</span>
@@ -278,7 +278,7 @@ const CredentialManager: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Attive</p>
               <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {credentials.filter(c => c.status === 'Attiva').length}
+                {credentials.filter(c => c.status === 'Active').length}
               </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-400" />
@@ -290,7 +290,7 @@ const CredentialManager: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">In Scadenza</p>
               <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                {credentials.filter(c => c.scadenza && new Date(c.scadenza) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
+                {credentials.filter(c => c.expiry && new Date(c.expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
               </p>
             </div>
             <AlertCircle className="h-8 w-8 text-yellow-400" />
@@ -302,7 +302,7 @@ const CredentialManager: React.FC = () => {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Scadute</p>
               <p className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {credentials.filter(c => c.status === 'Scaduta').length}
+                {credentials.filter(c => c.status === 'Expired').length}
               </p>
             </div>
             <AlertCircle className="h-8 w-8 text-red-400" />
@@ -338,11 +338,11 @@ const CredentialManager: React.FC = () => {
                     </label>
                     <select
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                      defaultValue={selectedCredential?.integrazione}
+                      defaultValue={selectedCredential?.integration}
                     >
                       <option value="GSE">GSE</option>
                       <option value="Terna">Terna</option>
-                      <option value="Dogane">Dogane</option>
+                      <option value="Customs">Dogane</option>
                       <option value="E-Distribuzione">E-Distribuzione</option>
                     </select>
                   </div>
@@ -393,7 +393,7 @@ const CredentialManager: React.FC = () => {
                   <input
                     type="date"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                    defaultValue={selectedCredential?.scadenza}
+                    defaultValue={selectedCredential?.expiry}
                   />
                 </div>
 
@@ -404,7 +404,7 @@ const CredentialManager: React.FC = () => {
                   <textarea
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
-                    defaultValue={selectedCredential?.note}
+                    defaultValue={selectedCredential?.notes}
                   />
                 </div>
               </form>

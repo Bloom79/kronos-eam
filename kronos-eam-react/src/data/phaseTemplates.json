@@ -1,0 +1,1118 @@
+{
+  "solarPlantActivation": {
+    "name": "Attivazione Impianto Fotovoltaico",
+    "description": "Processo completo per l'attivazione di un impianto fotovoltaico in Italia",
+    "phases": [
+      {
+        "id": "evaluation-design",
+        "name": "Valutazione e Progettazione",
+        "description": "Studio di fattibilità tecnica, sopralluogo e progettazione dell'impianto secondo normative 2025",
+        "type": "DESIGN",
+        "entity_responsible": "Progettista",
+        "duration_days": 15,
+        "icon": "Compass",
+        "color": "blue",
+        "tasks": [
+          {
+            "name": "Analisi Fabbisogno Energetico",
+            "tipo_pratica": "Studio Preliminare",
+            "responsabile": "Energy Manager",
+            "durata_giorni": 3,
+            "documenti_richiesti": [
+              "Bollette elettriche ultimi 12 mesi",
+              "POD (Point of Delivery) esistente",
+              "Dati catastali immobile (foglio, particella, subalterno)",
+              "Planimetria edificio con orientamento"
+            ],
+            "checkpoints": [
+              "Calcolo consumo annuo kWh dalle bollette",
+              "Verifica potenza disponibile e impegnata POD",
+              "Stima producibilità per zona climatica (Nord: 1100, Centro: 1300, Sud: 1500 kWh/kWp)",
+              "Calcolo autoconsumo previsto (target 60-70%)"
+            ],
+            "tools_required": [
+              "PVGIS Calculator - https://re.jrc.ec.europa.eu/pvg_tools/it/",
+              "Database ENEA UNI 10349 per dati climatici"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Sopralluogo Tecnico e Verifica Strutturale",
+            "tipo_pratica": "Verifica in Sito",
+            "responsabile": "Progettista",
+            "durata_giorni": 1,
+            "requires_site_inspection": true,
+            "documenti_richiesti": [
+              "CIS - Certificato Idoneità Statica (validità 15 anni)",
+              "Relazione calcolo carichi per zone sismiche",
+              "Planimetrie strutturali edificio",
+              "Foto dettagliate copertura (HD)",
+              "Foto quadro elettrico esistente"
+            ],
+            "checkpoints": [
+              "Misurazione superficie disponibile con metro laser",
+              "Verifica orientamento (azimut) e inclinazione (tilt)",
+              "Analisi ombreggiamenti con Solar Pathfinder",
+              "Controllo portata strutturale minima 25 kg/m² (normativa 2025)",
+              "Individuazione punto di connessione elettrica ottimale"
+            ],
+            "tools_required": [
+              "Bussola/App orientamento",
+              "Metro laser",
+              "Inclinometro digitale",
+              "Fotocamera HD",
+              "Drone (optional)",
+              "Solar Pathfinder"
+            ],
+            "priorita": "Alta",
+            "regulatory_requirement": "Portata minima 25 kg/m² obbligatoria dal 2025"
+          },
+          {
+            "name": "Progettazione Definitiva Impianto",
+            "tipo_pratica": "Progettazione",
+            "responsabile": "Progettista",
+            "durata_giorni": 5,
+            "documenti_richiesti": [
+              "Dati completi sopralluogo",
+              "Schede tecniche pannelli/inverter candidati",
+              "Normativa CEI 0-21 vigente"
+            ],
+            "documents_to_generate": [
+              "Schema unifilare firmato da professionista",
+              "Layout disposizione moduli su planimetria",
+              "Relazione tecnica dettagliata",
+              "Calcolo producibilità con PVGIS",
+              "Computo metrico materiali"
+            ],
+            "design_parameters": {
+              "fattori_correzione": {
+                "orientamento_non_ottimale": "-10% a -30%",
+                "temperature_elevate": "-10% a -15%",
+                "ombreggiamenti_parziali": "-5% a -20%"
+              },
+              "parametri_dimensionamento": {
+                "formula": "Potenza (kWp) = Consumo annuo (kWh) / Fattore Produzione zona"
+              }
+            },
+            "priorita": "Alta"
+          },
+          {
+            "name": "Preventivo Economico e Business Plan",
+            "tipo_pratica": "Analisi Economica",
+            "responsabile": "Commerciale",
+            "durata_giorni": 2,
+            "documenti_richiesti": [
+              "Progetto definitivo completo",
+              "Computo metrico dettagliato",
+              "Listini fornitori aggiornati"
+            ],
+            "documents_to_generate": [
+              "Business plan dettagliato con ROI",
+              "Preventivo itemizzato con costi trasparenti",
+              "Analisi incentivi applicabili 2025",
+              "Piano finanziario con/senza detrazioni"
+            ],
+            "cost_parameters": {
+              "costo_medio_kwp": "800-1200€ IVA 10% inclusa",
+              "tempo_rientro_con_detrazioni": "4-6 anni",
+              "risparmio_annuo_bolletta": "60-80%"
+            },
+            "incentivi_2025": {
+              "bonus_ristrutturazioni": {
+                "prima_casa": "50% max 96.000€",
+                "seconda_casa": "36% max 96.000€",
+                "scadenza": "31/12/2025"
+              },
+              "reddito_energetico": {
+                "isee_limite": "15.000€ (30.000€ con 4+ figli)",
+                "copertura": "100% costi per 2-6 kWp",
+                "fondo": "100M€ (80% Sud Italia)"
+              },
+              "cer_pnrr": {
+                "contributo": "40% per comuni <5000 abitanti",
+                "tariffa_incentivante": "20 anni GSE"
+              }
+            },
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Schema Unifilare Standard CEI",
+            "category": "Progettazione",
+            "template_url": "/templates/schema_unifilare.dwg"
+          },
+          {
+            "name": "Relazione Tecnica Impianto FV",
+            "category": "Progettazione",
+            "template_url": "/templates/relazione_tecnica_fv.docx"
+          },
+          {
+            "name": "Computo Metrico Excel",
+            "category": "Progettazione",
+            "template_url": "/templates/computo_metrico_fv.xlsx"
+          },
+          {
+            "name": "Business Plan Fotovoltaico",
+            "category": "Economica",
+            "template_url": "/templates/business_plan_fv.xlsx"
+          }
+        ]
+      },
+      {
+        "id": "authorizations",
+        "name": "Richiesta Autorizzazioni",
+        "description": "Ottenimento permessi secondo iter PAS, CILA o AU in base a potenza e vincoli (normativa 2025)",
+        "type": "AUTHORIZATION",
+        "entity_responsible": "Comune",
+        "duration_days": 30,
+        "icon": "Building",
+        "color": "purple",
+        "tasks": [
+          {
+            "name": "Verifica Iter Autorizzativo",
+            "tipo_pratica": "Verifica Preliminare",
+            "responsabile": "Progettista",
+            "ente_responsabile": "Comune",
+            "durata_giorni": 2,
+            "documenti_richiesti": [
+              "Estratto PRG/PGT comunale",
+              "CDU - Certificato Destinazione Urbanistica",
+              "Verifica vincoli paesaggistici/ambientali",
+              "Visura catastale aggiornata"
+            ],
+            "checkpoints": [
+              "Identificazione procedura: PAS (<200kW standard) / CILA (residenziale <50kW) / AU (>200kW o vincoli)",
+              "Verifica presenza vincoli (paesaggistici, archeologici, idrogeologici)",
+              "Controllo distanze confini e fabbricati",
+              "Verifica compatibilità urbanistica"
+            ],
+            "iter_selection_criteria": {
+              "PAS": "Impianti <200kW senza vincoli particolari",
+              "CILA": "Impianti residenziali <50kW integrati",
+              "AU": "Impianti >200kW o presenza vincoli"
+            },
+            "priorita": "Alta"
+          },
+          {
+            "name": "Presentazione PAS - Procedura Abilitativa Semplificata",
+            "tipo_pratica": "PAS",
+            "responsabile": "Progettista",
+            "ente_responsabile": "Comune",
+            "durata_giorni": 1,
+            "portal_url": "https://www.impresainungiorno.gov.it",
+            "portal_login_url": "https://www.impresainungiorno.gov.it/web/l-impresa-e-l-europa/sportello-suap",
+            "required_credentials": "SPID/CIE",
+            "submission_method": "Portale SUAP",
+            "documenti_richiesti": [
+              "Progetto definitivo completo firmato",
+              "Relazione tecnica asseverata",
+              "Elaborati grafici (piante, sezioni, prospetti)",
+              "Documento identità proprietario",
+              "Delega professionista incaricato",
+              "Marca da bollo €16 (se richiesta dal comune)"
+            ],
+            "documents_to_generate": [
+              "Modulo PAS precompilato",
+              "Relazione tecnica asseverata",
+              "Asseverazione professionista"
+            ],
+            "regulatory_deadline": "30 giorni per inizio lavori",
+            "deadline_type": "peremptory",
+            "deadline_consequences": "Decorsi 30gg senza diniego, si può iniziare",
+            "cost_amount": 150,
+            "cost_description": "Diritti segreteria (variabile per comune)",
+            "condizioni": "Per impianti <200kW standard",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Presentazione CILA - Comunicazione Inizio Lavori Asseverata",
+            "tipo_pratica": "CILA",
+            "responsabile": "Progettista",
+            "ente_responsabile": "Comune",
+            "durata_giorni": 1,
+            "portal_url": "https://www.impresainungiorno.gov.it",
+            "required_credentials": "SPID/CIE",
+            "submission_method": "Portale SUE",
+            "documenti_richiesti": [
+              "Modulo CILA standard",
+              "Schema impianto semplificato",
+              "Relazione tecnica base",
+              "Documento identità"
+            ],
+            "documents_to_generate": ["Modulo CILA compilato"],
+            "regulatory_deadline": "Efficace da subito",
+            "cost_amount": 0,
+            "cost_description": "Generalmente gratuita",
+            "condizioni": "Per impianti residenziali <50kW integrati",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Autorizzazione Unica - Procedura AU",
+            "tipo_pratica": "Autorizzazione Unica",
+            "responsabile": "Progettista",
+            "ente_responsabile": "Regione",
+            "durata_giorni": 90,
+            "portal_url": "Variabile per regione",
+            "required_credentials": "SPID/CIE",
+            "submission_method": "Portale Regionale",
+            "documenti_richiesti": [
+              "Progetto definitivo completo",
+              "VIA screening o VIA (se richiesta)",
+              "Relazione paesaggistica (se area vincolata)",
+              "Studio impatto ambientale",
+              "Pareri preliminari enti (VVF, ASL, ARPA)",
+              "Piano particellare espropri (se necessario)"
+            ],
+            "documents_to_generate": [
+              "Istanza AU completa",
+              "Relazioni specialistiche",
+              "Elaborati per conferenza servizi"
+            ],
+            "regulatory_deadline": "90 giorni + eventuali sospensioni",
+            "deadline_type": "peremptory",
+            "procedura_speciale": "Conferenza di Servizi decisoria",
+            "cost_amount": 500,
+            "cost_description": "Spese istruttorie regionali",
+            "condizioni": "Per impianti >200kW o in aree vincolate",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Autorizzazione Paesaggistica Semplificata",
+            "tipo_pratica": "Autorizzazione Paesaggistica",
+            "responsabile": "Progettista",
+            "ente_responsabile": "Soprintendenza",
+            "durata_giorni": 60,
+            "documenti_richiesti": [
+              "Relazione paesaggistica semplificata DPR 31/2017",
+              "Fotoinserimenti ante/post operam",
+              "Rilievo fotografico contesto",
+              "Elaborati stato di fatto e progetto"
+            ],
+            "required_credentials": "SPID",
+            "regulatory_deadline": "60 giorni",
+            "deadline_consequences": "Silenzio-assenso dopo 60gg",
+            "condizioni": "Solo se immobile in area vincolata ex D.Lgs 42/2004",
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Modello PAS Standard Nazionale",
+            "category": "Autorizzativo",
+            "official_url": "https://www.impresainungiorno.gov.it/web/l-impresa-e-l-europa/modulistica",
+            "version": "2025"
+          },
+          {
+            "name": "Modello CILA Unificato",
+            "category": "Autorizzativo",
+            "official_url": "https://www.impresainungiorno.gov.it/web/l-impresa-e-l-europa/modulistica",
+            "version": "2025"
+          },
+          {
+            "name": "Relazione Paesaggistica Semplificata DPR 31/2017",
+            "category": "Autorizzativo",
+            "template_url": "/templates/relazione_paesaggistica_semplificata.docx"
+          },
+          {
+            "name": "Schema Autorizzazione Unica",
+            "category": "Autorizzativo",
+            "template_url": "/templates/istanza_au_fotovoltaico.docx"
+          }
+        ]
+      },
+      {
+        "id": "dso-connection-request",
+        "name": "Richiesta Connessione DSO",
+        "description": "Presentazione Modello Unico Parte I per connessione alla rete E-Distribuzione",
+        "type": "CONNECTION",
+        "entity_responsible": "DSO",
+        "duration_days": 20,
+        "icon": "Plug",
+        "color": "green",
+        "tasks": [
+          {
+            "name": "Preparazione Richiesta Connessione",
+            "tipo_pratica": "Preparazione Documentale",
+            "responsabile": "Asset Manager",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 1,
+            "documenti_richiesti": [
+              "Account portale E-Distribuzione attivo",
+              "Progetto definitivo impianto (PDF max 10MB)",
+              "Schema elettrico unifilare firmato",
+              "Documento identità richiedente",
+              "Visura catastale aggiornata",
+              "Coordinate GPS punto connessione"
+            ],
+            "checkpoints": [
+              "Verifica completezza progetto",
+              "Controllo dimensione file < 10MB",
+              "Preparazione modalità pagamento TICA",
+              "Verifica dati POD esistente"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Compilazione Modello Unico - Parte I",
+            "tipo_pratica": "Modello Unico",
+            "responsabile": "Installatore",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 1,
+            "portal_url": "https://www.e-distribuzione.it/it/connessione-alla-rete.html",
+            "portal_login_url": "https://areaclienti.e-distribuzione.it",
+            "required_credentials": "Email Registration",
+            "submission_method": "Portale Online",
+            "documenti_richiesti": [
+              "Progetto definitivo completo",
+              "Schema unifilare dettagliato",
+              "Documento identità",
+              "Visura catastale",
+              "Delega (se non proprietario)"
+            ],
+            "documents_to_generate": ["Modello Unico Parte I compilato"],
+            "portal_navigation": {
+              "step1": "Login con credenziali registrate + OTP cellulare",
+              "step2": "Sezione 'Nuova Connessione'",
+              "step3": "Scelta tipologia: BT ≤100kW o MT >100kW",
+              "step4": "Compilazione dati tecnici impianto",
+              "step5": "Upload allegati tecnici",
+              "step6": "Invio e protocollazione pratica"
+            },
+            "technical_data_required": {
+              "potenza_richiesta": "kW immissione",
+              "tensione": "BT 400V / MT",
+              "pod_esistente": "IT001E...",
+              "uso": "Domestico/Altri usi"
+            },
+            "priorita": "Alta"
+          },
+          {
+            "name": "Ricezione e Valutazione Preventivo TICA",
+            "tipo_pratica": "TICA",
+            "responsabile": "Asset Manager",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 20,
+            "regulatory_deadline": "20 giorni lavorativi",
+            "deadline_type": "ordinatory",
+            "tica_contents": {
+              "costo_connessione": "Corrispettivo totale allaccio",
+              "punto_consegna": "Ubicazione contatore/cabina",
+              "soluzione_tecnica": "Modalità connessione proposta",
+              "tempistiche": "Date previste lavori"
+            },
+            "cost_breakdown": {
+              "bt_fino_6kw": {
+                "quota_distanza": "€0/m",
+                "quota_potenza": "€27,59/kW",
+                "quota_fissa": "€100 + IVA"
+              },
+              "bt_oltre_6kw": {
+                "quota_distanza": "€185/kW",
+                "quota_potenza": "€6,94/kW",
+                "quota_fissa": "€100 + IVA"
+              },
+              "mt": {
+                "quota_fissa": "€2.500 + IVA",
+                "altre_componenti": "Variabili"
+              }
+            },
+            "checkpoints": [
+              "Analisi tecnico-economica preventivo",
+              "Verifica congruità soluzione proposta",
+              "Valutazione alternative se costi elevati"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Accettazione TICA e Pagamento",
+            "tipo_pratica": "Accettazione Preventivo",
+            "responsabile": "Proprietario",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 2,
+            "cost_amount": "Variabile (vedi TICA)",
+            "cost_description": "Corrispettivo connessione + IVA 22%",
+            "payment_method": "Bonifico bancario con causale codice TICA",
+            "regulatory_deadline": "45 giorni dalla ricezione",
+            "deadline_type": "peremptory",
+            "deadline_consequences": "Decadenza automatica preventivo - necessario ripresentare domanda",
+            "payment_details": {
+              "beneficiario": "E-Distribuzione SpA",
+              "iban": "Fornito nel preventivo TICA",
+              "causale": "OBBLIGATORIA: Codice TICA + Nome richiedente"
+            },
+            "checkpoints": [
+              "Verifica scadenza 45gg",
+              "Esecuzione bonifico con causale corretta",
+              "Upload ricevuta pagamento su portale",
+              "Conferma accettazione online"
+            ],
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Modello Unico Semplificato ARERA",
+            "category": "Connessione",
+            "official_url": "https://www.arera.it/it/docs/15/072-15.htm",
+            "version": "2025"
+          },
+          {
+            "name": "Guida Compilazione Modello Unico",
+            "category": "Connessione",
+            "template_url": "/templates/guida_modello_unico.pdf"
+          },
+          {
+            "name": "Simulatore Costi Connessione",
+            "category": "Economica",
+            "template_url": "/templates/simulatore_tica.xlsx"
+          }
+        ]
+      },
+      {
+        "id": "installation",
+        "name": "Installazione Impianto",
+        "description": "Installazione fisica impianto con sicurezza D.Lgs 81/08 e standard CEI",
+        "type": "INSTALLATION",
+        "entity_responsible": "Installatore",
+        "duration_days": 7,
+        "icon": "Wrench",
+        "color": "orange",
+        "tasks": [
+          {
+            "name": "Preparazione Cantiere e Sicurezza",
+            "tipo_pratica": "Allestimento Cantiere",
+            "responsabile": "Capo Cantiere",
+            "durata_giorni": 1,
+            "documenti_richiesti": [
+              "PSC - Piano Sicurezza (se > 200 uomini-giorno)",
+              "POS - Piano Operativo Sicurezza",
+              "DURC imprese esecutrici valido",
+              "Nomina CSP/CSE (se richiesto)",
+              "Notifica preliminare ASL/ITL (se dovuta)"
+            ],
+            "safety_requirements": {
+              "dpi_obbligatori": [
+                "Casco protettivo EN 397",
+                "Imbracatura anticaduta EN 361",
+                "Scarpe antinfortunistiche S3",
+                "Guanti protezione meccanica",
+                "Occhiali protezione UV"
+              ],
+              "attrezzature_sicurezza": [
+                "Linee vita temporanee",
+                "Parapetti provvisori",
+                "Reti anticaduta",
+                "Segnaletica cantiere",
+                "Kit primo soccorso"
+              ]
+            },
+            "checkpoints": [
+              "Recinzione area cantiere",
+              "Installazione cartellonistica sicurezza",
+              "Verifica DPI tutti operatori",
+              "Briefing sicurezza iniziale",
+              "Test dispositivi anticaduta"
+            ],
+            "priorita": "Alta",
+            "requires_site_inspection": true
+          },
+          {
+            "name": "Installazione Strutture di Supporto",
+            "tipo_pratica": "Montaggio Meccanico",
+            "responsabile": "Installatore Qualificato",
+            "durata_giorni": 2,
+            "documenti_richiesti": [
+              "Schemi montaggio strutture",
+              "Certificati materiali (alluminio/acciaio)",
+              "Calcoli statici strutture"
+            ],
+            "technical_specifications": {
+              "ancoraggi": {
+                "tegole": "Ganci regolabili certificati",
+                "lamiera": "Viti autoforanti con guarnizione",
+                "guaina": "Piastre con controtelaio",
+                "cemento": "Tasselli chimici certificati"
+              },
+              "verifica_serraggio": "Chiave dinamometrica tarata"
+            },
+            "checkpoints": [
+              "Tracciamento punti ancoraggio",
+              "Foratura con dime di precisione",
+              "Impermeabilizzazione fori",
+              "Montaggio profili con livella",
+              "Serraggio controllato bulloneria"
+            ],
+            "quality_controls": [
+              "Test pull-out ancoraggi >2kN",
+              "Verifica planarità ±5mm",
+              "Controllo allineamento file"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Installazione Moduli Fotovoltaici",
+            "tipo_pratica": "Montaggio Moduli",
+            "responsabile": "Squadra Installazione",
+            "durata_giorni": 1,
+            "documenti_richiesti": [
+              "Layout disposizione moduli",
+              "Schede tecniche pannelli",
+              "Garanzie produttore"
+            ],
+            "installation_procedure": {
+              "movimentazione": "Max 2 operatori per modulo",
+              "stoccaggio": "Verticale, protetto da urti",
+              "montaggio": "Dal basso verso alto",
+              "serraggio_morsetti": "8-12 Nm secondo scheda"
+            },
+            "checkpoints": [
+              "Ispezione visiva moduli (no rotture)",
+              "Pulizia superfici vetro",
+              "Allineamento moduli in fila",
+              "Serraggio morsetti con coppia corretta",
+              "Gestione cavi per evitare sfregamenti"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Installazione Impianto Elettrico DC",
+            "tipo_pratica": "Cablaggio DC",
+            "responsabile": "Elettricista Specializzato FV",
+            "durata_giorni": 1,
+            "documenti_richiesti": [
+              "Schema unifilare stringhe",
+              "Certificazione cavi solari PV1-F",
+              "Schede connettori MC4"
+            ],
+            "technical_requirements": {
+              "cavi_dc": "PV1-F doppio isolamento 1500V",
+              "connettori": "MC4 originali IP68",
+              "percorsi_cavi": "Canaline/tubi protezione UV",
+              "sezionatori": "DC 1500V per ogni stringa"
+            },
+            "checkpoints": [
+              "Crimpatura connettori MC4 a regola",
+              "Test continuità ogni stringa",
+              "Verifica polarità con multimetro",
+              "Protezione cavi da bordi taglienti",
+              "Etichettatura stringhe permanente"
+            ],
+            "safety_measures": [
+              "Mai connettere stringhe sotto sole",
+              "Uso attrezzi isolati 1000V",
+              "Verifica assenza tensione prima interventi"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Installazione Inverter e Quadri",
+            "tipo_pratica": "Installazione Elettrica AC/DC",
+            "responsabile": "Elettricista Abilitato",
+            "durata_giorni": 1,
+            "documenti_richiesti": [
+              "Manuali installazione inverter",
+              "Schema quadri elettrici",
+              "Certificati SPD"
+            ],
+            "installation_details": {
+              "posizionamento_inverter": {
+                "altezza": "120-150cm da terra",
+                "ventilazione": "30cm liberi intorno",
+                "protezione": "IP65 se esterno"
+              },
+              "quadri_richiesti": [
+                "Quadro stringa DC con sezionatori",
+                "Quadro AC con protezioni",
+                "SPD Tipo 1+2 DC e AC"
+              ]
+            },
+            "checkpoints": [
+              "Fissaggio inverter a parete portante",
+              "Collegamenti DC stringhe con polarità",
+              "Cablaggio AC con sezioni corrette",
+              "Installazione SPD scaricatori",
+              "Programmazione parametri rete"
+            ],
+            "priorita": "Alta",
+            "requires_physical_signature": true
+          },
+          {
+            "name": "Realizzazione Impianto di Terra",
+            "tipo_pratica": "Messa a Terra",
+            "responsabile": "Elettricista Abilitato",
+            "durata_giorni": 1,
+            "normative": "CEI 64-8, CEI 82-25",
+            "technical_specifications": {
+              "dispersori": "Picchetti acciaio zincato L≥1.5m",
+              "conduttore_terra": "Corda rame nudo 16mm²",
+              "collegamenti_eqp": "Cavo G/V 6mm² per strutture"
+            },
+            "checkpoints": [
+              "Installazione dispersori di terra",
+              "Collegamenti equipotenziali strutture",
+              "Collegamento masse inverter",
+              "Collegamento SPD a terra",
+              "Misura resistenza terra <10Ω"
+            ],
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "POS - Piano Operativo Sicurezza FV",
+            "category": "Sicurezza",
+            "template_url": "/templates/pos_fotovoltaico.docx"
+          },
+          {
+            "name": "Checklist Sicurezza Cantiere",
+            "category": "Sicurezza",
+            "template_url": "/templates/checklist_sicurezza_fv.pdf"
+          },
+          {
+            "name": "Schema Cablaggio Stringhe",
+            "category": "Tecnico",
+            "template_url": "/templates/schema_stringhe.dwg"
+          }
+        ]
+      },
+      {
+        "id": "testing-compliance",
+        "name": "Collaudo e Dichiarazione Conformità",
+        "description": "Verifiche tecniche CEI 82-25 e rilascio DiCo DM 37/08 con allegati",
+        "type": "TESTING",
+        "entity_responsible": "Installatore",
+        "duration_days": 3,
+        "icon": "CheckSquare",
+        "color": "teal",
+        "tasks": [
+          {
+            "name": "Verifiche Preliminari Impianto",
+            "tipo_pratica": "Test Pre-Collaudo",
+            "responsabile": "Tecnico Verificatore",
+            "durata_giorni": 1,
+            "normativa": "CEI 82-25, CEI 64-8",
+            "documenti_richiesti": [
+              "Schemi as-built aggiornati",
+              "Certificazioni componenti installati",
+              "Strumentazione calibrata (certificati taratura)"
+            ],
+            "test_elettrici": {
+              "continuita_terra": {
+                "norma": "CEI 64-8",
+                "limite": "< 0.2 Ω",
+                "strumento": "Microhmetro"
+              },
+              "isolamento_stringhe": {
+                "norma": "CEI 82-25",
+                "tensione_test": "1000V DC",
+                "limite": "> 1 MΩ",
+                "strumento": "Megger"
+              },
+              "verifica_polarita": {
+                "procedura": "Test ogni stringa prima connessione",
+                "strumento": "Multimetro CAT III"
+              },
+              "test_spi": {
+                "norma": "CEI 0-21",
+                "verifiche": "Soglie tensione/frequenza",
+                "strumento": "Cassetta prova relè"
+              }
+            },
+            "checkpoints": [
+              "Test isolamento stringhe DC (>1MΩ)",
+              "Verifica polarità tutti collegamenti DC",
+              "Test continuità conduttori protezione",
+              "Misura resistenza impianto terra (<10Ω)",
+              "Verifica funzionamento protezioni differenziali",
+              "Test apertura sezionatori sotto carico"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Collaudo Funzionale e Prestazionale",
+            "tipo_pratica": "Collaudo Definitivo",
+            "responsabile": "Installatore + Committente",
+            "durata_giorni": 1,
+            "requires_site_inspection": true,
+            "test_funzionali": {
+              "avviamento": "Procedura primo avviamento controllato",
+              "produzione": "Verifica potenza con solarimetro",
+              "monitoraggio": "Test sistema supervisione",
+              "sicurezze": "Prova arresto emergenza"
+            },
+            "misure_prestazionali": {
+              "irraggiamento": "> 600 W/m² per test",
+              "potenza_dc": "Vdc x Idc per stringa",
+              "potenza_ac": "Misura uscita inverter",
+              "rendimento": "η = Pac/Pdc > 95%",
+              "pr_istantaneo": "Performance Ratio > 75%"
+            },
+            "analisi_termografica": {
+              "moduli": "ΔT < 20°C tra celle",
+              "connessioni": "ΔT < 10°C su giunti",
+              "quadri": "Verifica hot spot"
+            },
+            "documents_to_generate": [
+              "Verbale di collaudo firmato",
+              "Report misure elettriche",
+              "Report termografico",
+              "Checklist collaudo compilata"
+            ],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Rilascio Dichiarazione Conformità DM 37/08",
+            "tipo_pratica": "DiCo - DM 37/08",
+            "responsabile": "Installatore Abilitato (Camera Commercio)",
+            "durata_giorni": 1,
+            "requires_physical_signature": true,
+            "documenti_obbligatori": {
+              "modello_dico": "Ministeriale 2022",
+              "allegati_obbligatori": [
+                "Progetto as-built firmato (art.5)",
+                "Relazione tipologia materiali (art.7)",
+                "Schema impianto realizzato",
+                "Report verifiche e prove",
+                "Certificazione CE materiali",
+                "Visura CCIAA installatore"
+              ]
+            },
+            "contenuti_relazione_materiali": [
+              "Elenco materiali con marchi/modelli",
+              "Dichiarazione rispondenza norme",
+              "Certificati componenti principali",
+              "Dichiarazione compatibilità"
+            ],
+            "documents_to_generate": [
+              "DiCo compilata e firmata",
+              "Allegato schema impianto",
+              "Allegato relazione materiali",
+              "Allegato report verifiche"
+            ],
+            "consegna": {
+              "committente": "Originale DiCo + allegati",
+              "installatore": "Copia per archivio",
+              "comune": "Copia se richiesto"
+            },
+            "priorita": "Alta"
+          },
+          {
+            "name": "Comunicazione Fine Lavori Edilizia",
+            "tipo_pratica": "Chiusura Pratica",
+            "responsabile": "Direttore Lavori",
+            "ente_responsabile": "Comune",
+            "durata_giorni": 1,
+            "portal_url": "https://www.impresainungiorno.gov.it",
+            "required_credentials": "SPID/CIE",
+            "documenti_richiesti": [
+              "DiCo completa con allegati",
+              "Elaborati as-built timbrati",
+              "Foto impianto realizzato",
+              "Attestazione direttore lavori"
+            ],
+            "procedura": {
+              "pas": "Comunicazione entro 60gg da inizio",
+              "cila": "Comunicazione fine lavori semplice",
+              "au": "Comunicazione con collaudo tecnico"
+            },
+            "checkpoints": [
+              "Upload DiCo e allegati",
+              "Caricamento foto georeferenziate",
+              "Dichiarazione conformità al progetto",
+              "Chiusura pratica edilizia"
+            ],
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Modello DiCo DM 37/08 Editabile",
+            "category": "Conformità",
+            "official_url": "https://www.mise.gov.it/index.php/it/impresa/competitivita-e-nuove-imprese/start-up-innovative/modello-di-dichiarazione-di-conformita",
+            "version": "2022"
+          },
+          {
+            "name": "Verbale Collaudo Impianto FV",
+            "category": "Conformità",
+            "template_url": "/templates/verbale_collaudo_fv.docx"
+          },
+          {
+            "name": "Report Verifiche Elettriche CEI",
+            "category": "Test",
+            "template_url": "/templates/report_verifiche_cei.xlsx"
+          },
+          {
+            "name": "Checklist Collaudo Completa",
+            "category": "Test",
+            "template_url": "/templates/checklist_collaudo_fv.pdf"
+          }
+        ]
+      },
+      {
+        "id": "dso-activation",
+        "name": "Attivazione Connessione DSO",
+        "description": "Completamento Modello Unico Parte II e attivazione contatore bidirezionale",
+        "type": "CONNECTION",
+        "entity_responsible": "DSO",
+        "duration_days": 10,
+        "icon": "Zap",
+        "color": "yellow",
+        "tasks": [
+          {
+            "name": "Invio Modello Unico - Parte II",
+            "tipo_pratica": "Modello Unico",
+            "responsabile": "Installatore",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 1,
+            "portal_url": "https://www.e-distribuzione.it",
+            "documenti_richiesti": [
+              "DiCo completa",
+              "Verbale di collaudo",
+              "Schema unifilare as-built"
+            ],
+            "submission_method": "Portale Online",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Installazione Contatore Bidirezionale",
+            "tipo_pratica": "Intervento Tecnico",
+            "responsabile": "Tecnico DSO",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 7,
+            "requires_site_inspection": true,
+            "human_checkpoint_notes": "Presenza obbligatoria del titolare o delegato",
+            "regulatory_deadline": "10 giorni lavorativi",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Attivazione Produzione",
+            "tipo_pratica": "Attivazione",
+            "responsabile": "DSO",
+            "ente_responsabile": "DSO",
+            "durata_giorni": 1,
+            "checkpoints": ["Test bidirezionalità", "Verifica telelettura", "Comunicazione codice POD"],
+            "documents_to_generate": ["Comunicazione attivazione"],
+            "priorita": "Alta"
+          }
+        ]
+      },
+      {
+        "id": "terna-registration",
+        "name": "Registrazione GAUDÌ (Terna)",
+        "description": "Censimento impianto nel sistema GAUDÌ di Terna",
+        "type": "REGISTRATION",
+        "entity_responsible": "Terna",
+        "duration_days": 5,
+        "icon": "Database",
+        "color": "indigo",
+        "tasks": [
+          {
+            "name": "Registrazione Anagrafica GAUDÌ",
+            "tipo_pratica": "Registrazione UP",
+            "responsabile": "Produttore",
+            "ente_responsabile": "Terna",
+            "durata_giorni": 2,
+            "portal_url": "https://www.terna.it/it/sistema-elettrico/gaudi",
+            "portal_login_url": "https://myterna.terna.it",
+            "required_credentials": "SPID/CIE",
+            "documenti_richiesti": ["Dati tecnici impianto", "Coordinate GPS"],
+            "documents_to_generate": ["Codice CENSIMP", "Codice UP"],
+            "submission_method": "Portale Online",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Validazione Dati Tecnici",
+            "tipo_pratica": "Validazione",
+            "responsabile": "Terna",
+            "ente_responsabile": "Terna",
+            "durata_giorni": 3,
+            "checkpoints": ["Verifica dati inverter", "Controllo coordinate", "Validazione potenza"],
+            "priorita": "Media"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Guida Registrazione GAUDÌ",
+            "category": "Registrazione",
+            "official_url": "https://download.terna.it/terna/Guida_GAUDI_Produttori.pdf"
+          }
+        ]
+      },
+      {
+        "id": "gse-activation",
+        "name": "Attivazione Servizi GSE",
+        "description": "Attivazione contratti RID o SSP per remunerazione energia",
+        "type": "INCENTIVE",
+        "entity_responsible": "GSE",
+        "duration_days": 60,
+        "icon": "Euro",
+        "color": "green",
+        "tasks": [
+          {
+            "name": "Scelta Regime Commerciale",
+            "tipo_pratica": "Valutazione",
+            "responsabile": "Proprietario",
+            "durata_giorni": 3,
+            "checkpoints": ["Analisi RID vs SSP", "Valutazione autoconsumo", "Scelta regime ottimale"],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Richiesta Convenzione RID/SSP",
+            "tipo_pratica": "RID",
+            "responsabile": "Produttore",
+            "ente_responsabile": "GSE",
+            "durata_giorni": 5,
+            "portal_url": "https://www.gse.it",
+            "portal_login_url": "https://areaclienti.gse.it",
+            "required_credentials": "SPID + MFA",
+            "requires_human_auth": true,
+            "documenti_richiesti": [
+              "Codice CENSIMP",
+              "DiCo impianto",
+              "Documento identità",
+              "Coordinate bancarie"
+            ],
+            "documents_to_generate": ["Contratto RID/SSP"],
+            "submission_method": "Portale Online",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Dichiarazione Antimafia",
+            "tipo_pratica": "Dichiarazione",
+            "responsabile": "Legale Rappresentante",
+            "ente_responsabile": "GSE",
+            "durata_giorni": 2,
+            "requires_physical_signature": true,
+            "documenti_richiesti": ["Visura camerale", "Documento identità soci"],
+            "documents_to_generate": ["Autocertificazione antimafia"],
+            "condizioni": "Per impianti > 100 kW",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Attivazione Contratto GSE",
+            "tipo_pratica": "Attivazione",
+            "responsabile": "GSE",
+            "ente_responsabile": "GSE",
+            "durata_giorni": 50,
+            "regulatory_deadline": "60 giorni",
+            "deadline_type": "ordinatory",
+            "checkpoints": ["Verifica documentale", "Controllo GAUDÌ", "Attivazione pagamenti"],
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Modello Dichiarazione Antimafia",
+            "category": "GSE",
+            "official_url": "https://www.gse.it/servizi-per-te/fotovoltaico/ritiro-dedicato/documenti"
+          }
+        ]
+      },
+      {
+        "id": "customs-declaration",
+        "name": "Denuncia Officina Elettrica (se > 20 kW)",
+        "description": "Dichiarazione Agenzia Dogane per impianti superiori a 20 kW",
+        "type": "FISCAL",
+        "entity_responsible": "Dogane",
+        "duration_days": 15,
+        "icon": "FileText",
+        "color": "red",
+        "condizioni": "power > 20",
+        "tasks": [
+          {
+            "name": "Apertura Officina Elettrica",
+            "tipo_pratica": "Denuncia UTF",
+            "responsabile": "Produttore",
+            "ente_responsabile": "Dogane",
+            "durata_giorni": 5,
+            "portal_url": "https://www.adm.gov.it",
+            "portal_login_url": "https://telematici.adm.gov.it",
+            "required_credentials": "SPID/CNS",
+            "documenti_richiesti": [
+              "Planimetria con UTF",
+              "Schema elettrico",
+              "DiCo impianto"
+            ],
+            "documents_to_generate": ["Modello AD-1", "Verbale UTF"],
+            "submission_method": "Portale o PEC",
+            "cost_amount": 77.47,
+            "cost_description": "Diritti di licenza UTF",
+            "payment_method": "F24",
+            "priorita": "Alta"
+          },
+          {
+            "name": "Sopralluogo UTF",
+            "tipo_pratica": "Verifica",
+            "responsabile": "Funzionario UTF",
+            "ente_responsabile": "Dogane",
+            "durata_giorni": 10,
+            "requires_site_inspection": true,
+            "human_checkpoint_notes": "Presenza obbligatoria responsabile impianto",
+            "checkpoints": ["Verifica contatori", "Sigilli fiscali", "Verbale sopralluogo"],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Rilascio Licenza UTF",
+            "tipo_pratica": "Licenza",
+            "responsabile": "Dogane",
+            "ente_responsabile": "Dogane",
+            "durata_giorni": 5,
+            "documents_to_generate": ["Licenza officina elettrica"],
+            "priorita": "Alta"
+          }
+        ],
+        "document_templates": [
+          {
+            "name": "Modello AD-1 Denuncia Officina",
+            "category": "Fiscale",
+            "official_url": "https://www.adm.gov.it/portale/documents/20182/5064915/Modello+AD1.pdf"
+          }
+        ]
+      }
+    ]
+  },
+  "recurringCompliance": {
+    "name": "Adempimenti Ricorrenti",
+    "description": "Adempimenti periodici per impianti in esercizio",
+    "phases": [
+      {
+        "id": "annual-consumption",
+        "name": "Dichiarazione Annuale Consumo",
+        "description": "Dichiarazione annuale dei consumi per Agenzia Dogane",
+        "type": "FISCAL",
+        "entity_responsible": "Dogane",
+        "duration_days": 10,
+        "icon": "FileText",
+        "color": "red",
+        "recurrence": "Annual",
+        "deadline": "31 marzo",
+        "tasks": [
+          {
+            "name": "Raccolta Dati Produzione",
+            "tipo_pratica": "Raccolta Dati",
+            "responsabile": "Energy Manager",
+            "durata_giorni": 3,
+            "documenti_richiesti": ["Letture mensili produzione", "Fatture GSE"],
+            "priorita": "Alta"
+          },
+          {
+            "name": "Compilazione Modello AD-1",
+            "tipo_pratica": "Dichiarazione",
+            "responsabile": "Commercialista",
+            "ente_responsabile": "Dogane",
+            "durata_giorni": 2,
+            "portal_url": "https://telematici.adm.gov.it",
+            "required_credentials": "CNS",
+            "documents_to_generate": ["Dichiarazione annuale consumi"],
+            "regulatory_deadline": "31 marzo",
+            "deadline_type": "peremptory",
+            "deadline_consequences": "Sanzioni da 500 a 3000 euro",
+            "submission_method": "EDI",
+            "priorita": "Alta"
+          }
+        ]
+      }
+    ]
+  }
+}

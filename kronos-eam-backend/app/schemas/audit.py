@@ -22,7 +22,7 @@ class AuditLogResponse(BaseModel):
     old_values: Optional[Dict[str, Any]]
     new_values: Optional[Dict[str, Any]]
     changed_fields: List[str]
-    note: Optional[str]
+    notes: Optional[str]
     automatic: bool
     created_at: datetime
     summary: str
@@ -49,7 +49,7 @@ class AuditLogResponse(BaseModel):
             "old_values": obj.old_values,
             "new_values": obj.new_values,
             "changed_fields": obj.changed_fields or [],
-            "note": obj.note,
+            "note": obj.notes,
             "automatic": bool(obj.automatic),
             "created_at": obj.created_at,
             "summary": obj.summary,

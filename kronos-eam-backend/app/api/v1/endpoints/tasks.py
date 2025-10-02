@@ -40,17 +40,17 @@ async def create_task(
         title=task_data.title,
         tenant_id=current_user.tenant_id,
         user_id=current_user.id,
-        descrizione=task_data.descrizione,
+        description=task_data.description,
         stage_id=task_data.stage_id,
         status=task_data.status,
         priority=task_data.priority,
         assignee=task_data.assignee,
-        dueDate=task_data.dueDate,
-        estimatedHours=task_data.estimatedHours,
-        dipendenze=task_data.dipendenze,
-        integrazione=task_data.integrazione,
-        ente_responsabile=task_data.ente_responsabile,
-        tipo_pratica=task_data.tipo_pratica,
+        due_date=task_data.due_date,
+        estimated_hours=task_data.estimated_hours,
+        dependencies=task_data.dependencies,
+        integration=task_data.integration,
+        responsible_entity=task_data.responsible_entity,
+        practice_type=task_data.practice_type,
         timeline=task_data.timeline,
         documenti_associati=task_data.documenti_associati,
         audit_enabled=task_data.audit_enabled
@@ -96,16 +96,16 @@ async def update_task(
             user_id=current_user.id,
             tenant_id=current_user.tenant_id,
             title=update_data.title,
-            descrizione=update_data.descrizione,
+            description=update_data.description,
             status=update_data.status,
             priority=update_data.priority,
             assignee=update_data.assignee,
-            dueDate=update_data.dueDate,
-            estimatedHours=update_data.estimatedHours,
+            due_date=update_data.due_date,
+            estimated_hours=update_data.estimated_hours,
             actualHours=update_data.actualHours,
             timeline_update=update_data.timeline_update,
             documenti_update=update_data.documenti_update,
-            note=update_data.note
+            notes=update_data.notes
         )
         
         return task
@@ -132,7 +132,7 @@ async def update_task_status(
             status=status,
             user_id=current_user.id,
             tenant_id=current_user.tenant_id,
-            note=note
+            notes=note
         )
         
         return task
@@ -159,7 +159,7 @@ async def assign_task(
             assignee_email=assignee_email,
             user_id=current_user.id,
             tenant_id=current_user.tenant_id,
-            note=note
+            notes=note
         )
         
         return task
@@ -240,8 +240,8 @@ async def bulk_update_tasks(
         status=bulk_data.status,
         priority=bulk_data.priority,
         assignee=bulk_data.assignee,
-        dueDate=bulk_data.dueDate,
-        note=bulk_data.note
+        due_date=bulk_data.due_date,
+        notes=bulk_data.notes
     )
     
     return result
@@ -276,7 +276,7 @@ async def get_workflow_tasks(
     tasks = query.order_by(
         WorkflowTask.stage_id,
         WorkflowTask.priority.desc(),
-        WorkflowTask.dueDate
+        WorkflowTask.due_date
     ).all()
     
     return tasks
@@ -294,7 +294,7 @@ async def get_overdue_tasks(
         WorkflowTask.workflow
     ).filter(
         WorkflowTask.workflow.has(tenant_id=current_user.tenant_id),
-        WorkflowTask.dueDate < datetime.utcnow(),
+        WorkflowTask.due_date < datetime.utcnow(),
         WorkflowTask.status != TaskStatusEnum.COMPLETED
     )
     
@@ -305,7 +305,7 @@ async def get_overdue_tasks(
         query = query.filter(WorkflowTask.priority == priority_filter)
     
     tasks = query.order_by(
-        WorkflowTask.dueDate,
+        WorkflowTask.due_date,
         WorkflowTask.priority.desc()
     ).all()
     
@@ -338,7 +338,7 @@ async def link_document_to_task(
             user_id=current_user.id,
             tenant_id=current_user.tenant_id,
             documenti_update={"add": [document_id]},
-            note=f"Linked document: {document.nome}"
+            notes=f"Linked document: {document.name}"
         )
         
         return {"message": "Document linked successfully", "task_id": task.id}
@@ -363,7 +363,7 @@ async def unlink_document_from_task(
             user_id=current_user.id,
             tenant_id=current_user.tenant_id,
             documenti_update={"remove": [document_id]},
-            note=f"Unlinked document ID: {document_id}"
+            notes=f"Unlinked document ID: {document_id}"
         )
         
         return {"message": "Document unlinked successfully", "task_id": task.id}

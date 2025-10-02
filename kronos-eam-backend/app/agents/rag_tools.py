@@ -90,7 +90,7 @@ async def hybrid_document_search(
         # Build filters
         filters = {}
         if impianto_id:
-            filters["impianto_id"] = impianto_id
+            filters["plant_id"] = impianto_id
         if document_type:
             filters["document_type"] = document_type
         

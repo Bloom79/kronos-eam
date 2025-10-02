@@ -28,7 +28,7 @@ const WorkflowTemplates: React.FC = () => {
     try {
       setLoading(true);
       const data = await workflowService.getTemplates();
-      setTemplates(data);
+      setTemplates(data as WorkflowTemplate[]);
     } catch (error) {
       console.error('Error loading templates:', error);
     } finally {
@@ -36,8 +36,8 @@ const WorkflowTemplates: React.FC = () => {
     }
   };
 
-  const getCategoryIcon = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
       case 'Activation': return Activity;
       case 'Fiscal': return DollarSign;
       case 'Incentives': return TrendingUp;
@@ -48,8 +48,8 @@ const WorkflowTemplates: React.FC = () => {
     }
   };
 
-  const getCategoryColor = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryColor = (category: string) => {
+    switch (category) {
       case 'Activation': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'Fiscal': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'Incentives': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
@@ -93,15 +93,15 @@ const WorkflowTemplates: React.FC = () => {
   const filteredTemplates = templates.filter(template => {
     const matchesSearch = searchTerm === '' || 
       template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      template.descrizione.toLowerCase().includes(searchTerm.toLowerCase());
+      (template.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = selectedCategory === 'all' || template.categoria === selectedCategory;
+    const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
     const matchesPurpose = selectedPurpose === 'all' || template.workflow_purpose === selectedPurpose;
     
     return matchesSearch && matchesCategory && matchesPurpose;
   });
 
-  const categories = ['all', ...Array.from(new Set(templates.map(t => t.categoria)))];
+  const categories = ['all', ...Array.from(new Set(templates.map(t => t.category).filter(Boolean)))];
   const purposes = ['all', ...Array.from(new Set(templates.map(t => t.workflow_purpose).filter(Boolean)))];
 
   return (
@@ -205,14 +205,14 @@ const WorkflowTemplates: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredTemplates.map((template) => {
-                const CategoryIcon = getCategoryIcon(template.categoria);
+                const CategoryIcon = getCategoryIcon(template.category || 'Activation');
                 return (
                   <tr key={template.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className={clsx(
                           'p-2 rounded-lg',
-                          getCategoryColor(template.categoria).replace('text-', 'bg-').split(' ')[0]
+                          getCategoryColor(template.category || 'Activation').replace('text-', 'bg-').split(' ')[0]
                         )}>
                           <CategoryIcon className="h-5 w-5" />
                         </div>
@@ -221,7 +221,7 @@ const WorkflowTemplates: React.FC = () => {
                             {template.name}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">
-                            {template.descrizione}
+                            {template.description || ''}
                           </div>
                         </div>
                       </div>
@@ -229,9 +229,9 @@ const WorkflowTemplates: React.FC = () => {
                     <td className="px-6 py-4">
                       <span className={clsx(
                         'inline-flex px-2 py-1 text-xs rounded-full font-medium',
-                        getCategoryColor(template.categoria)
+                        getCategoryColor(template.category || 'Activation')
                       )}>
-                        {template.categoria}
+                        {template.category || 'Activation'}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -245,7 +245,7 @@ const WorkflowTemplates: React.FC = () => {
                       {template.tasks?.length || 0}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                      {template.ricorrenza || 'Una tantum'}
+                      {template.recurrence || 'One-time'}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -330,7 +330,7 @@ const WorkflowTemplates: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                {templates.filter(t => t.attivo !== false).length}
+                {templates.filter(t => t.active !== false).length}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Template Attivi
@@ -346,7 +346,7 @@ const WorkflowTemplates: React.FC = () => {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                {templates.filter(t => t.ricorrenza && t.ricorrenza !== 'One-time').length}
+                {templates.filter(t => t.recurrence && t.recurrence !== 'One-time').length}
               </p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Template Ricorrenti

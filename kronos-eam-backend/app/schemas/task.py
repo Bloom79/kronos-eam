@@ -14,22 +14,22 @@ from app.models.workflow import (
 class TaskBase(BaseModel):
     """Base task schema"""
     title: str
-    descrizione: Optional[str] = None
+    description: Optional[str] = None
     status: TaskStatusEnum = TaskStatusEnum.TO_START
     priority: TaskPriorityEnum = TaskPriorityEnum.MEDIUM
     assignee: Optional[str] = None
-    dueDate: Optional[datetime] = None
-    estimatedHours: Optional[float] = None
+    due_date: Optional[datetime] = None
+    estimated_hours: Optional[float] = None
 
 
 class TaskCreate(TaskBase):
     """Schema for creating tasks"""
     workflow_id: int
     stage_id: Optional[int] = None
-    dipendenze: Optional[List[int]] = []
-    integrazione: Optional[EntityEnum] = None
-    ente_responsabile: Optional[EntityEnum] = None
-    tipo_pratica: Optional[str] = None
+    dependencies: Optional[List[int]] = []
+    integration: Optional[EntityEnum] = None
+    responsible_entity: Optional[EntityEnum] = None
+    practice_type: Optional[str] = None
     timeline: Optional[Dict[str, Any]] = None
     documenti_associati: Optional[List[int]] = []
     audit_enabled: bool = True
@@ -38,16 +38,16 @@ class TaskCreate(TaskBase):
 class TaskUpdate(BaseModel):
     """Schema for updating tasks"""
     title: Optional[str] = None
-    descrizione: Optional[str] = None
+    description: Optional[str] = None
     status: Optional[TaskStatusEnum] = None
     priority: Optional[TaskPriorityEnum] = None
     assignee: Optional[str] = None
-    dueDate: Optional[datetime] = None
-    estimatedHours: Optional[float] = None
+    due_date: Optional[datetime] = None
+    estimated_hours: Optional[float] = None
     actualHours: Optional[float] = None
     timeline_update: Optional[Dict[str, Any]] = None
     documenti_update: Optional[Dict[str, Any]] = None
-    note: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class TaskResponse(TaskBase):
@@ -56,20 +56,20 @@ class TaskResponse(TaskBase):
     workflow_id: int
     stage_id: Optional[int] = None
     actualHours: Optional[float] = None
-    dipendenze: List[int] = []
-    integrazione: Optional[EntityEnum] = None
+    dependencies: List[int] = []
+    integration: Optional[EntityEnum] = None
     automazione_config: Dict[str, Any] = {}
-    ente_responsabile: Optional[EntityEnum] = None
-    tipo_pratica: Optional[str] = None
-    codice_pratica: Optional[str] = None
-    url_portale: Optional[str] = None
-    credenziali_richieste: Optional[str] = None
+    responsible_entity: Optional[EntityEnum] = None
+    practice_type: Optional[str] = None
+    practice_code: Optional[str] = None
+    portal_url: Optional[str] = None
+    required_credentials: Optional[str] = None
     timeline: Dict[str, Any] = {}
     documenti_associati: List[int] = []
     audit_enabled: bool
     stato_azione: Optional[ActionStatusEnum] = None
-    completato_da: Optional[str] = None
-    completato_data: Optional[datetime] = None
+    completed_by: Optional[str] = None
+    completed_date: Optional[datetime] = None
     is_overdue: bool
     created_at: datetime
     updated_at: datetime
@@ -141,8 +141,8 @@ class BulkTaskUpdate(BaseModel):
     status: Optional[TaskStatusEnum] = None
     priority: Optional[TaskPriorityEnum] = None
     assignee: Optional[str] = None
-    dueDate: Optional[datetime] = None
-    note: Optional[str] = None
+    due_date: Optional[datetime] = None
+    notes: Optional[str] = None
 
 
 class BulkUpdateResponse(BaseModel):

@@ -12,7 +12,7 @@ export interface PlantRegistry {
   censimp?: string;
   data_esercizio?: string;
   regime?: string;
-  responsabile?: string;
+  assignee?: string;
   assicurazione?: string;
   numero_moduli?: number;
   numero_inverter?: number;

@@ -35,7 +35,7 @@ export interface DashboardSummary {
   recent_activities: Array<{
     timestamp: string;
     type: string;
-    descrizione: string;
+    description: string;
     plant?: string;
     utente?: string;
   }>;
@@ -53,13 +53,14 @@ export interface PerformanceTrend {
 export interface AlertItem {
   id: string;
   type: 'error' | 'warning' | 'info';
-  titolo: string;
-  descrizione: string;
+  title: string;
+  description: string;
   plant_id?: number;
   plant_name?: string;
   timestamp: string;
-  letto: boolean;
-  azioni?: Array<{
+  read: boolean;
+  
+  actions?: Array<{
     label: string;
     action: string;
   }>;

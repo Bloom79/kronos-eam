@@ -169,10 +169,10 @@ class WorkflowService:
         hierarchy = {
             "workflow": {
                 "id": workflow.id,
-                "nome": workflow.nome,
-                "tipo": workflow.tipo,
+                "nome": workflow.name,
+                "tipo": workflow.type,
                 "stato": workflow.stato_corrente,
-                "progresso": workflow.progresso,
+                "progresso": workflow.progress,
                 "is_sub_workflow": workflow.parent_workflow_id is not None,
                 "is_copy": workflow.workflow_originale_id is not None
             },
@@ -190,8 +190,8 @@ class WorkflowService:
             if parent:
                 hierarchy["parent"] = {
                     "id": parent.id,
-                    "nome": parent.nome,
-                    "tipo": parent.tipo,
+                    "nome": parent.name,
+                    "tipo": parent.type,
                     "stato": parent.stato_corrente
                 }
         
@@ -204,10 +204,10 @@ class WorkflowService:
         hierarchy["children"] = [
             {
                 "id": child.id,
-                "nome": child.nome,
-                "tipo": child.tipo,
+                "nome": child.name,
+                "tipo": child.type,
                 "stato": child.stato_corrente,
-                "progresso": child.progresso
+                "progresso": child.progress
             }
             for child in children
         ]
@@ -223,8 +223,8 @@ class WorkflowService:
             hierarchy["siblings"] = [
                 {
                     "id": sibling.id,
-                    "nome": sibling.nome,
-                    "tipo": sibling.tipo,
+                    "nome": sibling.name,
+                    "tipo": sibling.type,
                     "stato": sibling.stato_corrente
                 }
                 for sibling in siblings
@@ -238,9 +238,9 @@ class WorkflowService:
             if original:
                 hierarchy["original"] = {
                     "id": original.id,
-                    "nome": original.nome,
-                    "tipo": original.tipo,
-                    "created_at": original.data_creazione.isoformat() if original.data_creazione else None
+                    "nome": original.name,
+                    "tipo": original.type,
+                    "created_at": original.created_at.isoformat() if original.created_at else None
                 }
         
         return hierarchy
@@ -269,7 +269,7 @@ class WorkflowService:
             # Update task status based on sub-workflow progress
             if sub_workflow.stato_corrente == WorkflowStatusEnum.COMPLETED.value:
                 tracking_task.status = TaskStatusEnum.COMPLETED
-                tracking_task.completato_data = datetime.utcnow()
+                tracking_task.completed_date = datetime.utcnow()
                 tracking_task.actualHours = self._calculate_workflow_duration(sub_workflow)
             elif sub_workflow.stato_corrente == WorkflowStatusEnum.ACTIVE.value:
                 tracking_task.status = TaskStatusEnum.IN_PROGRESS
@@ -278,7 +278,7 @@ class WorkflowService:
             
             # Update progress
             if tracking_task.timeline:
-                tracking_task.timeline["sub_workflow_progress"] = sub_workflow.progresso
+                tracking_task.timeline["sub_workflow_progress"] = sub_workflow.progress
                 tracking_task.timeline["sub_workflow_status"] = sub_workflow.stato_corrente
         
         self.db.commit()
@@ -292,17 +292,17 @@ class WorkflowService:
         copies = self.db.query(Workflow).filter(
             Workflow.workflow_originale_id == workflow_id,
             Workflow.tenant_id == tenant_id
-        ).order_by(Workflow.data_creazione.desc()).all()
+        ).order_by(Workflow.created_at.desc()).all()
         
         return [
             {
                 "id": copy.id,
-                "nome": copy.nome,
-                "impianto_id": copy.impianto_id,
-                "impianto_nome": copy.impiantoNome,
+                "nome": copy.name,
+                "impianto_id": copy.plant_id,
+                "impianto_nome": copy.plant_name,
                 "stato": copy.stato_corrente,
-                "progresso": copy.progresso,
-                "created_at": copy.data_creazione.isoformat() if copy.data_creazione else None,
+                "progresso": copy.progress,
+                "created_at": copy.created_at.isoformat() if copy.created_at else None,
                 "task_count": len(copy.tasks)
             }
             for copy in copies
@@ -342,27 +342,27 @@ class WorkflowService:
             raise ValueError("One or more workflows not found")
         
         # Verify all workflows are for the same plant
-        impianto_ids = set(w.impianto_id for w in workflows)
+        impianto_ids = set(w.plant_id for w in workflows)
         if len(impianto_ids) > 1:
             raise ValueError("All workflows must belong to the same plant")
         
         # Create merged workflow
         merged = Workflow(
-            nome=nome,
-            impianto_id=workflows[0].impianto_id,
-            impiantoNome=workflows[0].impiantoNome,
-            tipo="Workflow Composto",
-            categoria=workflows[0].categoria,
-            descrizione=descrizione or f"Unione di {len(workflows)} workflow",
+            name=nome,
+            plant_id=workflows[0].plant_id,
+            plant_name=workflows[0].plant_name,
+            type="Workflow Composto",
+            category=workflows[0].category,
+            description=descrizione or f"Unione di {len(workflows)} workflow",
             stato_corrente=WorkflowStatusEnum.DRAFT.value,
-            progresso=0,
+            progress=0,
             tipo_workflow=WorkflowTypeEnum.COMPOSTO,
-            enti_coinvolti=list(set(
+            involved_entities=list(set(
                 ente for w in workflows 
-                for ente in (w.enti_coinvolti or [])
+                for ente in (w.involved_entities or [])
             )),
-            potenza_impianto=workflows[0].potenza_impianto,
-            tipo_impianto=workflows[0].tipo_impianto,
+            plant_power=workflows[0].plant_power,
+            plant_type=workflows[0].plant_type,
             config={
                 "merged_from": workflow_ids,
                 "merge_date": datetime.utcnow().isoformat()
@@ -377,11 +377,11 @@ class WorkflowService:
         for idx, source_workflow in enumerate(workflows):
             sub_workflow = self.create_sub_workflow(
                 parent_workflow_id=merged.id,
-                nome=f"{source_workflow.nome} (Parte {idx + 1})",
+                name=f"{source_workflow.name} (Parte {idx + 1})",
                 user_id=user_id,
                 tenant_id=tenant_id,
-                categoria=source_workflow.categoria,
-                descrizione=f"Sub-workflow da unione: {source_workflow.nome}",
+                category=source_workflow.category,
+                description=f"Sub-workflow da unione: {source_workflow.name}",
                 tipo_workflow=source_workflow.tipo_workflow or WorkflowTypeEnum.CUSTOM
             )
             
@@ -403,7 +403,7 @@ class WorkflowService:
                 "merged_workflows": workflow_ids,
                 "sub_workflows_created": len(workflows)
             },
-            note=f"Merged {len(workflows)} workflows into composite workflow"
+            notes=f"Merged {len(workflows)} workflows into composite workflow"
         )
         
         return merged
@@ -426,10 +426,10 @@ class WorkflowService:
     
     def _calculate_workflow_duration(self, workflow: Workflow) -> float:
         """Calculate workflow duration in hours"""
-        if not workflow.data_creazione or not workflow.data_completamento:
+        if not workflow.created_at or not workflow.completion_date:
             return 0
         
-        duration = (workflow.data_completamento - workflow.data_creazione).total_seconds() / 3600
+        duration = (workflow.completion_date - workflow.created_at).total_seconds() / 3600
         return round(duration, 2)
     
     def _create_workflow_from_template(self, workflow: Workflow, template: WorkflowTemplate):
@@ -439,8 +439,8 @@ class WorkflowService:
         for stage_data in template.stages:
             stage = WorkflowStage(
                 workflow_id=workflow.id,
-                nome=stage_data["nome"],
-                ordine=stage_data.get("ordine", 0),
+                name=stage_data["name"],
+                order=stage_data.get("order", 0),
                 tenant_id=workflow.tenant_id
             )
             self.db.add(stage)
@@ -453,15 +453,15 @@ class WorkflowService:
                 workflow_id=workflow.id,
                 stage_id=stage_mapping.get(task_data.get("stage_id")),
                 title=task_data["title"],
-                descrizione=task_data.get("descrizione"),
+                description=task_data.get("description"),
                 status=TaskStatusEnum.TO_START,
                 priority=TaskPriorityEnum[task_data.get("priority", "MEDIUM")],
-                estimatedHours=task_data.get("estimatedHours"),
-                integrazione=EntityEnum[task_data["integrazione"]] if task_data.get("integrazione") else None,
-                ente_responsabile=EntityEnum[task_data["ente_responsabile"]] if task_data.get("ente_responsabile") else None,
-                tipo_pratica=task_data.get("tipo_pratica"),
-                url_portale=task_data.get("url_portale"),
-                credenziali_richieste=task_data.get("credenziali_richieste"),
+                estimated_hours=task_data.get("estimated_hours"),
+                integration=EntityEnum[task_data["integration"]] if task_data.get("integration") else None,
+                responsible_entity=EntityEnum[task_data["responsible_entity"]] if task_data.get("responsible_entity") else None,
+                practice_type=task_data.get("practice_type"),
+                portal_url=task_data.get("portal_url"),
+                required_credentials=task_data.get("required_credentials"),
                 timeline={"inizio": datetime.utcnow().isoformat()},
                 documenti_associati=[],
                 audit_enabled=True
@@ -475,8 +475,8 @@ class WorkflowService:
         for source_stage in source_workflow.stages:
             new_stage = WorkflowStage(
                 workflow_id=target_workflow.id,
-                nome=source_stage.nome,
-                ordine=source_stage.ordine,
+                name=source_stage.name,
+                order=source_stage.order,
                 tenant_id=target_workflow.tenant_id
             )
             self.db.add(new_stage)
@@ -489,13 +489,13 @@ class WorkflowService:
                 workflow_id=target_workflow.id,
                 stage_id=stage_mapping.get(source_task.stage_id) if source_task.stage_id else None,
                 title=source_task.title,
-                descrizione=source_task.descrizione,
+                description=source_task.description,
                 status=TaskStatusEnum.TO_START,
                 priority=source_task.priority,
-                estimatedHours=source_task.estimatedHours,
-                integrazione=source_task.integrazione,
-                ente_responsabile=source_task.ente_responsabile,
-                tipo_pratica=source_task.tipo_pratica,
+                estimated_hours=source_task.estimated_hours,
+                integration=source_task.integration,
+                responsible_entity=source_task.responsible_entity,
+                practice_type=source_task.practice_type,
                 timeline={"inizio": datetime.utcnow().isoformat()},
                 audit_enabled=source_task.audit_enabled
             )
@@ -520,22 +520,22 @@ class WorkflowService:
     ) -> Workflow:
         """Create a new workflow instance as a copy of source."""
         return Workflow(
-            nome=nome or f"Copia di {source.nome}",
-            impianto_id=target_impianto_id or source.impianto_id,
-            impiantoNome=source.impiantoNome,
-            tipo=source.tipo,
-            categoria=source.categoria,
-            descrizione=f"Copia di: {source.descrizione}" if source.descrizione else None,
+            name=nome or f"Copia di {source.name}",
+            plant_id=target_impianto_id or source.plant_id,
+            plant_name=source.plant_name,
+            type=source.type,
+            category=source.category,
+            description=f"Copia di: {source.description}" if source.description else None,
             stato_corrente=WorkflowStatusEnum.DRAFT.value,
-            progresso=0,
+            progress=0,
             template_id=source.template_id,
             workflow_originale_id=source.id,
             is_standard=False,
             tipo_workflow=source.tipo_workflow,
-            enti_coinvolti=source.enti_coinvolti.copy() if source.enti_coinvolti else [],
-            potenza_impianto=source.potenza_impianto,
-            tipo_impianto=source.tipo_impianto,
-            requisiti_documenti=source.requisiti_documenti.copy() if source.requisiti_documenti else {},
+            involved_entities=source.involved_entities.copy() if source.involved_entities else [],
+            plant_power=source.plant_power,
+            plant_type=source.plant_type,
+            document_requirements=source.document_requirements.copy() if source.document_requirements else {},
             config=customizations or source.config.copy() if source.config else {},
             tenant_id=tenant_id
         )
@@ -551,9 +551,9 @@ class WorkflowService:
         for source_stage in source.stages:
             new_stage = WorkflowStage(
                 workflow_id=copy_id,
-                nome=source_stage.nome,
-                ordine=source_stage.ordine,
-                completato=False,
+                name=source_stage.name,
+                order=source_stage.order,
+                completed=False,
                 tenant_id=tenant_id
             )
             self.db.add(new_stage)
@@ -576,19 +576,19 @@ class WorkflowService:
                 workflow_id=copy_id,
                 stage_id=stage_mapping.get(source_task.stage_id) if source_task.stage_id else None,
                 title=source_task.title,
-                descrizione=source_task.descrizione,
+                description=source_task.description,
                 status=TaskStatusEnum.TO_START,
                 priority=source_task.priority,
                 assignee=None,
-                dueDate=self._adjust_due_date(source_task.dueDate) if source_task.dueDate else None,
-                estimatedHours=source_task.estimatedHours,
-                dipendenze=[],
-                integrazione=source_task.integrazione,
+                due_date=self._adjust_due_date(source_task.due_date) if source_task.due_date else None,
+                estimated_hours=source_task.estimated_hours,
+                dependencies=[],
+                integration=source_task.integration,
                 automazione_config=source_task.automazione_config.copy() if source_task.automazione_config else {},
-                ente_responsabile=source_task.ente_responsabile,
-                tipo_pratica=source_task.tipo_pratica,
-                url_portale=source_task.url_portale,
-                credenziali_richieste=source_task.credenziali_richieste,
+                responsible_entity=source_task.responsible_entity,
+                practice_type=source_task.practice_type,
+                portal_url=source_task.portal_url,
+                required_credentials=source_task.required_credentials,
                 timeline={"inizio": datetime.utcnow().isoformat()},
                 documenti_associati=[] if not copy_documents else source_task.documenti_associati.copy(),
                 audit_enabled=source_task.audit_enabled
@@ -605,16 +605,16 @@ class WorkflowService:
     ) -> None:
         """Update task dependencies based on mapping."""
         for source_task in source.tasks:
-            if source_task.dipendenze:
+            if source_task.dependencies:
                 new_task_id = task_mapping.get(source_task.id)
                 if new_task_id:
                     new_task = self.db.query(WorkflowTask).filter(
                         WorkflowTask.id == new_task_id
                     ).first()
                     if new_task:
-                        new_task.dipendenze = [
+                        new_task.dependencies = [
                             task_mapping.get(dep_id) 
-                            for dep_id in source_task.dipendenze 
+                            for dep_id in source_task.dependencies 
                             if task_mapping.get(dep_id)
                         ]
     
@@ -641,7 +641,7 @@ class WorkflowService:
                 "tasks_copied": copy_tasks,
                 "documents_copied": copy_documents
             },
-            note=note or f"Workflow copied from {source.nome}"
+            notes=note or f"Workflow copied from {source.name}"
         )
     
     def _create_sub_workflow_instance(
@@ -658,20 +658,20 @@ class WorkflowService:
     ) -> Workflow:
         """Create a new sub-workflow instance."""
         return Workflow(
-            nome=nome,
-            impianto_id=parent.impianto_id,
-            impiantoNome=parent.impiantoNome,
-            tipo=f"Sub-workflow di {parent.tipo}" if parent.tipo else "Sub-workflow",
-            categoria=categoria or parent.categoria,
-            descrizione=descrizione,
+            name=nome,
+            plant_id=parent.plant_id,
+            plant_name=parent.plant_name,
+            type=f"Sub-workflow di {parent.type}" if parent.type else "Sub-workflow",
+            category=categoria or parent.category,
+            description=descrizione,
             stato_corrente=WorkflowStatusEnum.DRAFT.value,
-            progresso=0,
+            progress=0,
             template_id=template_id,
             parent_workflow_id=parent_workflow_id,
             tipo_workflow=tipo_workflow,
-            enti_coinvolti=parent.enti_coinvolti.copy() if parent.enti_coinvolti else [],
-            potenza_impianto=parent.potenza_impianto,
-            tipo_impianto=parent.tipo_impianto,
+            involved_entities=parent.involved_entities.copy() if parent.involved_entities else [],
+            plant_power=parent.plant_power,
+            plant_type=parent.plant_type,
             config=config or {},
             tenant_id=tenant_id
         )

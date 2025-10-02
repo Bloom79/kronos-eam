@@ -2,12 +2,12 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 interface UseAsyncDataOptions {
   immediate?: boolean;
-  onSuccess?: (data: any) => void;
+  onSuccess?: (date: any) => void;
   onError?: (error: Error) => void;
 }
 
 interface UseAsyncDataReturn<T> {
-  data: T | null;
+  date: T | null;
   loading: boolean;
   error: Error | null;
   execute: (...args: any[]) => Promise<void>;
@@ -22,7 +22,7 @@ export function useAsyncData<T>(
   options: UseAsyncDataOptions = {}
 ): UseAsyncDataReturn<T> {
   const { immediate = false, onSuccess, onError } = options;
-  const [data, setData] = useState<T | null>(null);
+  const [date, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const isMountedRef = useRef(true);
@@ -72,5 +72,5 @@ export function useAsyncData<T>(
     }
   }, [immediate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { data, loading, error, execute, reset };
+  return { date, loading, error, execute, reset };
 }

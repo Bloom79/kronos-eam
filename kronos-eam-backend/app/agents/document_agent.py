@@ -118,7 +118,7 @@ Always extract specific dates, reference numbers, and key obligations.
                     "args": {
                         "query": term,
                         "tenant_id": state["tenant_id"],
-                        "impianto_id": context.get("impianto_id")
+                        "impianto_id": context.get("plant_id")
                     }
                 })
             
@@ -259,24 +259,24 @@ Provide:
         
         # Extract dates from documents
         for doc in documents:
-            if doc.get("data_scadenza"):
+            if doc.get("due_date"):
                 extracted["key_dates"].append({
-                    "document": doc.get("nome"),
+                    "document": doc.get("name"),
                     "type": "expiration",
-                    "date": doc.get("data_scadenza"),
-                    "days_until": self._calculate_days_until(doc.get("data_scadenza"))
+                    "date": doc.get("due_date"),
+                    "days_until": self._calculate_days_until(doc.get("due_date"))
                 })
         
         # Identify compliance-related documents
         compliance_types = ["autorizzazione", "licenza", "certificato", "convenzione"]
         for doc in documents:
-            doc_name_lower = doc.get("nome", "").lower()
+            doc_name_lower = doc.get("name", "").lower()
             if any(comp_type in doc_name_lower for comp_type in compliance_types):
                 extracted["compliance_items"].append({
-                    "document": doc.get("nome"),
-                    "type": doc.get("tipo"),
-                    "status": doc.get("stato"),
-                    "category": doc.get("categoria")
+                    "document": doc.get("name"),
+                    "type": doc.get("type"),
+                    "status": doc.get("status"),
+                    "category": doc.get("category")
                 })
         
         # Check for missing critical documents
@@ -287,7 +287,7 @@ Provide:
             "licenza_utf": "Licenza UTF"
         }
         
-        found_types = {doc.get("tipo", "").lower() for doc in documents}
+        found_types = {doc.get("type", "").lower() for doc in documents}
         for doc_type, doc_name in critical_docs.items():
             if doc_type not in found_types:
                 extracted["missing_documents"].append(doc_name)

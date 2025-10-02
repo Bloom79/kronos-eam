@@ -4,15 +4,15 @@ import {
   ChevronRight, FileText, Users, Building2, ExternalLink,
   Info, AlertTriangle, MapPin, Zap
 } from 'lucide-react';
-import { WorkflowStage, Task, EntityEnum } from '../../types';
+import { WorkflowStage, Task, EntityEnum, WorkflowTask } from '../../types';
 import clsx from 'clsx';
 import { format, addDays, differenceInDays, isAfter, isBefore } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 interface WorkflowTimelineProps {
   stages: WorkflowStage[];
-  tasks: Task[];
-  startDate?: Date;
+  tasks: WorkflowTask[];
+  startDate: Date;
   onTaskClick?: (task: Task) => void;
   onStageClick?: (stage: WorkflowStage) => void;
 }
@@ -34,14 +34,14 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
     const timelineData: any[] = [];
 
     stages.forEach((stage, stageIndex) => {
-      const stageTasks = tasks.filter(t => t.stage?.id === stage.id);
+      const stageTasks = tasks.filter(t => t.stage_name === stage.name);
       const stageStartDate = currentDate;
-      const stageDuration = stage.durata_giorni || 30;
+      const stageDuration = stage.duration_days || 30;
       const stageEndDate = addDays(stageStartDate, stageDuration);
 
       timelineData.push({
         type: 'stage',
-        data: stage,
+        date: stage,
         startDate: stageStartDate,
         endDate: stageEndDate,
         tasks: stageTasks
@@ -107,9 +107,9 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
 
   const filteredTasks = selectedEntity === 'all' 
     ? tasks 
-    : tasks.filter(t => t.ente_responsabile === selectedEntity);
+    : tasks.filter(t => t.responsible_entity === selectedEntity);
 
-  const entities = ['all', 'DSO', 'Terna', 'GSE', 'Dogane', 'Comune'] as const;
+  const entities = ['all', 'DSO', 'Terna', 'GSE', 'Customs', 'Municipality'] as const;
 
   return (
     <div className="space-y-4">
@@ -175,11 +175,11 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
           <div className="p-6">
             <div className="space-y-6">
               {timelineData.map((item, index) => {
-                const stage = item.data as WorkflowStage;
+                const stage = item.date as WorkflowStage;
                 const isExpanded = expandedStages.has(stage.id!);
                 const stageTasks = selectedEntity === 'all' 
                   ? item.tasks 
-                  : item.tasks.filter((t: Task) => t.ente_responsabile === selectedEntity);
+                  : item.tasks.filter((t: Task) => t.responsible_entity === selectedEntity);
 
                 return (
                   <div key={stage.id} className="relative">
@@ -196,11 +196,11 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                         <div className="relative">
                           <div className={clsx(
                             'w-12 h-12 rounded-full flex items-center justify-center',
-                            stage.completato 
+                            stage.completed 
                               ? 'bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400'
                               : 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
                           )}>
-                            {stage.completato ? (
+                            {stage.completed ? (
                               <CheckCircle className="h-6 w-6" />
                             ) : (
                               <span className="font-bold">{index + 1}</span>
@@ -209,7 +209,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                           {index < timelineData.length - 1 && (
                             <div className={clsx(
                               'absolute top-12 left-6 w-0.5 h-24',
-                              stage.completato 
+                              stage.completed 
                                 ? 'bg-green-300 dark:bg-green-700'
                                 : 'bg-gray-300 dark:bg-gray-600'
                             )} />
@@ -233,7 +233,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <Clock className="h-4 w-4" />
-                                  <span>{stage.durata_giorni || 30} giorni</span>
+                                  <span>{stage.duration_days || 30} giorni</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                   <FileText className="h-4 w-4" />
@@ -253,7 +253,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                               <div
                                 className="bg-blue-600 h-2 rounded-full transition-all"
                                 style={{
-                                  width: `${stage.completato ? 100 : 
+                                  width: `${stage.completed ? 100 : 
                                     (stageTasks.filter((t: Task) => t.status === 'Completed').length / 
                                     stageTasks.length * 100) || 0}%`
                                 }}
@@ -269,7 +269,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                       <div className="ml-16 mt-4 space-y-3">
                         {stageTasks.map((task: Task) => {
                           const TaskIcon = getTaskStatusIcon(task.status);
-                          const EntityIcon = getEntityIcon(task.ente_responsabile);
+                          const EntityIcon = getEntityIcon(task.responsible_entity);
 
                           return (
                             <div
@@ -288,26 +288,26 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                                       <h4 className="font-medium text-gray-800 dark:text-gray-100">
                                         {task.title}
                                       </h4>
-                                      {task.descrizione && (
+                                      {task.description && (
                                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                          {task.descrizione}
+                                          {task.description}
                                         </p>
                                       )}
                                       
                                       <div className="flex flex-wrap items-center gap-3 mt-2">
-                                        {task.ente_responsabile && (
+                                        {task.responsible_entity && (
                                           <span className={clsx(
                                             'inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium',
-                                            getEntityColor(task.ente_responsabile)
+                                            getEntityColor(task.responsible_entity)
                                           )}>
                                             <EntityIcon className="h-3 w-3" />
-                                            {task.ente_responsabile}
+                                            {task.responsible_entity}
                                           </span>
                                         )}
                                         
-                                        {task.tipo_pratica && (
+                                        {task.practice_type && (
                                           <span className="text-xs text-gray-600 dark:text-gray-400">
-                                            {task.tipo_pratica}
+                                            {task.practice_type}
                                           </span>
                                         )}
                                         
@@ -318,17 +318,17 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                                           </span>
                                         )}
                                         
-                                        {task.dueDate && (
+                                        {task.due_date && (
                                           <span className="text-xs text-gray-600 dark:text-gray-400">
                                             <Clock className="inline h-3 w-3 mr-1" />
-                                            {format(new Date(task.dueDate), 'dd/MM/yyyy')}
+                                            {format(new Date(task.due_date), 'dd/MM/yyyy')}
                                           </span>
                                         )}
                                       </div>
 
-                                      {task.url_portale && (
+                                      {task.portal_url && (
                                         <a
-                                          href={task.url_portale}
+                                          href={task.portal_url}
                                           target="_blank"
                                           rel="noopener noreferrer"
                                           className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 dark:text-blue-400 hover:underline"
@@ -377,7 +377,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
               {/* Gantt Chart */}
               <div className="space-y-2">
                 {timelineData.map((item, index) => {
-                  const stage = item.data as WorkflowStage;
+                  const stage = item.date as WorkflowStage;
                   const totalDays = differenceInDays(
                     addDays(timelineData[timelineData.length - 1].endDate, 30),
                     startDate
@@ -398,7 +398,7 @@ const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({
                         <div
                           className={clsx(
                             'absolute h-10 top-3 rounded-lg flex items-center px-2',
-                            stage.completato
+                            stage.completed
                               ? 'bg-green-500 dark:bg-green-600'
                               : 'bg-blue-500 dark:bg-blue-600'
                           )}

@@ -39,10 +39,10 @@ class IntegrationStatus(BaseModel):
     id: str
     name: str
     status: str
-    last_sync: Optional[datetime]
+    last_sync: Optional[datetime] = None
     messages_in_queue: int = 0
     errors: int = 0
-    success_rate: float = 100.0
+    success_rate: float = 0.0
 
 
 class ProductionChart(BaseModel):

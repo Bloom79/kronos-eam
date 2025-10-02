@@ -114,7 +114,7 @@ Help users navigate Italian energy sector bureaucracy efficiently.
                 "tool": "get_active_workflows",
                 "args": {
                     "tenant_id": state["tenant_id"],
-                    "impianto_id": context.get("impianto_id")
+                    "impianto_id": context.get("plant_id")
                 }
             })
             
@@ -269,7 +269,7 @@ Provide:
         else:
             # Find most relevant workflow
             relevant_workflow = active_workflows[0]  # Simplified
-            current_status = f"{relevant_workflow.get('stato', 'Unknown')} - {relevant_workflow.get('progresso', 0)}% complete"
+            current_status = f"{relevant_workflow.get('status', 'Unknown')} - {relevant_workflow.get('progress', 0)}% complete"
         
         # Generate workflow-specific actions
         actions = self._get_workflow_actions(workflow_type, current_status)
@@ -314,8 +314,8 @@ Provide:
         """Determine workflow priority"""
         # Check for approaching deadlines
         for workflow in active_workflows:
-            if workflow.get("data_scadenza"):
-                days_until = self._calculate_days_until(workflow["data_scadenza"])
+            if workflow.get("due_date"):
+                days_until = self._calculate_days_until(workflow["due_date"])
                 if days_until < 7:
                     return "critical"
                 elif days_until < 30:

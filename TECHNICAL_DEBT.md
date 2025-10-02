@@ -4,9 +4,32 @@
 **Risk Level**: Medium-High  
 **Estimated Effort**: 120-160 hours
 
+## 🚨 NEW CRITICAL ISSUE (Deployment Blocker)
+
+### 0. Artifact Registry Setup Missing ✅ FIXED
+**Impact**: BLOCKER | **Effort**: 1 hour  
+**Location**: GCP Setup / GitHub Secrets  
+**Problem**: Deployment fails with "Permission artifactregistry.repositories.uploadArtifacts denied"  
+**Root Causes**: 
+1. Artifact Registry API not enabled in setup script
+2. Service account doesn't exist or lacks permissions
+3. GitHub secret GCP_SA_KEY is missing/wrong
+
+**Solution**:
+```bash
+# Quick fix - run this script:
+./deploy/quick-fix-artifact-registry.sh
+
+# Or full setup:
+./deploy/gcp-setup.sh
+
+# Then update GitHub secret GCP_SA_KEY with the generated key
+```
+**Status**: Fixed - Added artifactregistry.googleapis.com to setup script
+
 ## 🔴 Critical Debt (Fix Immediately)
 
-### 1. Internationalization System Broken
+### 1. Internationalization System Broken ✅ FIXED
 **Impact**: High | **Effort**: 8 hours  
 **Location**: `kronos-eam-react/src/i18n/`, all components  
 **Problem**: Translation keys displayed instead of values  

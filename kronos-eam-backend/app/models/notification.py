@@ -42,17 +42,17 @@ class Notification(BaseModel):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     
     # Content
-    tipo = Column(Enum(NotificationTypeEnum), nullable=False)
-    titolo = Column(String(200), nullable=False)
+    type = Column(Enum(NotificationTypeEnum), nullable=False)
+    title = Column(String(200), nullable=False)
     messaggio = Column(Text, nullable=False)
-    priorita = Column(Enum(NotificationPriorityEnum), default=NotificationPriorityEnum.MEDIA)
+    priority = Column(Enum(NotificationPriorityEnum), default=NotificationPriorityEnum.MEDIA)
     
     # Status
     letta = Column(Boolean, default=False)
     data_lettura = Column(DateTime)
     
     # References
-    impianto_id = Column(Integer, ForeignKey("plants.id"))
+    plant_id = Column(Integer, ForeignKey("plants.id"))
     workflow_id = Column(Integer, ForeignKey("workflows.id"))
     documento_id = Column(Integer, ForeignKey("documents.id"))
     
@@ -76,7 +76,7 @@ class Notification(BaseModel):
     documento = relationship("Document")
     
     def __repr__(self):
-        return f"<Notification {self.tipo} - {self.titolo}>"
+        return f"<Notification {self.type} - {self.title}>"
 
 
 class NotificationPreference(BaseModel):
@@ -122,8 +122,8 @@ class NotificationTemplate(BaseModel):
     
     # Template identification
     codice = Column(String(50), unique=True, nullable=False)
-    nome = Column(String(200), nullable=False)
-    tipo = Column(Enum(NotificationTypeEnum), nullable=False)
+    name = Column(String(200), nullable=False)
+    type = Column(Enum(NotificationTypeEnum), nullable=False)
     
     # Content templates
     titolo_template = Column(String(500), nullable=False)
@@ -158,7 +158,7 @@ class NotificationQueue(BaseModel):
     destinatario = Column(String(500), nullable=False)  # Email, phone, device token
     
     # Status
-    stato = Column(String(50), default="pending")  # pending, sending, sent, failed
+    status = Column(String(50), default="pending")  # pending, sending, sent, failed
     tentativi = Column(Integer, default=0)
     max_tentativi = Column(Integer, default=3)
     

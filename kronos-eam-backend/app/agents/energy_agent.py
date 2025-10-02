@@ -102,7 +102,7 @@ Always provide quantified recommendations with expected improvements.
             
             # Collect performance metrics for different periods
             if "impianto_id" in context:
-                impianto_id = context["impianto_id"]
+                impianto_id = context["plant_id"]
                 
                 # Get current week, month, and quarter data
                 for period in [7, 30, 90]:

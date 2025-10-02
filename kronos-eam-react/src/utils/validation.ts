@@ -1,132 +1,82 @@
-/**
- * Validation utility functions
- */
+import { z } from 'zod';
 
-/**
- * Validate email format
- */
-export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
+// Common validation schemas
+export const emailSchema = z.string().email('Invalid email address');
 
-/**
- * Validate Italian fiscal code (Codice Fiscale)
- */
-export function isValidCodiceFiscale(cf: string): boolean {
-  if (!cf || cf.length !== 16) return false;
-  
-  const cfRegex = /^[A-Z]{6}[0-9]{2}[A-Z][0-9]{2}[A-Z][0-9]{3}[A-Z]$/;
-  return cfRegex.test(cf.toUpperCase());
-}
+export const phoneSchema = z.string().regex(
+  /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{4,6}$/,
+  'Invalid phone number'
+);
 
-/**
- * Validate Italian VAT number (Partita IVA)
- */
-export function isValidPartitaIVA(piva: string): boolean {
-  if (!piva || piva.length !== 11) return false;
-  
-  const pivaRegex = /^[0-9]{11}$/;
-  return pivaRegex.test(piva);
-}
+export const requiredString = (fieldName: string) => 
+  z.string().min(1, `${fieldName} is required`);
 
-/**
- * Validate POD (Point of Delivery) code
- */
-export function isValidPOD(pod: string): boolean {
-  if (!pod) return false;
-  
-  // Italian POD format: IT001E12345678
-  const podRegex = /^IT[0-9]{3}[A-Z][0-9]{8}$/;
-  return podRegex.test(pod.toUpperCase());
-}
+export const optionalString = () => z.string().optional();
 
-/**
- * Validate power value
- */
-export function isValidPower(power: number | string): boolean {
-  const numPower = typeof power === 'string' ? parseFloat(power) : power;
-  return !isNaN(numPower) && numPower > 0;
-}
+export const numericString = () => 
+  z.string().regex(/^\d+$/, 'Must be a number');
 
-/**
- * Validate date is not in the past
- */
-export function isDateInFuture(date: string | Date): boolean {
-  const dateObj = date instanceof Date ? date : new Date(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  return dateObj >= today;
-}
+export const positiveNumber = () => 
+  z.number().positive('Must be a positive number');
 
-/**
- * Validate date range
- */
-export function isValidDateRange(startDate: string | Date, endDate: string | Date): boolean {
-  const start = startDate instanceof Date ? startDate : new Date(startDate);
-  const end = endDate instanceof Date ? endDate : new Date(endDate);
-  
-  return start <= end;
-}
+export const dateString = () => 
+  z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)');
 
-/**
- * Validate Italian province code
- */
-export function isValidProvince(province: string): boolean {
-  if (!province || province.length !== 2) return false;
-  
-  // List of valid Italian province codes
-  const validProvinces = [
-    'AG', 'AL', 'AN', 'AO', 'AP', 'AQ', 'AR', 'AT', 'AV', 'BA', 'BG', 'BI', 'BL', 'BN', 'BO',
-    'BR', 'BS', 'BT', 'BZ', 'CA', 'CB', 'CE', 'CH', 'CI', 'CL', 'CN', 'CO', 'CR', 'CS', 'CT',
-    'CZ', 'EN', 'FC', 'FE', 'FG', 'FI', 'FM', 'FR', 'GE', 'GO', 'GR', 'IM', 'IS', 'KR', 'LC',
-    'LE', 'LI', 'LO', 'LT', 'LU', 'MB', 'MC', 'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NA', 'NO',
-    'NU', 'OG', 'OR', 'OT', 'PA', 'PC', 'PD', 'PE', 'PG', 'PI', 'PN', 'PO', 'PR', 'PT', 'PU',
-    'PV', 'PZ', 'RA', 'RC', 'RE', 'RG', 'RI', 'RM', 'RN', 'RO', 'SA', 'SI', 'SO', 'SP', 'SR',
-    'SS', 'SU', 'SV', 'TA', 'TE', 'TN', 'TO', 'TP', 'TR', 'TS', 'TV', 'UD', 'VA', 'VB', 'VC',
-    'VE', 'VI', 'VR', 'VS', 'VT', 'VV'
-  ];
-  
-  return validProvinces.includes(province.toUpperCase());
-}
+// Plant validation schemas
+export const plantSchema = z.object({
+  name: requiredString('Plant name'),
+  code: requiredString('Plant code'),
+  type: z.enum(['Photovoltaic', 'Wind', 'Hydroelectric', 'Biomass', 'Geothermal']),
+  status: z.enum(['In Operation', 'In Authorization', 'Under Construction', 'Decommissioned']),
+  power_kw: positiveNumber(),
+  location: requiredString('Location'),
+  municipality: requiredString('Municipality'),
+  province: requiredString('Province'),
+  region: requiredString('Region'),
+  operation_date: dateString().optional(),
+  notes: optionalString()
+});
 
-/**
- * Validate required fields in an object
- */
-export function validateRequiredFields<T extends Record<string, any>>(
-  data: T,
-  requiredFields: (keyof T)[]
-): { isValid: boolean; missingFields: string[] } {
-  const missingFields: string[] = [];
-  
-  for (const field of requiredFields) {
-    const value = data[field];
-    if (value === null || value === undefined || value === '') {
-      missingFields.push(String(field));
+// User validation schemas
+export const userSchema = z.object({
+  email: emailSchema,
+  first_name: requiredString('First name'),
+  last_name: requiredString('Last name'),
+  role: z.enum(['Admin', 'Asset Manager', 'Plant Owner', 'Operator', 'Viewer']),
+  phone: phoneSchema.optional(),
+  is_active: z.boolean().default(true)
+});
+
+// Login validation schema
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: requiredString('Password').min(6, 'Password must be at least 6 characters')
+});
+
+// Document validation schema
+export const documentSchema = z.object({
+  title: requiredString('Document title'),
+  category: z.enum(['Contract', 'Technical', 'Administrative', 'Compliance', 'Report', 'Other']),
+  description: optionalString(),
+  tags: z.array(z.string()).optional()
+});
+
+// Workflow validation schema
+export const workflowSchema = z.object({
+  name: requiredString('Workflow name'),
+  description: optionalString(),
+  priority: z.enum(['High', 'Medium', 'Low']),
+  due_date: dateString().optional(),
+  assigned_to: z.number().optional()
+});
+
+// Helper function to extract error messages
+export const getFormErrors = (error: z.ZodError) => {
+  const errors: Record<string, string> = {};
+  error.errors.forEach((err) => {
+    if (err.path.length > 0) {
+      errors[err.path.join('.')] = err.message;
     }
-  }
-  
-  return {
-    isValid: missingFields.length === 0,
-    missingFields
-  };
-}
-
-/**
- * Validate file type
- */
-export function isValidFileType(filename: string, allowedTypes: string[]): boolean {
-  const extension = filename.split('.').pop()?.toLowerCase();
-  if (!extension) return false;
-  
-  return allowedTypes.map(t => t.toLowerCase()).includes(extension);
-}
-
-/**
- * Validate file size (in bytes)
- */
-export function isValidFileSize(size: number, maxSizeInMB: number): boolean {
-  const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
-  return size <= maxSizeInBytes;
-}
+  });
+  return errors;
+};

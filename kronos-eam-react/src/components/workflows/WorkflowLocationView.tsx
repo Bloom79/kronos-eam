@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, ChevronRight, ChevronDown, Activity, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Workflow } from '../../types';
 import clsx from 'clsx';
+import { useState } from 'react';
 
 interface WorkflowLocationViewProps {
   workflows: Workflow[];
@@ -39,11 +40,11 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
       // For now, using a placeholder approach - in real implementation, 
       // this would come from the plant data
       if (groupBy === 'region') {
-        location = workflow.plantRegion || 'Non specificato';
+        location = 'Non specificato'; // placeholder, as plantRegion is not on Workflow model
       } else if (groupBy === 'province') {
-        location = workflow.plantProvince || 'Non specificato';
+        location = 'Non specificato'; // placeholder, as plantProvince is not on Workflow model
       } else if (groupBy === 'city') {
-        location = workflow.plantCity || 'Non specificato';
+        location = 'Non specificato'; // placeholder, as plantCity is not on Workflow model
       }
       
       if (!groups[location]) {
@@ -56,10 +57,10 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
     const locationGroups: LocationGroup[] = Object.entries(groups).map(([location, workflows]) => {
       const stats = {
         total: workflows.length,
-        active: workflows.filter(w => w.progresso < 100 && w.progresso > 0).length,
-        completed: workflows.filter(w => w.progresso === 100).length,
+        active: workflows.filter(w => w.progress < 100).length,
+        completed: workflows.filter(w => w.progress === 100).length,
         delayed: workflows.reduce((sum, w) => {
-          const delayedTasks = w.stages.flatMap(s => s.tasks).filter(t => t.status === 'Delayed').length;
+          const delayedTasks = w.stages?.flatMap(s => s.tasks).filter(t => t.status === 'Delayed').length || 0;
           return sum + (delayedTasks > 0 ? 1 : 0);
         }, 0)
       };
@@ -89,9 +90,9 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
   };
 
   const getWorkflowIcon = (workflow: Workflow) => {
-    if (workflow.progresso === 100) return CheckCircle;
-    if (workflow.stages.flatMap(s => s.tasks).some(t => t.status === 'Delayed')) return AlertCircle;
-    if (workflow.progresso > 0) return Activity;
+    if (workflow.progress === 100) return CheckCircle;
+    if (workflow.stages?.flatMap(s => s.tasks).some(t => t.status === 'Delayed')) return AlertCircle;
+    if (workflow.progress > 0) return Activity;
     return Clock;
   };
 
@@ -174,9 +175,9 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
                 <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {group.workflows.map((workflow) => {
                     const Icon = getWorkflowIcon(workflow);
-                    const iconColor = workflow.progresso === 100 
+                    const iconColor = workflow.progress === 100 
                       ? 'text-green-600 dark:text-green-400' 
-                      : workflow.stages.flatMap(s => s.tasks).some(t => t.status === 'Delayed')
+                      : workflow.stages?.flatMap(s => s.tasks).some(t => t.status === 'Delayed')
                       ? 'text-red-600 dark:text-red-400'
                       : 'text-blue-600 dark:text-blue-400';
 
@@ -194,12 +195,12 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
                                 {workflow.name}
                               </h5>
                               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                {workflow.plantname} • {workflow.statusCorrente}
+                                {workflow.plant_name} • {workflow.currentStatus}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                <span>Creato: {new Date(workflow.dataCreazione!).toLocaleDateString('it-IT')}</span>
-                                {workflow.dataScadenza && (
-                                  <span>Scadenza: {new Date(workflow.dataScadenza).toLocaleDateString('it-IT')}</span>
+                                <span>Creato: {new Date(workflow.created_at || '').toLocaleDateString('it-IT')}</span>
+                                {workflow.due_date && (
+                                  <span>Scadenza: {new Date(workflow.due_date).toLocaleDateString('it-IT')}</span>
                                 )}
                               </div>
                             </div>
@@ -208,13 +209,13 @@ const WorkflowLocationView: React.FC<WorkflowLocationViewProps> = ({
                           <div className="text-right">
                             <div className="mb-1">
                               <span className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                                {workflow.progresso}%
+                                {workflow.progress}%
                               </span>
                             </div>
                             <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
                               <div
-                                className={clsx('h-1.5 rounded-full transition-all', getProgressColor(workflow.progresso))}
-                                style={{ width: `${workflow.progresso}%` }}
+                                className={clsx('h-1.5 rounded-full transition-all', getProgressColor(workflow.progress))}
+                                style={{ width: `${workflow.progress}%` }}
                               />
                             </div>
                           </div>

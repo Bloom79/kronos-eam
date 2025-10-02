@@ -33,35 +33,35 @@ class Integration(BaseModel):
     """External service integrations"""
     __tablename__ = "integrations"
     
-    nome = Column(String(100), nullable=False)
-    tipo = Column(Enum(IntegrationTypeEnum), nullable=False)
-    stato = Column(Enum(IntegrationStatusEnum), default=IntegrationStatusEnum.DISCONNESSO)
+    name = Column(String(100), nullable=False)
+    type = Column(Enum(IntegrationTypeEnum), nullable=False)
+    status = Column(Enum(IntegrationStatusEnum), default=IntegrationStatusEnum.DISCONNESSO)
     
     # Connection details
-    tipoConnessione = Column(String(50))  # API, RPA, EDI, PEC
+    connection_type = Column(String(50))  # API, RPA, EDI, PEC
     endpoint = Column(String(500))
-    configurazione = Column(JSON, default=dict)
+    configuration = Column(JSON, default=dict)
     
     # Status
-    ultimaSincronizzazione = Column(DateTime)
-    prossimaSincronizzazione = Column(DateTime)
+    last_sync = Column(DateTime)
+    next_sync = Column(DateTime)
     
     # Metrics
-    messaggiInCoda = Column(Integer, default=0)
-    messaggiProcessati = Column(Integer, default=0)
-    errori = Column(Integer, default=0)
-    ultimoErrore = Column(Text)
+    messages_in_queue = Column(Integer, default=0)
+    messages_processed = Column(Integer, default=0)
+    errors = Column(Integer, default=0)
+    last_error = Column(Text)
     
     # Scheduling
-    abilitato = Column(Boolean, default=True)
-    scheduleConfig = Column(JSON, default=dict)  # Cron expression or interval
+    is_enabled = Column(Boolean, default=True)
+    schedule_config = Column(JSON, default=dict)  # Cron expression or interval
     
     # Relationships
     logs = relationship("IntegrationLog", back_populates="integration", cascade="all, delete-orphan")
     credentials = relationship("IntegrationCredential", back_populates="integration", cascade="all, delete-orphan")
     
     def __repr__(self):
-        return f"<Integration {self.nome} - {self.stato}>"
+        return f"<Integration {self.name} - {self.status}>"
 
 
 class IntegrationLog(BaseModel):
@@ -71,20 +71,20 @@ class IntegrationLog(BaseModel):
     integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
     
     # Log details
-    tipo = Column(String(50))  # sync, error, warning, info
-    azione = Column(String(100))  # login, download, upload, process
+    type = Column(String(50))  # sync, error, warning, info
+    action = Column(String(100))  # login, download, upload, process
     
-    messaggio = Column(Text)
-    dettagli = Column(JSON, default=dict)
+    message = Column(Text)
+    details = Column(JSON, default=dict)
     
     # Metrics
-    durata_ms = Column(Integer)  # Duration in milliseconds
-    record_processati = Column(Integer)
-    record_errori = Column(Integer)
+    duration_ms = Column(Integer)  # Duration in milliseconds
+    records_processed = Column(Integer)
+    records_with_errors = Column(Integer)
     
     # Status
-    successo = Column(Boolean, default=True)
-    errore = Column(Text)
+    is_successful = Column(Boolean, default=True)
+    error_message = Column(Text)
     
     # Timestamps handled by BaseModel
     
@@ -92,7 +92,7 @@ class IntegrationLog(BaseModel):
     integration = relationship("Integration", back_populates="logs")
     
     def __repr__(self):
-        return f"<IntegrationLog {self.integration_id} - {self.tipo}>"
+        return f"<IntegrationLog {self.integration_id} - {self.type}>"
 
 
 class IntegrationCredential(BaseModel):
@@ -102,24 +102,24 @@ class IntegrationCredential(BaseModel):
     integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
     
     # Credential info
-    nome = Column(String(100), nullable=False)
-    tipo = Column(String(50))  # username_password, certificate, api_key, oauth
+    name = Column(String(100), nullable=False)
+    type = Column(String(50))  # username_password, certificate, api_key, oauth
     
     # Encrypted storage
-    valore_criptato = Column(Text, nullable=False)
+    encrypted_value = Column(Text, nullable=False)
     
     # Validity
-    valido_dal = Column(DateTime, default=datetime.utcnow)
-    valido_fino = Column(DateTime)
+    valid_from = Column(DateTime, default=datetime.utcnow)
+    valid_until = Column(DateTime)
     
     # Metadata
-    model_metadata = Column(JSON, default=dict)
+    credential_metadata = Column("metadata", JSON, default=dict)
     
     # Relationship
     integration = relationship("Integration", back_populates="credentials")
     
     def __repr__(self):
-        return f"<IntegrationCredential {self.nome}>"
+        return f"<IntegrationCredential {self.name}>"
 
 
 class IntegrationMapping(BaseModel):
@@ -129,20 +129,20 @@ class IntegrationMapping(BaseModel):
     integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
     
     # Mapping details
-    entita = Column(String(50))  # impianto, documento, workflow
+    entity = Column(String(50))  # impianto, documento, workflow
     
     # Field mappings
-    campi_origine = Column(JSON, nullable=False)  # External field names
-    campi_destinazione = Column(JSON, nullable=False)  # Internal field names
-    trasformazioni = Column(JSON, default=dict)  # Transformation rules
+    source_fields = Column(JSON, nullable=False)  # External field names
+    destination_fields = Column(JSON, nullable=False)  # Internal field names
+    transformations = Column(JSON, default=dict)  # Transformation rules
     
     # Validation
-    validazioni = Column(JSON, default=dict)
+    validations = Column(JSON, default=dict)
     
-    attivo = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True)
     
     def __repr__(self):
-        return f"<IntegrationMapping {self.integration_id} - {self.entita}>"
+        return f"<IntegrationMapping {self.integration_id} - {self.entity}>"
 
 
 class EDIMessage(BaseModel):
@@ -152,27 +152,27 @@ class EDIMessage(BaseModel):
     integration_id = Column(Integer, ForeignKey("integrations.id"), nullable=False)
     
     # Message details
-    tipo_messaggio = Column(String(50))  # ORDERS, INVOIC, DESADV
-    numero_messaggio = Column(String(100), unique=True)
+    message_type = Column(String(50))  # ORDERS, INVOIC, DESADV
+    message_number = Column(String(100), unique=True)
     
-    direzione = Column(String(10))  # IN, OUT
+    direction = Column(String(10))  # IN, OUT
     
     # Content
-    contenuto = Column(Text)
-    formato = Column(String(20))  # EDIFACT, XML, X12
+    content = Column(Text)
+    format = Column(String(20))  # EDIFACT, XML, X12
     
     # Status
-    stato = Column(String(50))  # pending, sent, received, processed, error
-    data_invio = Column(DateTime)
-    data_ricezione = Column(DateTime)
-    data_elaborazione = Column(DateTime)
+    status = Column(String(50))  # pending, sent, received, processed, error
+    sent_at = Column(DateTime)
+    received_at = Column(DateTime)
+    processed_at = Column(DateTime)
     
     # Error handling
-    errore = Column(Text)
-    tentativi = Column(Integer, default=0)
+    error_message = Column(Text)
+    retry_attempts = Column(Integer, default=0)
     
     # References
-    riferimento_interno = Column(String(100))  # Order ID, Invoice ID, etc.
+    internal_reference = Column(String(100))  # Order ID, Invoice ID, etc.
     
     def __repr__(self):
-        return f"<EDIMessage {self.numero_messaggio} - {self.stato}>"
+        return f"<EDIMessage {self.message_number} - {self.status}>"

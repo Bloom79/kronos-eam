@@ -15,28 +15,41 @@ interface WorkflowTemplateGalleryProps {
   plantId?: number;
   plantpower?: number;
   selectedTemplate?: WorkflowTemplate | null;
+  templates?: WorkflowTemplate[];
 }
 
 const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
   onTemplateSelect,
   plantId,
   plantpower = 0,
-  selectedTemplate = null
+  selectedTemplate = null,
+  templates: propTemplates
 }) => {
-  const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
+  const [templates, setTemplates] = useState<WorkflowTemplate[]>(propTemplates || []);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [previewTemplate, setPreviewTemplate] = useState<WorkflowTemplate | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
-    loadTemplates();
-  }, []);
+    if (propTemplates && propTemplates.length > 0) {
+      // Use templates from props if provided
+      console.log('Using templates from props:', propTemplates);
+      setTemplates(propTemplates);
+      setLoading(false);
+    } else {
+      // Load templates if not provided
+      loadTemplates();
+    }
+  }, [propTemplates]);
 
   const loadTemplates = async () => {
     try {
       setLoading(true);
       const data = await workflowService.getTemplates();
+      console.log('Templates loaded:', data);
+      console.log('Plant ID:', plantId);
+      console.log('Plant Power:', plantpower);
       setTemplates(data);
     } catch (error) {
       console.error('Error loading templates:', error);
@@ -45,8 +58,8 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
     }
   };
 
-  const getCategoryIcon = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
       case 'Activation': return Activity;
       case 'Fiscal': return DollarSign;
       case 'Incentives': return TrendingUp;
@@ -68,8 +81,8 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
     }
   };
 
-  const getCategoryColor = (categoria: string) => {
-    switch (categoria) {
+  const getCategoryColor = (category: string) => {
+    switch (category) {
       case 'Activation': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
       case 'Fiscal': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
       case 'Incentives': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
@@ -104,24 +117,36 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
   };
 
   const isTemplateApplicable = (template: WorkflowTemplate): boolean => {
+    // If no plant power specified, show all templates
+    if (!plantpower || plantpower === 0) {
+      return true;
+    }
+    
     // Check if template is applicable based on plant power
+    console.log('Checking template:', template.name, {
+      min_power: template.min_power,
+      max_power: template.max_power,
+      plantpower: plantpower
+    });
     if (template.min_power && plantpower < template.min_power) {
+      console.log('Template excluded - power too low');
       return false;
     }
     if (template.max_power && plantpower > template.max_power) {
+      console.log('Template excluded - power too high');
       return false;
     }
     return true;
   };
 
   const filteredTemplates = templates.filter(template => {
-    if (selectedCategory !== 'all' && template.categoria !== selectedCategory) {
+    if (selectedCategory !== 'all' && template.category !== selectedCategory) {
       return false;
     }
     return isTemplateApplicable(template);
   });
 
-  const categories = ['all', ...Array.from(new Set(templates.map(t => t.categoria)))];
+  const categories = ['all', ...Array.from(new Set(templates.map(t => t.category)))];
 
   const handlePreview = (template: WorkflowTemplate, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -149,7 +174,7 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
         {categories.map(category => (
           <button
             key={category}
-            onClick={() => setSelectedCategory(category)}
+            onClick={() => setSelectedCategory(category || 'all')}
             className={clsx(
               'px-4 py-2 rounded-lg font-medium transition-colors',
               selectedCategory === category
@@ -165,7 +190,7 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
       {/* Templates Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredTemplates.map((template) => {
-          const CategoryIcon = getCategoryIcon(template.categoria);
+          const CategoryIcon = getCategoryIcon(template.category || 'Activation');
           const isApplicable = isTemplateApplicable(template);
           const isSelected = selectedTemplate?.id === template.id;
           
@@ -196,7 +221,7 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
               <div className="flex items-start justify-between mb-4">
                 <div className={clsx(
                   'p-3 rounded-lg',
-                  getCategoryColor(template.categoria).replace('text-', 'bg-').split(' ')[0]
+                  getCategoryColor(template.category || 'Activation').replace('text-', 'bg-').split(' ')[0]
                 )}>
                   <CategoryIcon className="h-6 w-6" />
                 </div>
@@ -212,9 +237,9 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
                   )}
                   <span className={clsx(
                     'text-xs px-2 py-1 rounded-full font-medium',
-                    getCategoryColor(template.categoria)
+                    getCategoryColor(template.category || 'Activation')
                   )}>
-                    {template.categoria}
+                    {template.category || 'Activation'}
                   </span>
                 </div>
               </div>
@@ -227,7 +252,7 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
                 )}
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                {template.descrizione}
+                {template.description}
               </p>
 
               {/* Metadata */}
@@ -235,7 +260,7 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
                 {/* Duration */}
                 <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Clock className="h-4 w-4" />
-                  <span>Durata: ~{template.durata_stimata_giorni || template.durataStimataDays} giorni</span>
+                  <span>Durata: ~{template.estimated_duration_days} giorni</span>
                 </div>
 
                 {/* Power Range */}
@@ -249,17 +274,17 @@ const WorkflowTemplateGallery: React.FC<WorkflowTemplateGalleryProps> = ({
                 )}
 
                 {/* Recurrence */}
-                {template.ricorrenza && (
+                {template.recurrence && (
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <Calendar className="h-4 w-4" />
-                    <span>Ricorrenza: {template.ricorrenza}</span>
+                    <span>Ricorrenza: {template.recurrence}</span>
                   </div>
                 )}
 
                 {/* Entities Involved */}
-                {template.enti_richiesti && template.enti_richiesti.length > 0 && (
+                {template.required_entities && template.required_entities.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-3">
-                    {template.enti_richiesti.map(entity => {
+                    {template.required_entities.map(entity => {
                       const EntityIcon = getEntityIcon(entity);
                       return (
                         <div

@@ -28,7 +28,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
       id: 1,
       name: 'TICA - Testo Integrato Connessioni Attive',
       type: 'Preventivo',
-      data: '20/02/2022',
+      date: '20/02/2022',
       status: 'Accettato',
       dimensione: '1.2 MB'
     },
@@ -36,7 +36,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
       id: 2,
       name: 'Regolamento di Esercizio',
       type: 'Contratto',
-      data: '15/04/2022',
+      date: '15/04/2022',
       status: 'Firmato',
       dimensione: '856 KB'
     },
@@ -44,7 +44,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
       id: 3,
       name: 'Comunicazione Fine Lavori',
       type: 'Comunicazione',
-      data: '20/05/2022',
+      date: '20/05/2022',
       status: 'Protocollato',
       dimensione: '2.3 MB'
     },
@@ -52,7 +52,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
       id: 4,
       name: 'Verbale di Attivazione',
       type: 'Verbale',
-      data: '22/05/2022',
+      date: '22/05/2022',
       status: 'Completato',
       dimensione: '432 KB'
     }
@@ -61,21 +61,21 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
   const comunicazioniDSO = [
     {
       id: 1,
-      data: '15/11/2024',
+      date: '15/11/2024',
       oggetto: 'Programmazione manutenzione cabina',
       type: 'Manutenzione',
       letta: true
     },
     {
       id: 2,
-      data: '02/10/2024',
+      date: '02/10/2024',
       oggetto: 'Aggiornamento tariffe distribuzione 2025',
       type: 'Amministrativo',
       letta: true
     },
     {
       id: 3,
-      data: '18/09/2024',
+      date: '18/09/2024',
       oggetto: 'Verifica annuale protezioni di interfaccia',
       type: 'Tecnico',
       letta: false
@@ -201,7 +201,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
                 <div>
                   <p className="font-medium text-gray-800 dark:text-gray-100">{doc.name}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {doc.type} • {doc.data} • {doc.dimensione}
+                    {doc.type} • {doc.date} • {doc.dimensione}
                   </p>
                 </div>
               </div>
@@ -304,7 +304,7 @@ const DSOTab: React.FC<DSOTabProps> = ({ plant }) => {
                     {com.oggetto}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {com.type} • {com.data}
+                    {com.type} • {com.date}
                   </p>
                 </div>
               </div>

@@ -104,15 +104,15 @@ export function formatCurrencyForExport(amount: number | string | null | undefin
 export function preparePlantDataForExport(plants: any[]): any[] {
   return plants.map(plant => ({
     Name: plant.name,
-    Code: plant.codice,
-    Power: plant.potenza,
+    Code: plant.code,
+    Power: plant.power,
     Status: plant.status,
     Type: plant.type,
     Location: plant.location,
-    Municipality: plant.comune || '',
-    Province: plant.provincia || '',
-    Region: plant.regione || '',
+    Municipality: plant.municipality || '',
+    Province: plant.province || '',
+    Region: plant.region || '',
     'Created Date': formatDateForExport(plant.created_at),
-    'Next Deadline': plant.prossima_scadenza || plant.prossimaScadenza || ''
+    'Next Deadline': plant.next_deadline || plant.nextDeadline || ''
   }));
 }

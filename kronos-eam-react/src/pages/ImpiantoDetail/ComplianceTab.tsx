@@ -340,7 +340,7 @@ const ComplianceTab: React.FC<ComplianceTabProps> = ({ plant }) => {
                     )}
 
                     {/* Role-specific actions */}
-                    {(user?.ruolo === 'Admin' || user?.ruolo === 'Asset Manager' || user?.ruolo === 'Plant Owner') && (
+                    {(user?.role === 'Admin' || user?.role === 'Asset Manager' || user?.role === 'Plant Owner') && (
                       <div className="mt-3 flex items-center gap-3">
                         <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
                           <FileText className="h-4 w-4" />
@@ -362,7 +362,7 @@ const ComplianceTab: React.FC<ComplianceTabProps> = ({ plant }) => {
         </div>
 
         {/* Export Report */}
-        {(user?.ruolo === 'Admin' || user?.ruolo === 'Asset Manager' || user?.ruolo === 'Plant Owner') && (
+        {(user?.role === 'Admin' || user?.role === 'Asset Manager' || user?.role === 'Plant Owner') && (
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <button className="w-full md:w-auto px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2">
               <Download className="h-4 w-4" />

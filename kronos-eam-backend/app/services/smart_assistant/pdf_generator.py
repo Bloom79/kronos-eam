@@ -97,7 +97,7 @@ class PDFFormGenerator:
         
         plant_data = [
             ['Codice CENSIMP:', self._get_anagrafica_field(plant, 'codice_censimp', 'DA ASSEGNARE')],
-            ['Denominazione Plant:', plant.nome],
+            ['Denominazione Plant:', plant.name],
             ['Potenza Installata (kW):', f"{potenza:.2f}" if potenza else 'DA SPECIFICARE'],
             ['Comune di Installazione:', self._get_anagrafica_field(plant, 'comune')],
             ['Provincia:', self._get_anagrafica_field(plant, 'provincia')],
@@ -224,7 +224,7 @@ class PDFFormGenerator:
         story.append(Paragraph("2. ANAGRAFICA IMPIANTO", self.styles['FormSection']))
         
         terna_data = [
-            ['Denominazione:', plant.nome],
+            ['Denominazione:', plant.name],
             ['Comune:', plant.anagrafica.comune],
             ['Provincia:', plant.anagrafica.provincia],
             ['Coordinate GPS Lat:', plant.anagrafica.latitudine or 'DA RILEVARE'],
@@ -247,7 +247,7 @@ class PDFFormGenerator:
         connection_data = [
             ['Punto di Connessione:', plant.anagrafica.punto_connessione or 'DA SPECIFICARE'],
             ['Gestore di Rete:', plant.anagrafica.gestore_rete or 'E-Distribuzione'],
-            ['Codice Pratica Connessione:', plant.anagrafica.codice_pratica or 'DA SPECIFICARE'],
+            ['Codice Pratica Connessione:', plant.anagrafica.practice_code or 'DA SPECIFICARE'],
             ['Data Richiesta Connessione:', 'DA SPECIFICARE'],
             ['Data Autorizzazione:', 'DA SPECIFICARE'],
         ]
@@ -463,7 +463,7 @@ class PDFFormGenerator:
         story.append(Paragraph("2. DATI DELL'IMPIANTO", self.styles['FormSection']))
         
         plant_data = [
-            ['Denominazione:', plant.nome],
+            ['Denominazione:', plant.name],
             ['Ubicazione:', f"{plant.anagrafica.indirizzo}, {plant.anagrafica.comune} ({plant.anagrafica.provincia})"],
             ['Potenza Installata (kW):', f"{plant.potenza_installata:.2f}"],
             ['Data Attivazione:', plant.data_attivazione.strftime('%d/%m/%Y') if plant.data_attivazione else 'DA SPECIFICARE'],

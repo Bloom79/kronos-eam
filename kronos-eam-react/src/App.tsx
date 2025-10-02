@@ -28,6 +28,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ToastContainer } from './components/ui/Toast';
+import { ToastProvider } from './hooks/useToast';
 
 const router = createBrowserRouter([
   {
@@ -132,8 +133,10 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <NotificationProvider>
-            <RouterProvider router={router} />
-            <ToastContainer />
+            <ToastProvider>
+              <RouterProvider router={router} />
+              <ToastContainer />
+            </ToastProvider>
           </NotificationProvider>
         </AuthProvider>
       </ThemeProvider>

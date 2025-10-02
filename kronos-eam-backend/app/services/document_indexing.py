@@ -73,19 +73,19 @@ class DocumentIndexingService:
             # Prepare metadata
             doc_metadata = {
                 "document_id": document_id,
-                "document_name": document.nome,
-                "document_type": document.tipo,
-                "category": document.categoria,
-                "impianto_id": document.impianto_id,
-                "upload_date": document.data_caricamento.isoformat() if document.data_caricamento else None,
-                "expiration_date": document.data_scadenza.isoformat() if document.data_scadenza else None,
+                "document_name": document.name,
+                "document_type": document.type,
+                "category": document.category,
+                "plant_id": document.plant_id,
+                "upload_date": document.upload_date.isoformat() if document.upload_date else None,
+                "expiration_date": document.due_date.isoformat() if document.due_date else None,
                 **metadata
             }
             
             # Chunk the document
             chunks = self.chunker.chunk_document(
                 text=content,
-                document_type=document.tipo or "generic",
+                document_type=document.type or "generic",
                 metadata=doc_metadata
             )
             
@@ -112,7 +112,7 @@ class DocumentIndexingService:
             doc_ids = await self.vector_store.add_documents(vector_docs, tenant_id)
             
             # Update document status
-            document.stato = DocumentStatusEnum.INDEXED
+            document.status = DocumentStatusEnum.INDEXED
             document.metadata = document.metadata or {}
             document.metadata["vector_ids"] = doc_ids
             document.metadata["chunks_count"] = len(chunks)
@@ -225,13 +225,13 @@ class DocumentIndexingService:
                 return ""
             
             # Read based on file type
-            if document.tipo == "pdf":
+            if document.type == "pdf":
                 return self._extract_pdf_text(file_path)
-            elif document.tipo in ["txt", "md"]:
+            elif document.type in ["txt", "md"]:
                 return file_path.read_text(encoding="utf-8")
             else:
                 # For other types, return empty for now
-                logger.warning(f"Unsupported document type: {document.tipo}")
+                logger.warning(f"Unsupported document type: {document.type}")
                 return ""
                 
         except Exception as e:

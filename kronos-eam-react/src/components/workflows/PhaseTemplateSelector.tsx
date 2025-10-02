@@ -71,7 +71,7 @@ const PhaseTemplateSelector: React.FC<PhaseTemplateSelectorProps> = ({
       for (const phase of phases) {
         const templates = await workflowService.getTemplates({
           phase: phase.key,
-          potenza_kw: plantpower
+          power_kw: plantpower
         });
         templatesData[phase.key] = templates;
       }
@@ -213,20 +213,20 @@ const PhaseTemplateSelector: React.FC<PhaseTemplateSelectorProps> = ({
                           )}
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                          {template.descrizione}
+                          {template.description}
                         </p>
                         
                         <div className="space-y-2">
                           {/* Duration */}
                           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                             <Clock className="h-3 w-3" />
-                            <span>{template.durata_stimata_giorni || 10} giorni</span>
+                            <span>{template.estimated_duration_days || 10} giorni</span>
                           </div>
                           
                           {/* Entities */}
-                          {template.enti_richiesti && template.enti_richiesti.length > 0 && (
+                          {template.required_entities && template.required_entities.length > 0 && (
                             <div className="flex flex-wrap gap-1">
-                              {template.enti_richiesti.map(entity => (
+                              {template.required_entities.map(entity => (
                                 <span
                                   key={entity}
                                   className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-xs"
