@@ -55,7 +55,7 @@ jobs:
       - name: Build and Push Backend
         working-directory: ./kronos-eam-backend
         run: |
-          docker build --no-cache -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest .
+          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest
 
   build-frontend:
@@ -91,7 +91,7 @@ jobs:
       - name: Build and Push Frontend
         working-directory: ./kronos-eam-react
         run: |
-          docker build --no-cache \
+          docker build \
             --build-arg REACT_APP_API_URL=${{ steps.backend-url.outputs.BACKEND_URL }}/api/v1 \
             --build-arg CACHEBUST=$(date +%s) \
             -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest .
@@ -137,7 +137,7 @@ jobs:
             --min-instances 1 \
             --max-instances 10 \
             --port 8080 \
-            --timeout 300 \
+            --timeout 600 \
             --no-traffic
 
       - name: Get Backend URL
