@@ -132,8 +132,8 @@ jobs:
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest,DB_PASSWORD=db-password:latest" \
             --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
             --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
-            --memory 1Gi \
-            --cpu 1 \
+            --memory 8Gi \
+            --cpu 2 \
             --min-instances 1 \
             --max-instances 10 \
             --port 8080 \
