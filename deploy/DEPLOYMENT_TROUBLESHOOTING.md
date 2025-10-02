@@ -3,10 +3,123 @@
 This guide shows how to retrieve and analyze GitHub Actions deployment logs and Cloud Run logs to diagnose deployment failures.
 
 ## Table of Contents
-1. [Quick Diagnostics Script](#quick-diagnostics-script)
-2. [Manual GitHub Actions Log Retrieval](#manual-github-actions-log-retrieval)
-3. [Manual Cloud Run Log Retrieval](#manual-cloud-run-log-retrieval)
-4. [Common Error Patterns](#common-error-patterns)
+1. [Infrastructure Setup](#infrastructure-setup)
+2. [Quick Diagnostics Script](#quick-diagnostics-script)
+3. [Manual GitHub Actions Log Retrieval](#manual-github-actions-log-retrieval)
+4. [Manual Cloud Run Log Retrieval](#manual-cloud-run-log-retrieval)
+5. [Common Error Patterns](#common-error-patterns)
+
+---
+
+## Infrastructure Setup
+
+### Prerequisites
+
+Before deploying the application, you must set up the GCP infrastructure using the automated workflow.
+
+#### Required Service Account Permissions
+
+The `kronos-deploy` service account (used by GitHub Actions via `GCP_SA_KEY` secret) needs these roles:
+
+| Role | Purpose | Required For |
+|------|---------|--------------|
+| `roles/artifactregistry.admin` | Push Docker images | Backend/Frontend deployment |
+| `roles/run.admin` | Deploy to Cloud Run | Backend/Frontend deployment |
+| `roles/cloudsql.admin` | Manage Cloud SQL | Infrastructure setup |
+| `roles/secretmanager.admin` | Create/manage secrets | Infrastructure setup |
+| `roles/iam.securityAdmin` | Grant IAM permissions | Infrastructure setup |
+| `roles/storage.admin` | Manage Cloud Storage | Backups/static assets |
+
+#### Granting Permissions
+
+If the infrastructure setup workflow fails with permission errors, grant the missing roles:
+
+```bash
+# Grant Secret Manager Admin (for creating secrets)
+gcloud projects add-iam-policy-binding kronos-eam-prod-20250802 \
+  --member="serviceAccount:kronos-deploy@kronos-eam-prod-20250802.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.admin"
+
+# Grant IAM Security Admin (for granting permissions to other service accounts)
+gcloud projects add-iam-policy-binding kronos-eam-prod-20250802 \
+  --member="serviceAccount:kronos-deploy@kronos-eam-prod-20250802.iam.gserviceaccount.com" \
+  --role="roles/iam.securityAdmin"
+```
+
+#### Running Infrastructure Setup
+
+```bash
+# First-time setup (creates everything)
+gh workflow run setup-gcp-infrastructure.yml -f environment=production
+
+# Watch progress
+gh run watch
+
+# Verify completion
+gh run view --log | grep "Infrastructure Summary"
+```
+
+**What gets created:**
+- Cloud SQL PostgreSQL instance (`kronos-db`)
+- Database (`kronos_eam`)
+- Secrets in Secret Manager (`jwt-secret`, `redis-password`, `db-password`)
+- Service accounts (`kronos-backend`, `kronos-frontend`) with proper IAM roles
+
+See [GCP_INFRASTRUCTURE_SETUP.md](./GCP_INFRASTRUCTURE_SETUP.md) for complete documentation.
+
+### Common Infrastructure Setup Issues
+
+#### Issue 1: Permission Denied - Secret Manager
+
+**Error**:
+```
+ERROR: [kronos-deploy@...] does not have permission to access projects instance
+Permission 'secretmanager.secrets.create' denied
+```
+
+**Solution**:
+```bash
+gcloud projects add-iam-policy-binding kronos-eam-prod-20250802 \
+  --member="serviceAccount:kronos-deploy@kronos-eam-prod-20250802.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.admin"
+```
+
+Then re-run the workflow - it's idempotent and will skip already-created resources.
+
+#### Issue 2: Permission Denied - IAM Policy
+
+**Error**:
+```
+ERROR: does not have permission to access projects instance [getIamPolicy]
+```
+
+**Solution**:
+```bash
+gcloud projects add-iam-policy-binding kronos-eam-prod-20250802 \
+  --member="serviceAccount:kronos-deploy@kronos-eam-prod-20250802.iam.gserviceaccount.com" \
+  --role="roles/iam.securityAdmin"
+```
+
+#### Issue 3: Cloud SQL Instance Already Exists
+
+**Message**: `⏭️ Skipping Cloud SQL instance creation - already exists`
+
+**This is normal!** The workflow is idempotent. It will:
+- ✅ Skip existing resources
+- 🔄 Update secrets with new versions
+- ✅ Re-apply IAM permissions (safe to repeat)
+
+### Infrastructure Setup Timeline
+
+Historical attempts for this project:
+
+| Attempt | Result | Issue | Time Taken | Fix Applied |
+|---------|--------|-------|------------|-------------|
+| 1 | ❌ Failed | Missing `secretmanager.admin` role | 35s | Granted role, re-ran workflow |
+| 2 | ❌ Failed | Missing `iam.securityAdmin` role | 40s | Granted role, re-ran workflow |
+| 3 | ✅ Success | All permissions granted | 48s | Complete infrastructure created |
+
+**Total setup time:** ~2 minutes (including permission fixes)
 
 ---
 
