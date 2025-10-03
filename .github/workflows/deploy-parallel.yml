@@ -125,7 +125,7 @@ jobs:
             --region ${REGION} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE},ENVIRONMENT=production,DISABLE_REDIS=true,DISABLE_QDRANT=true,DISABLE_RATE_LIMIT=true,TENANT_ISOLATION_MODE=shared,RUN_MIGRATIONS=true,RUN_INIT_DATA=true,BACKEND_CORS_ORIGINS=[\"https://kronos-frontend-e7xnmhn7ra-ew.a.run.app\"]" \
+            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE},ENVIRONMENT=production,DISABLE_REDIS=1,DISABLE_QDRANT=1,DISABLE_RATE_LIMIT=1,TENANT_ISOLATION_MODE=shared,RUN_MIGRATIONS=1,RUN_INIT_DATA=1,BACKEND_CORS_ORIGINS=[\"https://kronos-frontend-e7xnmhn7ra-ew.a.run.app\"]" \
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest,DB_PASSWORD=db-password:latest" \
             --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
             --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
