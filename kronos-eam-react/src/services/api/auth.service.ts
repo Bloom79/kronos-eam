@@ -54,6 +54,7 @@ class AuthService {
       const response = await apiClient.post<LoginResponse>('/auth/login', params, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Tenant-ID': 'demo',  // Add default tenant ID for login
         },
       });
 
