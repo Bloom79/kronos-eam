@@ -55,7 +55,7 @@ jobs:
       - name: Build and Push Backend
         working-directory: ./kronos-eam-backend
         run: |
-          docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest .
+          docker build --no-cache -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/backend:latest
 
   build-frontend:
