@@ -130,6 +130,7 @@ jobs:
             --set-env-vars "DISABLE_REDIS=true" \
             --set-env-vars "DISABLE_QDRANT=true" \
             --set-env-vars "DISABLE_RATE_LIMIT=true" \
+            --set-env-vars "TENANT_ISOLATION_MODE=shared" \
             --set-env-vars "RUN_MIGRATIONS=true" \
             --set-env-vars "RUN_INIT_DATA=true" \
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest,DB_PASSWORD=db-password:latest" \
