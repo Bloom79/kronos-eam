@@ -242,3 +242,45 @@ grep -c "✅\|completed" PROJECT_STATUS.md
 - **Weekly**: Update all three main documents with progress
 - **Sprint End**: Complete sprint review and plan next sprint
 - **Monthly**: Full document review and stakeholder update
+
+## Deployment Configuration (Production-Verified)
+
+### Critical Requirements
+⚠️ **MUST use SINGLE `--set-env-vars` flag** - Multiple flags will cause deployment failure
+⚠️ **Use `1`/`0` for booleans** - Not `true`/`false` to ensure proper parsing
+⚠️ **CORS as JSON array** - Format: `BACKEND_CORS_ORIGINS=["https://frontend-url"]`
+
+### Complete Deployment Documentation
+📚 **See [DEPLOYMENT_REQUIREMENTS.md](./DEPLOYMENT_REQUIREMENTS.md)** for full deployment guide
+
+### Quick Reference - Required Environment Variables
+```bash
+# Backend (all required for proper operation)
+DATABASE_URL=postgresql://postgres:PASSWORD@/kronos_eam?host=/cloudsql/PROJECT:REGION:INSTANCE
+ENVIRONMENT=production
+DISABLE_REDIS=1
+DISABLE_QDRANT=1
+DISABLE_RATE_LIMIT=1
+TENANT_ISOLATION_MODE=shared
+RUN_MIGRATIONS=1
+RUN_INIT_DATA=1
+BACKEND_CORS_ORIGINS=["https://frontend-url"]
+```
+
+### GCP Secrets Required
+- `jwt-secret` - JWT signing key (32+ chars)
+- `db-password` - PostgreSQL password
+- `redis-password` - Redis password (unused but required)
+
+### Deployment Verification
+```bash
+# Check all env vars are set (should see 12 total)
+gcloud run services describe kronos-backend --region=europe-west1 \
+  --format='value(spec.template.spec.containers[0].env)' | tr ';' '\n' | grep "'name':" | wc -l
+
+# Test login endpoint
+curl -X POST https://backend-url/api/v1/auth/login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -H "X-Tenant-ID: demo" \
+  -d "username=demo@kronos-eam.local&password=Demo2024!"
+```
