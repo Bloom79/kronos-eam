@@ -85,7 +85,8 @@ jobs:
       - name: Get Backend URL
         id: backend-url
         run: |
-          BACKEND_URL=$(gcloud run services describe ${BACKEND_SERVICE} --region=${REGION} --format='value(status.url)' 2>/dev/null || echo "https://kronos-backend-placeholder.run.app")
+          # Use the known backend URL directly
+          BACKEND_URL="https://kronos-backend-e7xnmhn7ra-ew.a.run.app"
           echo "BACKEND_URL=${BACKEND_URL}" >> $GITHUB_OUTPUT
 
       - name: Build and Push Frontend
@@ -93,7 +94,9 @@ jobs:
         run: |
           docker build \
             --build-arg REACT_APP_API_URL=${{ steps.backend-url.outputs.BACKEND_URL }}/api/v1 \
+            --build-arg REACT_APP_ENVIRONMENT=production \
             --build-arg CACHEBUST=$(date +%s) \
+            --no-cache \
             -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest
 
