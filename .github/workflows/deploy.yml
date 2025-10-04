@@ -14,7 +14,7 @@ on:
         default: false
 
 env:
-  PROJECT_ID: kronos-eam-prod-20250802
+  PROJECT_ID: sentrics-1025
   REGION: europe-west1
   BACKEND_SERVICE: kronos-backend
   FRONTEND_SERVICE: kronos-frontend
@@ -132,10 +132,7 @@ jobs:
             --region ${REGION} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE}" \
-            --set-env-vars "ENVIRONMENT=production" \
-            --set-env-vars "DISABLE_REDIS=true" \
-            --set-env-vars "DISABLE_QDRANT=true" \
+            --set-env-vars "DATABASE_URL=postgresql://postgres:${{ secrets.DB_PASSWORD }}@/kronos_eam?host=/cloudsql/${PROJECT_ID}:${REGION}:${SQL_INSTANCE},ENVIRONMENT=production,DISABLE_REDIS=1,DISABLE_QDRANT=1,DISABLE_RATE_LIMIT=1,TENANT_ISOLATION_MODE=shared,RUN_MIGRATIONS=1,RUN_INIT_DATA=1,BACKEND_CORS_ORIGINS=[\\\"https://kronos-frontend-949811571472.europe-west1.run.app\\\"]" \
             --set-secrets "SECRET_KEY=jwt-secret:latest,REDIS_PASSWORD=redis-password:latest,DB_PASSWORD=db-password:latest" \
             --add-cloudsql-instances ${PROJECT_ID}:${REGION}:${SQL_INSTANCE} \
             --service-account kronos-backend@${PROJECT_ID}.iam.gserviceaccount.com \
@@ -143,7 +140,7 @@ jobs:
             --cpu 2 \
             --min-instances 1 \
             --max-instances 10 \
-            --port 8080 \
+            --port 8000 \
             --timeout 600
 
       # Get Backend URL for Frontend
@@ -157,9 +154,12 @@ jobs:
       - name: Build and Push Frontend
         working-directory: ./kronos-eam-react
         run: |
+          echo "Building frontend with API URL: ${{ steps.backend-url.outputs.BACKEND_URL }}/api/v1"
           docker build \
             --build-arg REACT_APP_API_URL=${{ steps.backend-url.outputs.BACKEND_URL }}/api/v1 \
+            --build-arg REACT_APP_ENVIRONMENT=production \
             --build-arg CACHEBUST=$(date +%s) \
+            --no-cache \
             -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest .
           docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/kronos-eam/frontend:latest
 
