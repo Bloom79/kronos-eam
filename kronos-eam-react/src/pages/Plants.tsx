@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, Filter, Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import clsx from 'clsx';
 import { plantsService, PlantCreate } from '../services/api';
-import type { Plant, PlantFilters, PlantListResponse } from '../services/api';
-import { LoadingSpinner, ErrorMessage, EmptyState, Pagination, TableSkeleton } from '../components/ui';
+import type { PlantFilters, PlantListResponse } from '../services/api';
+import { ErrorMessage, EmptyState, Pagination, TableSkeleton } from '../components/ui';
 import { AddPlantModal } from '../components/plants/AddPlantModal';
 import { PlantsTable } from '../components/plants/PlantsTable';
+import { PlantsGrid } from '../components/plants/PlantsGrid';
+import { ViewToggle, ViewMode } from '../components/plants/ViewToggle';
 import ComplianceStats from '../components/plants/ComplianceStats';
 import { useDebounce } from '../hooks/useDebounce';
 import { usePagination } from '../hooks/usePagination';
@@ -18,6 +19,7 @@ const Plants: React.FC = () => {
   const { t } = useTranslation('plants');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showAddModal, setShowAddModal] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -72,8 +74,7 @@ const Plants: React.FC = () => {
     totalPages,
     canGoNext,
     canGoPrevious,
-    pageNumbers,
-    goToFirstPage
+    pageNumbers
   } = usePagination({
     totalItems: totalItems,
     initialPage: currentPage,
@@ -184,6 +185,10 @@ const Plants: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ViewToggle
+                currentView={viewMode}
+                onViewChange={setViewMode}
+              />
               <select
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
                 value={filterStatus}
@@ -228,9 +233,17 @@ const Plants: React.FC = () => {
 
           {/* Content */}
           {loading ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-              <TableSkeleton rows={5} columns={6} />
-            </div>
+            viewMode === 'grid' ? (
+              <PlantsGrid
+                plants={[]}
+                onDelete={handleDeletePlant}
+                loading={true}
+              />
+            ) : (
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                <TableSkeleton rows={5} columns={6} />
+              </div>
+            )
           ) : plants.length === 0 ? (
             <EmptyState
               title={
@@ -257,10 +270,18 @@ const Plants: React.FC = () => {
             />
           ) : (
             <>
-              <PlantsTable
-                plants={plants}
-                onDelete={handleDeletePlant}
-              />
+              {viewMode === 'grid' ? (
+                <PlantsGrid
+                  plants={plants}
+                  onDelete={handleDeletePlant}
+                  loading={loading}
+                />
+              ) : (
+                <PlantsTable
+                  plants={plants}
+                  onDelete={handleDeletePlant}
+                />
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
