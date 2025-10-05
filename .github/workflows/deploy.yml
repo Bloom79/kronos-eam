@@ -140,7 +140,7 @@ jobs:
             --cpu 2 \
             --min-instances 1 \
             --max-instances 10 \
-            --port 8000 \
+            --port 8080 \
             --timeout 600
 
       # Get Backend URL for Frontend
