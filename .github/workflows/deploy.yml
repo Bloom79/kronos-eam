@@ -14,7 +14,7 @@ on:
         default: false
 
 env:
-  PROJECT_ID: sentrics-1025
+  PROJECT_ID: kronos-eam-prod-20250802
   REGION: europe-west1
   BACKEND_SERVICE: kronos-backend
   FRONTEND_SERVICE: kronos-frontend

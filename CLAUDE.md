@@ -49,6 +49,36 @@ You run in an environment where ast-grep (sg) is available; whenever a search re
 - **Translation Files**: `/home/bloom/sentrics/kronos-eam-react/src/i18n/locales/`
 - **Language Selector**: `/home/bloom/sentrics/kronos-eam-react/src/components/common/LanguageSelector.tsx`
 
+## 🚨 CRITICAL: GCP Project Configuration
+
+### ⚠️ DO NOT CONFUSE LOCAL DIRECTORY WITH GCP PROJECT ID
+
+**Correct GCP Project Information:**
+- **Project ID**: `kronos-eam-prod-20250802` ← **USE THIS IN ALL WORKFLOWS**
+- **Project Number**: `949811571472`
+- **Project Name**: Kronos EAM Production
+- **Region**: `europe-west1`
+
+**Common Mistake to AVOID:**
+- **Local Directory**: `/home/bloom/sentrics/`
+- **GCP Project ID**: `kronos-eam-prod-20250802`
+
+**THESE ARE DIFFERENT!** The directory name "sentrics" is NOT the GCP project ID.
+
+**Always verify in workflows:**
+```yaml
+env:
+  PROJECT_ID: kronos-eam-prod-20250802  # ✅ CORRECT
+  # NOT: sentrics-1025 ❌ WRONG
+```
+
+**Production Services:**
+- Backend: `https://kronos-backend-e7xnmhn7ra-ew.a.run.app`
+- Frontend: `https://kronos-frontend-949811571472.europe-west1.run.app`
+- Cloud SQL Instance: `kronos-db`
+
+---
+
 ## Project Overview
 
 Kronos EAM (previously referred to as Sentrics) is a cloud-native SaaS platform for managing administrative and compliance workflows for renewable energy assets in Italy. The platform centralizes asset data, provides intelligent assistance for bureaucratic processes, and manages regulatory deadlines for photovoltaic and wind power plants.

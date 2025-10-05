@@ -1,7 +1,25 @@
 # Kronos EAM Deployment Requirements - Complete Guide
 
-Last Updated: October 3, 2025
+Last Updated: October 4, 2025
 Status: **Production-Ready Configuration Verified**
+
+## 🚨 CRITICAL: GCP Project Information
+
+**⚠️ DO NOT CONFUSE THE PROJECT ID WITH DIRECTORY PATHS**
+
+### Correct GCP Project
+- **Project ID**: `kronos-eam-prod-20250802`
+- **Project Number**: `949811571472`
+- **Project Name**: Kronos EAM Production
+
+### ❌ Common Mistake to Avoid
+The local directory is `/home/bloom/sentrics/` but this is **NOT** the GCP project ID!
+- **Directory name**: `sentrics` (local filesystem)
+- **GCP Project ID**: `kronos-eam-prod-20250802` (cloud resources)
+
+**These are different!** Always use `kronos-eam-prod-20250802` in deployment workflows.
+
+---
 
 ## Overview
 
